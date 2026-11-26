@@ -172,6 +172,13 @@
     }
   });
 
+  // ---------------------------------------------------------------- hero options: the photo answers the pointer
+  if (FINE && !RM) $$('[data-hx]').forEach((hx) => {
+    let raf = 0, nx = 0, ny = 0;
+    hx.addEventListener('pointermove', (e) => { const r = hx.getBoundingClientRect(); nx = ((e.clientX - r.left) / r.width - 0.5) * 2; ny = ((e.clientY - r.top) / r.height - 0.5) * 2; if (!raf) raf = requestAnimationFrame(() => { raf = 0; hx.style.setProperty('--px', nx.toFixed(3)); hx.style.setProperty('--py', ny.toFixed(3)); }); });
+    hx.addEventListener('pointerleave', () => { hx.style.setProperty('--px', 0); hx.style.setProperty('--py', 0); });
+  });
+
   // ---------------------------------------------------------------- rotating sport word
   $$('[data-rotate]').forEach((el) => {
     const words = el.dataset.rotate.split('|'), tones = (el.dataset.tones || '').split('|'); let i = 0;
@@ -184,14 +191,16 @@
   $$('[data-marquee]').forEach((mq) => {
     const track = $('.mq__track', mq); const run = $('.mq__run', mq);
     if (RM || !track || !run) return;
-    let x = 0, v = 0, lastS = W.scrollY, visible = false, last = performance.now(), dir = 1;
+    let x = 0, v = 0, lastS = W.scrollY, visible = false, last = performance.now(), dir = 1, hover = false;
+    mq.addEventListener('pointerenter', () => { hover = true; }); mq.addEventListener('pointerleave', () => { hover = false; });
+    mq.addEventListener('focusin', () => { hover = true; }); mq.addEventListener('focusout', () => { hover = false; });
     if ('IntersectionObserver' in W) new IntersectionObserver((en) => { visible = en[0].isIntersecting; }).observe(mq); else visible = true;
     const loop = (t) => {
       const dt = Math.min(64, t - last) / 1000; last = t;
       const s = W.scrollY; const ds = s - lastS; lastS = s;
       if (ds) dir = ds > 0 ? 1 : -1;
       v += (Math.abs(ds) * 14 - v) * 0.08;
-      if (visible && !d.hidden) {
+      if (visible && !d.hidden && !hover) {
         const w = run.offsetWidth || 1;
         x -= (60 + v) * dt * dir;
         if (x <= -w) x += w; if (x > 0) x -= w;
