@@ -2,9 +2,10 @@
    you have opened readable offline. Pages, styles, scripts and photos come from the network first, so a
    new deploy shows straight away; the cache only answers when the network cannot. Fonts never change,
    so they come from the cache first. The build stamps VERSION, and each deploy clears the last cache. */
-const VERSION = '943449825a';
+const VERSION = '1d1ba681a8';
 const CACHE = `served-${VERSION}`;
-const SHELL = ['./', 'assets/site.css', 'assets/site.js', 'assets/favicon.svg', 'manifest.webmanifest', 'assets/img/app-icon-192.png'];
+// styles, script and logo carry a build hash in their URLs, so they are cached as pages ask for them
+const SHELL = ['./', 'assets/favicon.svg', 'manifest.webmanifest', 'assets/img/app-icon-192.png'];
 
 const OFFLINE = `<!doctype html><html lang="en-PH"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0a0a0a"><title>Offline | Served.</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#0a0a0a;color:#f7f7f5;font:16px/1.5 system-ui,sans-serif;text-align:center}h1{margin:0 0 8px;font-size:28px}i{display:inline-block;width:.3em;height:.3em;margin-left:.08em;border-radius:50%;background:#ff6b18}p{margin:0 0 18px;color:#cdd2da}a{display:inline-block;padding:14px 24px;border-radius:999px;background:#ff6b18;color:#0a0a0a;font-weight:700;text-decoration:none}</style></head><body><main><h1>You are offline<i></i></h1><p>Pages you have opened before still work. Reconnect to book a court.</p><a href="">Try again</a></main></body></html>`;
 
