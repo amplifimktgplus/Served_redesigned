@@ -18,9 +18,10 @@ mkdirSync(join(OUT, 'assets'), { recursive: true });
 
 // stylesheet and script first: their hash versions every URL that points at them, so pages and assets from
 // one deploy always arrive together
-const css = ['base', 'chrome', 'components', 'pages', 'motion', 'hero'].map((f) => readFileSync(join(ROOT, `src/styles/${f}.css`), 'utf8')).join('\n');
+const css = ['base', 'chrome', 'components', 'pages', 'motion', 'hero', 'account'].map((f) => readFileSync(join(ROOT, `src/styles/${f}.css`), 'utf8')).join('\n');
 const min = css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\n\s*\n/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n /g, '\n').trim();
-const js = readFileSync(join(ROOT, 'src/scripts/site.js'), 'utf8');
+// one script file: the site script, then accounts, bookings and the studio (which use the site script's helpers)
+const js = ['site', 'account'].map((f) => readFileSync(join(ROOT, `src/scripts/${f}.js`), 'utf8')).join('\n');
 const assetV = createHash('sha1').update(min).update(js).update(JSON.stringify(LOGO)).digest('hex').slice(0, 10);
 setAssetVersion(assetV);
 writeFileSync(join(OUT, 'assets/site.css'), min);

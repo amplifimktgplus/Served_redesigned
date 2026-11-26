@@ -21,6 +21,8 @@
   // ---------------------------------------------------------------- toast
   const toastEl = $('[data-toast]'); let toastT;
   function toast(msg) { if (!toastEl) return; toastEl.textContent = msg; toastEl.classList.add('is-on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('is-on'), 3200); }
+  // shared with the accounts script that follows this one in the bundle (it adds W.__srv.acct)
+  W.__srv = { $, $$, esc, toast, fmt, peso, pesoI, hh, ss, RM, todayISO, nowHour };
 
   // ---------------------------------------------------------------- installable app
   // The service worker (sw.js) plus the web app manifest make the site installable. The install prompt itself
@@ -558,7 +560,37 @@
     const trap = (box) => { const f = $$('button, [href], input', box).filter((x) => !x.disabled); return f; };
     function openSheet(sh) { sh.hidden = false; evalBar(); const f = trap(sh); if (f[0]) f[0].focus(); }
     function closeSheet(sh) { sh.hidden = true; evalBar(); }
+    // booking needs an account: a guest is asked to register or sign in, and their picks wait for them
+    const acct = () => (W.__srv.acct ? W.__srv.acct.me() : null);
+    const siteBase = new URL(root.dataset.root || './', d.baseURI).pathname;
+    const here = location.pathname.startsWith(siteBase) ? location.pathname.slice(siteBase.length) : '';
+    function holdPicks() { ss.set('srv.pending', JSON.stringify({ path: location.pathname, date: st.date, court: st.court, picks: Object.fromEntries(Object.entries(st.picks).map(([k, s]) => [k, [...s]])) })); }
+    let gateEl = null;
+    function gate() {
+      if (gateEl) return gateEl;
+      const R = root.dataset.root || './'; const next = encodeURIComponent(here);
+      gateEl = d.createElement('div'); gateEl.className = 'sheet'; gateEl.hidden = true;
+      gateEl.setAttribute('role', 'dialog'); gateEl.setAttribute('aria-modal', 'true'); gateEl.setAttribute('aria-labelledby', 'gate-h');
+      gateEl.innerHTML = `<div class="sheet__in board gate"><button class="iconbtn sheet__x" type="button" data-gate-close aria-label="Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button><p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>One quick step</p><h2 class="d3" id="gate-h">Book as a player</h2><p class="gate__p">Create a free account or sign in to finish this booking. Your date and times are kept for you.</p><div class="ctas"><a class="btn btn--accent" href="${R}sign-up/?next=${next}"><span>Create account</span><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="btn btn--ghost" href="${R}sign-in/?next=${next}"><span>Sign in</span></a></div><p class="demo-note"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>Preview: accounts live in this browser only.</p></div>`;
+      el.appendChild(gateEl);
+      $('[data-gate-close]', gateEl).addEventListener('click', () => { closeSheet(gateEl); go.focus(); });
+      gateEl.addEventListener('click', (e) => { if (e.target === gateEl) closeSheet(gateEl); });
+      $$('a', gateEl).forEach((a) => a.addEventListener('click', holdPicks));
+      return gateEl;
+    }
+    // back from signing in: restore the held picks and go straight to payment (after the accounts script loads)
+    setTimeout(() => {
+      let pend = null; try { pend = JSON.parse(ss.get('srv.pending') || 'null'); } catch (e) { pend = null; }
+      if (!pend || pend.path !== location.pathname || !acct()) return;
+      ss.set('srv.pending', '');
+      pickDate(pend.date, false);
+      st.picks = {}; Object.entries(pend.picks || {}).forEach(([k, hs]) => { st.picks[k] = new Set(hs); });
+      if (pend.court) st.court = pend.court;
+      drawCourts(); drawSlots(); paintSum();
+      if (!go.disabled) { toast('You are in. Your picks are ready to pay.'); go.click(); }
+    }, 0);
     go.addEventListener('click', () => {
+      if (!acct()) { holdPicks(); openSheet(gate()); return; }
       const L = lines();
       $('[data-pay-sum]', el).innerHTML = `<div class="row"><span>${esc(B.name)}</span><b>${fmt(st.date, { weekday: 'short', day: 'numeric', month: 'short' })}</b></div>${L.map((l) => `<div class="row"><span>${esc(l.court)}</span><span>${l.hours.map((h) => hh(h)).join(', ')}</span></div>`).join('')}<div class="row"><span>Subtotal</span><span>${peso(st.sub)}</span></div><div class="row"><span>Service fee (5%)</span><span>${peso(st.fee)}</span></div><div class="row t"><span>Total</span><b>${peso(st.total)}</b></div>`;
       $('[data-pay-label]', el).textContent = 'Pay ' + peso(st.total);
@@ -572,6 +604,7 @@
         const L = lines(); const m = ($('input[name="paym"]:checked', el) || {}).parentElement;
         $('[data-ticket]', el).innerHTML = `<div class="row"><span>Venue</span><b>${esc(B.name)}</b></div><div class="row"><span>Date</span><b>${fmt(st.date, { weekday: 'long', day: 'numeric', month: 'long' })}</b></div>${L.map((l) => `<div class="row"><span>${esc(l.court)}</span><b>${l.hours.map((h) => hh(h)).join(', ')}</b></div>`).join('')}<div class="row"><span>Paid with</span><b>${m ? esc(m.textContent.trim()) : ''}</b></div><div class="row t"><span>Total</span><b>${peso(st.total)}</b></div>`;
         steps.forEach((s) => { s.classList.add('is-done'); s.classList.remove('is-on'); }); steps[3].classList.add('is-on'); steps[3].classList.remove('is-done');
+        if (W.__srv.acct) W.__srv.acct.addBooking({ venue: B.name, slug: B.slug, address: B.address, date: st.date, lines: L, sub: st.sub, fee: st.fee, total: st.total, paidWith: m ? m.textContent.trim() : '' });
         openSheet(done);
       }, RM ? 50 : 1300);
     });

@@ -56,6 +56,22 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
 - Fixed with the change: the splash wordmark no longer clips the top of the "d", and the final "GAME ON." band
   no longer pushes its copy and buttons off screen (it was cut off on desktop and on phones).
 
+## Accounts, bookings and court pages (27 Nov 2026)
+
+- Register as a player and book any listed court. A guest who picks times is asked to sign up or sign in, and
+  their date and times are waiting when they come back. Bookings show under My account and can be cancelled
+  (the 24-hour refund rule is applied to the message).
+- Register as a court owner and the court page studio opens: pick your venue, an accent colour and a background,
+  upload a hero photo (the dark gradient over it always stays, so text reads) and up to 12 gallery photos. A live
+  preview sits beside the controls, and a contrast check warns when button text would be hard to read.
+- Every venue page now reads as the venue's own site: its own bar with its name and sections, a Photos section
+  once photos are added, and a sign-off band with "Bookings by Served.". The owner's colours carry onto the
+  venue's booking pages too.
+- Preview limits: there is no server, so accounts, bookings and page settings live in the visitor's own browser.
+  Passwords are salted and hashed, never stored as typed. Other visitors do not see an owner's changes.
+- Section dividers: five options at `/lab/dividers/`. Rule: a divider only sits where the background colour
+  changes, so the one divider that sat between two black sections was removed.
+
 ## Marked as concept, not live
 
 - Play mode: open play, find players, clubs and ranking, tournaments, events (stamped "Concept", examples
@@ -87,3 +103,6 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
    PNG. Is there a master vector file to swap in? The favicon and app icon use its S.
 7. Confirm the 5% service fee and the 24-hour cancellation rule are current.
 8. Is a native app planned? The concept's Install App button installs the website itself as an app.
+9. Which court listings can the concept show? Venue data comes only from your own site; a full partner list (or
+   the venues' permission) would let the directory grow.
+10. Court page studio: should owner changes publish at once or go through a review first?

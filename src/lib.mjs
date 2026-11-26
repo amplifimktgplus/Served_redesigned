@@ -231,7 +231,7 @@ export function header(active = '') {
       <li class="nav__item"><a class="nav__a${active === 'contact' ? ' is-active' : ''}" href="${u('/contact/')}">Contact Us</a></li>
     </ul></nav>
     <div class="hdr__acts">
-      <a class="hdr__in-link" href="${u('/sign-in/')}">${icon('user')}<span>Login / Register</span></a>
+      <a class="hdr__in-link" href="${u('/sign-in/')}" data-acct>${icon('user')}<span>Login / Register</span></a>
       <a class="btn btn--accent btn--sm hdr__book" href="${u('/courts/')}"><span>Book a court</span></a>
       <button class="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Open menu" data-burger><span></span><span></span><span></span></button>
     </div>
@@ -247,7 +247,7 @@ export function header(active = '') {
     <div class="drawer__chips">${SPORTS.filter((s) => s.live).map((s) => `<a class="chip chip--sport" data-tone="${s.tone}" href="${u(`/courts/?sport=${s.name}`)}">${icon(s.icon)}${s.name}</a>`).join('')}</div>
     <p class="drawer__h">Cities</p>
     <div class="drawer__chips">${CITIES.map((c) => `<a class="chip" href="${u(`/cities/${c.slug}/`)}">${c.name}</a>`).join('')}</div>
-    <div class="ctas drawer__ctas"><a class="btn btn--ghost" href="${u('/sign-in/')}"><span>Login / Register</span></a><a class="btn btn--accent" href="${u('/courts/')}"><span>Book a court</span>${icon('arrow')}</a></div>
+    <div class="ctas drawer__ctas"><a class="btn btn--ghost" href="${u('/sign-in/')}" data-acct><span>Login / Register</span></a><a class="btn btn--accent" href="${u('/courts/')}"><span>Book a court</span>${icon('arrow')}</a></div>
   </div>
 </div>`;
 }
@@ -312,7 +312,8 @@ export function footer() {
 
 const splash = () => `<div class="splash" aria-hidden="true" data-splash><div class="splash__court">${linesSvg()}</div><div class="splash__mark"><span class="splash__w">${logoPart('letters')}</span><span class="splash__ball">${logoPart('dot')}</span></div></div>`;
 
-export function layout({ path, title, desc, body, active = '', bodyCls = '', sticky = 'site', venue = null, schema = null, ogImg = 'og-served.jpg', noFinal = false }) {
+// vslug marks a venue's own pages (page, booking, Rally X) so an owner's page settings can be applied to them
+export function layout({ path, title, desc, body, active = '', bodyCls = '', sticky = 'site', venue = null, schema = null, ogImg = 'og-served.jpg', noFinal = false, vslug = venue ? venue.slug : '' }) {
   setPage(path);
   const full = title.includes('Served') ? title : `${title} | Served.`;
   const html = `<!doctype html>
@@ -337,7 +338,7 @@ export function layout({ path, title, desc, body, active = '', bodyCls = '', sti
 <script defer src="${a('assets/site.js')}?v=${ASSET_V}"></script>
 ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ''}
 </head>
-<body class="${bodyCls}">
+<body class="${bodyCls}"${vslug ? ` data-venue="${vslug}"` : ''}>
 ${sprite()}
 ${splash()}
 ${header(active)}

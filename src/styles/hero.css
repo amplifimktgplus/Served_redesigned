@@ -68,7 +68,7 @@
 .hb__label i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: livePulse 1.8s var(--ease) infinite; }
 .mq--board { flex: 1; min-width: 0; padding: 0; background: transparent; border: 0; }
 .bitem { --tone: var(--accent); display: inline-flex; align-items: center; gap: 14px; padding: 19px 26px; border-right: 1px solid rgba(255, 255, 255, .1); color: #fff; text-decoration: none; white-space: nowrap; transition: background .25s; }
-.bitem:hover { background: rgba(255, 107, 24, .1); }
+.bitem:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .bitem__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--tone); flex: none; }
 .bitem > b { font: 850 15px/1 var(--f-display); text-transform: uppercase; font-stretch: 104%; }
 .bitem > span { font-size: 13.5px; color: rgba(255, 255, 255, .62); }

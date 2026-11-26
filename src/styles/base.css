@@ -122,12 +122,12 @@ p { text-wrap: pretty; }
 
 /* the brand full stop: the glyph stays in the text, an orange ball is drawn in its place */
 .pd { position: relative; display: inline-block; color: transparent; width: .3em; }
-.pd::after { content: ""; position: absolute; left: .03em; bottom: .07em; width: .21em; height: .21em; border-radius: 50%; background: radial-gradient(circle at 34% 30%, var(--accent-hot), var(--accent) 46%, #c2410c); box-shadow: 0 0 .32em rgba(255, 107, 24, .45); }
+.pd::after { content: ""; position: absolute; left: .03em; bottom: .07em; width: .21em; height: .21em; border-radius: 50%; background: radial-gradient(circle at 34% 30%, var(--accent-hot), var(--accent) 46%, #c2410c); box-shadow: 0 0 .32em color-mix(in srgb, var(--accent) 45%, transparent); }
 .band--cream .pd::after, .band--accent .pd::after { box-shadow: 0 0 0 .035em var(--ink); }
 .band--accent .pd::after { background: var(--ink); }
 
 .kicker { display: inline-flex; align-items: center; gap: 10px; font: 700 13px/1.2 var(--f-ui); letter-spacing: .17em; text-transform: uppercase; color: var(--accent); margin-bottom: 18px; }
-.kicker__ball { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px rgba(255, 107, 24, .6); flex: none; }
+.kicker__ball { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent); flex: none; }
 .band--cream .kicker, .band--accent .kicker { color: rgba(10, 10, 10, .75); }
 .band--cream .kicker__ball { background: var(--ink); box-shadow: none; }
 .soon { display: inline-flex; align-items: center; font: 700 11px/1 var(--f-ui); letter-spacing: .12em; text-transform: uppercase; font-style: normal; color: var(--ink); background: var(--heat); padding: 5px 9px; border-radius: var(--pill); vertical-align: middle; margin-left: 6px; }
@@ -144,10 +144,10 @@ p { text-wrap: pretty; }
 .btn:hover .ico { transform: translateX(3px); }
 .btn::after { content: ""; position: absolute; inset: -2px; z-index: -1; background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .5) 48%, transparent 66%); transform: translateX(-130%); transition: transform .8s var(--ease); pointer-events: none; }
 .btn:hover::after { transform: translateX(130%); }
-.btn--accent { background: var(--accent); color: var(--ink); box-shadow: 0 10px 30px -10px rgba(255, 107, 24, .6), inset 0 1px 0 rgba(255, 255, 255, .45); }
-.btn--accent:hover { background: var(--accent-hot); box-shadow: 0 16px 40px -12px rgba(255, 107, 24, .75), inset 0 1px 0 rgba(255, 255, 255, .5); }
+.btn--accent { background: var(--accent); color: var(--ink); box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--accent) 60%, transparent), inset 0 1px 0 rgba(255, 255, 255, .45); }
+.btn--accent:hover { background: var(--accent-hot); box-shadow: 0 16px 40px -12px color-mix(in srgb, var(--accent) 75%, transparent), inset 0 1px 0 rgba(255, 255, 255, .5); }
 .btn--ghost { color: var(--text); border-color: var(--line-2); background: rgba(239, 235, 223, .03); }
-.btn--ghost::after { background: linear-gradient(105deg, transparent 30%, rgba(255, 107, 24, .16) 48%, transparent 66%); }
+.btn--ghost::after { background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--accent) 16%, transparent) 48%, transparent 66%); }
 .btn--ghost:hover { border-color: var(--accent); color: var(--accent); }
 .btn--line { color: currentColor; border-color: currentColor; background: transparent; }
 .btn--line:hover { background: rgba(10, 10, 10, .08); }
@@ -202,7 +202,7 @@ a.chip:hover, button.chip:hover { border-color: var(--accent); }
 .field select { cursor: pointer; }
 .field select option { background: var(--iron); color: var(--text); }
 .field input::placeholder, .field textarea::placeholder { color: rgba(239, 235, 223, .38); }
-.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255, 107, 24, .14); background: rgba(11, 15, 15, .75); }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent); background: rgba(11, 15, 15, .75); }
 .field__i { position: absolute; right: 15px; bottom: 16px; width: 19px; height: 19px; color: var(--text-3); pointer-events: none; }
 .field__eye { position: absolute; right: 6px; bottom: 4px; width: 44px; height: 44px; display: grid; place-items: center; color: var(--text-3); }
 .field--xl input { min-height: 64px; font-size: 18px; border-radius: 18px; padding-left: 22px; }

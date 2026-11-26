@@ -15,10 +15,14 @@ Every page carries `noindex, nofollow`. Forms, sign-in and payment are demonstra
 | Sports and cities | Sports hub plus pickleball, tennis and badminton; cities hub plus Taguig, Pasig, Quezon City, Marikina, Muntinlupa, Nasugbu |
 | Community | Play mode (open play, find players, clubs and ranking, tournaments, events), marked as concepts |
 | Company | Pricing, List Your Court, Help centre and FAQ, About, Contact, Court Gallery |
-| Account | Sign in, Register, Forgot password, Staff sign in |
+| Account | Sign in, Register, Forgot password, Staff sign in, My account (bookings, cancel), Court page studio for owners |
 | App | Installable: web app manifest, a service worker that keeps visited pages readable offline, and an Install App button on the home hero |
 
-44 pages in all, URLs kept from the current site (`/courts`, `/courts/<venue>`, `/courts/<venue>/availability`, `/courts/<venue>/slots`, `/pricing`, `/list-your-court`, `/contact`, `/sign-in`, `/sign-up`, `/forgot-password`, `/staff/sign-in`).
+Accounts work in the browser with no server: players register and can then book any listed court (the booking
+waits while a guest signs up), and owners set their court page's colours, hero photo and gallery, which every page
+of that venue then wears. Everything is kept in the visitor's own browser.
+
+46 pages in all, plus the section divider options at `/lab/dividers/`. URLs kept from the current site (`/courts`, `/courts/<venue>`, `/courts/<venue>/availability`, `/courts/<venue>/slots`, `/pricing`, `/list-your-court`, `/contact`, `/sign-in`, `/sign-up`, `/forgot-password`, `/staff/sign-in`).
 
 ## Build
 

@@ -282,7 +282,7 @@ function booking(v, mode) {
     <h2 class="d2" id="done-h">Court secured<span class="pd">.</span></h2>
     <p class="done__sub">Booked and served. You’re on.</p>
     <div class="ticket" data-ticket></div>
-    <div class="ctas"><button class="btn btn--accent" type="button" data-ics><span>Add to calendar</span>${icon('download')}</button><a class="btn btn--ghost" href="${u('/courts/')}"><span>Book another court</span></a></div>
+    <div class="ctas"><button class="btn btn--accent" type="button" data-ics><span>Add to calendar</span>${icon('download')}</button><a class="btn btn--ghost" href="${u('/courts/')}"><span>Book another court</span></a><a class="btn btn--line" href="${u('/account/')}"><span>My bookings</span></a></div>
     ${demoNote('Preview build: this is a demonstration of the confirmation step.')}
   </div></div>
   <noscript><div class="wrap"><p class="nojs">Turn on JavaScript to pick a slot. Next open day: ${fmtDate(v.open[0], { weekday: 'long', day: 'numeric', month: 'long' })}.</p></div></noscript>
@@ -313,10 +313,15 @@ function venuePage(v) {
       </div>
     </div>
   </div>
-  <p class="photo-note">Representative photo</p>
+  <p class="photo-note" data-photo-note>Representative photo</p>
 </section>
+<nav class="vbar" aria-label="${esc(v.name)}"><div class="wrap vbar__in">
+  <a class="vbar__brand" href="#top" aria-label="${esc(v.name)}, back to top"><span class="vbar__mono" aria-hidden="true">${esc(v.name[0])}</span><b>${esc(v.name)}</b></a>
+  <div class="vbar__links"><a href="#book">Book</a><a href="#about">About</a><a href="#photos" data-vgal-link hidden>Photos</a><a href="#location">Location</a><a href="#reviews">Reviews</a></div>
+  <a class="btn btn--accent btn--sm vbar__go" href="#book"><span>Book now</span>${icon('arrow')}</a>
+</div></nav>
 ${booking(v, 'venue')}
-<section class="band band--night vinfo">
+<section class="band band--night vinfo" id="about">
   <div class="wrap vinfo__grid">
     <div class="vinfo__about" data-reveal>
       ${kicker('The venue')}
@@ -337,7 +342,10 @@ ${booking(v, 'venue')}
     </div>
   </div>
 </section>
-<section class="band band--iron vloc" aria-labelledby="loc-h">
+<section class="band band--night vgal" id="photos" data-vgal hidden aria-labelledby="ph-h">
+  <div class="wrap">${kicker('Photos')}<h2 class="d2" id="ph-h">Inside ${esc(v.name)}</h2><div class="masonry vgal__grid" data-vgal-grid></div></div>
+</section>
+<section class="band band--iron vloc" id="location" aria-labelledby="loc-h">
   <div class="wrap vloc__grid">
     <div class="vloc__copy" data-reveal>
       ${kicker('Location')}
@@ -352,16 +360,22 @@ ${booking(v, 'venue')}
     </div>
   </div>
 </section>
-<section class="band band--night vrev" aria-labelledby="rv-h">
+<section class="band band--night vrev" id="reviews" aria-labelledby="rv-h">
   <div class="wrap">
     <div class="vrev__head" data-reveal>
       <h2 class="d2" id="rv-h">Reviews</h2>
       ${v.reviewCount ? `<p class="vrev__score"><b>${v.rating.toFixed(1)}</b><span>from ${v.reviewCount} reviews</span></p>` : '<p class="vrev__score"><b>New</b><span>no reviews yet</span></p>'}
       <a class="link" href="${u('/sign-in/')}">Sign in to review a court you have played at. ${icon('arrow')}</a>
     </div>
-    ${v.reviews.length ? `<div class="vrev__grid" data-rail-scroll>${v.reviews.map((r, i) => `<figure class="rcard" data-reveal style="--i:${i}"><blockquote>${esc(r.text)}</blockquote><figcaption><span class="rcard__av" aria-hidden="true">${esc(r.name[0].toUpperCase())}</span><b>${esc(r.name)}</b><small>${esc(r.date)}</small></figcaption></figure>`).join('')}</div><p class="fine">Reviews shown as captured from the current site on ${fmtDate(CAPTURED_ON, { day: 'numeric', month: 'long', year: 'numeric' })}.</p>` : `<p class="empty-line">${icon('sparkle')}No reviews yet. Be the first to play here and say how it went.</p>`}
+    ${v.reviews.length ? `<div class="vrev__grid" data-rail-scroll data-vrev>${v.reviews.map((r, i) => `<figure class="rcard" data-reveal style="--i:${i}"><blockquote>${esc(r.text)}</blockquote><figcaption><span class="rcard__av" aria-hidden="true">${esc(r.name[0].toUpperCase())}</span><b>${esc(r.name)}</b><small>${esc(r.date)}</small></figcaption></figure>`).join('')}</div><p class="fine">Reviews shown as captured from the current site on ${fmtDate(CAPTURED_ON, { day: 'numeric', month: 'long', year: 'numeric' })}.</p>` : `<p class="empty-line">${icon('sparkle')}No reviews yet. Be the first to play here and say how it went.</p>`}
   </div>
 </section>
+<section class="vend" aria-label="${esc(v.name)}"><div class="wrap vend__in">
+  <span class="vend__mono" aria-hidden="true">${esc(v.name[0])}</span>
+  <div class="vend__id"><b>${esc(v.name)}</b><span>${esc(v.address)}</span></div>
+  <a class="btn btn--accent" href="#book"><span>Book a court</span>${icon('arrow')}</a>
+  <p class="vend__by">Bookings by ${logoMark('vend__logo')}</p>
+</div></section>
 ${similar.length ? `<section class="band band--night more" aria-labelledby="mo-h"><div class="wrap">${sh({ k: 'Keep scrolling, keep playing', h: '<span id="mo-h">More courts like this</span>', cls: 'sh--split' })}<div class="more__grid" data-rail-scroll>${similar.map((x) => vcard(x)).join('')}</div></div></section>` : ''}`;
   return layout({ path: `/courts/${v.slug}/`, title: `${v.name}`, desc: `${v.desc} ${v.address}. ${peso(v.rate)} / hr. Check live availability and book on Served.`, body, active: 'courts', bodyCls: 'pg-venue', sticky: 'venue', venue: v,
     schema: { '@context': 'https://schema.org', '@type': 'SportsActivityLocation', name: v.name, description: v.desc, address: { '@type': 'PostalAddress', streetAddress: v.area, addressLocality: v.city, addressCountry: 'PH' }, ...(v.reviewCount ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: v.rating, reviewCount: v.reviewCount } } : {}), amenityFeature: v.amenities.map((x) => ({ '@type': 'LocationFeatureSpecification', name: x, value: true })) } });
@@ -382,7 +396,7 @@ function bookPage(v, mode) {
   </div>
 </section>
 ${booking(v, mode)}`;
-  return layout({ path: `/courts/${v.slug}/${mode}/`, title: `${isSlots ? 'Pick Your Slot' : 'Check Availability'}: ${v.name}`, desc: `Live availability at ${v.name}, ${v.address}. Pick a date, choose your time and court, and pay online.`, body, active: 'courts', bodyCls: 'pg-book', sticky: null, noFinal: true });
+  return layout({ path: `/courts/${v.slug}/${mode}/`, title: `${isSlots ? 'Pick Your Slot' : 'Check Availability'}: ${v.name}`, desc: `Live availability at ${v.name}, ${v.address}. Pick a date, choose your time and court, and pay online.`, body, active: 'courts', bodyCls: 'pg-book', sticky: null, noFinal: true, vslug: v.slug });
 }
 
 // ============================================================ RALLY X
@@ -429,7 +443,7 @@ ${marquee(['Rally X', 'Pickleball', 'Tennis', 'Now open', 'Rally X', 'Paddles up
   </div>
 </section>
 <section class="band band--night more" aria-labelledby="nb-h"><div class="wrap">${sh({ k: 'Want to play today?', h: '<span id="nb-h">Pickleball and tennis you can book now</span>', cls: 'sh--split' })}<div class="more__grid" data-rail-scroll>${nearby.map((x) => vcard(x)).join('')}</div></div></section>`;
-  return layout({ path: '/courts/rally-x/', title: 'Rally X: pickleball and tennis, now open', desc: 'Rally X is now open for pickleball and tennis. Booking on Served opens soon: get notified and see the courts.', body, active: 'courts', bodyCls: 'pg-venue pg-rx', ogImg: 'og-served.jpg' });
+  return layout({ path: '/courts/rally-x/', vslug: 'rally-x',title: 'Rally X: pickleball and tennis, now open', desc: 'Rally X is now open for pickleball and tennis. Booking on Served opens soon: get notified and see the courts.', body, active: 'courts', bodyCls: 'pg-venue pg-rx', ogImg: 'og-served.jpg' });
 }
 
 // ============================================================ PRICING
@@ -551,23 +565,23 @@ function signIn() {
   return auth({ path: '/sign-in/', title: 'Sign in', desc: 'Sign in to Served as a player or court owner. Your game, your court, let’s play.', photo: 'signin-tennis', pos: '50% 45%',
     side: `<p class="kicker"><span class="kicker__ball"></span>Login User &amp; Court Owner</p><p class="auth__big">Your game, your court, Let’s play!</p>`,
     form: `<a class="logo" href="${u('/')}" aria-label="Served. home">${logoMark()}</a><h1 class="d2">You’re Up!</h1><p class="auth__sub">Ready for your next match?</p>
-    <form data-demo-form>${roleSeg('role')}
+    <form data-auth="signin" novalidate>${roleSeg('role')}
       <label class="field"><span class="field__l">Email or username</span><input name="email" type="text" required placeholder="Email/Username" autocomplete="username"></label>${pw('password', 'Password', 'current-password')}
       <div class="auth__row"><label class="check"><input type="checkbox" name="remember"><span>Remember Password</span></label><a class="link" href="${u('/forgot-password/')}">Forgot Password</a></div>
-      <button class="btn btn--accent btn--lg btn--block" type="submit"><span>Sign In</span>${icon('arrow')}</button>${demoNote()}</form>
+      <button class="btn btn--accent btn--lg btn--block" type="submit"><span>Sign In</span>${icon('arrow')}</button>${demoNote('Preview: accounts live in this browser only. Register first, then sign in here.')}</form>
     <p class="auth__alt">Don’t have an account? <a href="${u('/sign-up/')}">Sign up!</a></p>` });
 }
 function signUp() {
   return auth({ path: '/sign-up/', title: 'Register', desc: 'Create your Served account. Book your court. Start playing, or list your venue as a court owner.', photo: 'rallyx-forehand', pos: '50% 35%',
     side: `<p class="kicker"><span class="kicker__ball"></span>Register Now</p><p class="auth__big">Find your court. Book it. Show up. That’s it.</p><p class="auth__small">Served cuts out the calls, the waiting, the guesswork. Just you, the game, and a slot that’s already yours. Register now.</p>`,
     form: `<a class="logo" href="${u('/')}" aria-label="Served. home">${logoMark()}</a><h1 class="d2">Get Served<span class="pd">.</span></h1><p class="auth__sub">Create your account. Book your court. Start playing.</p>
-    <form data-demo-form>${roleSeg('register')}
+    <form data-auth="register" novalidate>${roleSeg('register')}
       <div class="cform__row"><label class="field"><span class="field__l">First name</span><input name="first_name" required placeholder="First name" autocomplete="given-name"></label><label class="field"><span class="field__l">Last name</span><input name="last_name" required placeholder="Last name" autocomplete="family-name"></label></div>
       <label class="field"><span class="field__l">Username</span><input name="username" required placeholder="Username" autocomplete="username"></label>
       <div class="cform__row"><label class="field"><span class="field__l">Email address</span><input name="email" type="email" required placeholder="Email" autocomplete="email"></label><label class="field"><span class="field__l">Phone number</span><input name="phone" type="tel" placeholder="Phone number (optional)" autocomplete="tel"></label></div>
       <div class="cform__row">${pw('password', 'Password', 'new-password')}${pw('password_confirm', 'Confirm Password', 'new-password')}</div>
       <label class="check"><input type="checkbox" name="terms" required><span>By continuing you indicate that you read and agreed to the Terms of Use</span></label>
-      <button class="btn btn--accent btn--lg btn--block" type="submit"><span>Create Account</span>${icon('arrow')}</button>${demoNote()}</form>
+      <button class="btn btn--accent btn--lg btn--block" type="submit"><span>Create Account</span>${icon('arrow')}</button>${demoNote('Preview: your account lives in this browser only. Players can then book any listed court; owners get the court page studio.')}</form>
     <p class="auth__alt">Have an account? <a href="${u('/sign-in/')}">Sign In!</a></p>` });
 }
 function forgot() {
@@ -748,6 +762,62 @@ function notFound() {
   return layout({ path: '/', title: 'Out of bounds', desc: 'Page not found.', body, noFinal: true }).replace('<html lang="en-PH" class="no-js" data-root="./">', '<html lang="en-PH" class="no-js" data-root="./" data-404>');
 }
 
+// ============================================================ ACCOUNT: a player's bookings, an owner's links (rendered in the browser)
+function account() {
+  const body = `<section class="band band--night acct">
+  <div class="wrap">
+    <header class="sh">${kicker('Your account')}<h1 class="d1">My account<span class="pd">.</span></h1></header>
+    <div class="acct__view" data-acct-view aria-live="polite"><p class="lede">Loading your account.</p></div>
+    <noscript><p class="lede">Your account needs JavaScript in this preview.</p></noscript>
+  </div>
+</section>`;
+  return layout({ path: '/account/', title: 'My account', desc: 'Your Served bookings and account.', body, sticky: null, noFinal: true });
+}
+
+// ============================================================ OWNER STUDIO: colours, hero photo and gallery for your court page
+const STUDIO_ACCENTS = [['Served orange', '#ff6b18'], ['Gold', '#f5b301'], ['Sunset', '#ef4444'], ['Sky', '#38bdf8'], ['Violet', '#a78bfa'], ['Mint', '#34d399'], ['Chalk', '#f4f4f2']];
+const STUDIO_BASES = [['Black', '#0a0a0a'], ['Navy', '#101a2e'], ['Court green', '#0c2419'], ['Clay', '#2a130b'], ['Plum', '#1f1230']];
+function studio() {
+  const venues = [...VENUES.map((v) => [v.slug, v.name]), ['rally-x', 'Rally X']];
+  const body = `<section class="band band--night studio">
+  <div class="wrap">
+    <header class="sh sh--split">${kicker('For court owners')}<h1 class="d1">Your court page<span class="pd">.</span></h1><p class="lede">Make your venue's page feel like your own site: your colours, your hero photo, your gallery. A dark gradient always sits over the hero so your name and buttons stay easy to read.</p></header>
+    <div class="studio__gate board" data-studio-gate hidden>
+      <h2 class="d3">Sign in as a court owner</h2>
+      <p>The studio is for court owners. Register as an owner, or sign in, and you will come straight back here.</p>
+      ${ctas(btn('Register as an owner', '/sign-up/?role=owner&next=owner/studio/'), btn('Sign in', '/sign-in/?role=owner&next=owner/studio/', 'btn--ghost'))}
+    </div>
+    <div class="studio__grid" data-studio hidden>
+      <form class="studio__panel board" data-studio-form>
+        <fieldset class="studio__f"><legend class="field__l">Your venue</legend>
+          <label class="field"><span class="sr">Your venue</span><select name="venue">${venues.map(([s, n]) => `<option value="${s}">${esc(n)}</option>`).join('')}</select></label>
+          <p class="fine">In this preview you can claim any listed venue. On Served you would manage the venues on your owner account.</p></fieldset>
+        <fieldset class="studio__f"><legend class="field__l">Accent colour</legend>
+          <div class="swatches">${STUDIO_ACCENTS.map(([n, c]) => `<label class="swatch" style="--sw:${c}"><input type="radio" name="accent" value="${c}"><span><i></i>${n}</span></label>`).join('')}<label class="swatch swatch--pick"><input type="color" name="accentPick" value="#ff6b18" aria-label="Any colour"><span>Any colour</span></label></div>
+          <p class="studio__warn" data-contrast role="status"></p></fieldset>
+        <fieldset class="studio__f"><legend class="field__l">Background</legend>
+          <div class="swatches">${STUDIO_BASES.map(([n, c]) => `<label class="swatch swatch--base" style="--sw:${c}"><input type="radio" name="base" value="${c}"><span><i></i>${n}</span></label>`).join('')}</div></fieldset>
+        <fieldset class="studio__f"><legend class="field__l">Hero photo</legend>
+          <div class="studio__hero" data-hero-prev><span>Default photo</span></div>
+          <div class="studio__row"><label class="btn btn--ghost btn--sm studio__up">${icon('image')}<span>Upload a hero photo</span><input type="file" accept="image/*" name="hero"></label><button class="btn btn--line btn--sm" type="button" data-hero-reset>Use the default</button></div>
+          <p class="fine">Landscape photos work best. The gradient over the hero stays so the text reads.</p></fieldset>
+        <fieldset class="studio__f"><legend class="field__l">Gallery</legend>
+          <div class="studio__gal" data-gal></div>
+          <label class="btn btn--ghost btn--sm studio__up">${icon('plus')}<span>Add photos</span><input type="file" accept="image/*" name="gallery" multiple></label>
+          <p class="fine">Up to 12 photos. They show in a Photos section on your page.</p></fieldset>
+        <div class="ctas"><a class="btn btn--accent" href="#" target="_blank" rel="noopener" data-studio-view><span>Open your page</span>${icon('arrow-ne')}</a><button class="btn btn--line" type="button" data-studio-reset>Reset this page</button></div>
+        ${demoNote('Preview: your settings and photos are saved in this browser only. On Served they would publish to your page for everyone.')}
+      </form>
+      <div class="studio__preview board" aria-label="Live preview">
+        <div class="studio__bar" aria-hidden="true"><i></i><i></i><i></i><em data-studio-url></em></div>
+        <iframe title="Your court page, live preview" data-studio-frame></iframe>
+      </div>
+    </div>
+  </div>
+</section>`;
+  return layout({ path: '/owner/studio/', title: 'Court page studio', desc: 'Court owners: set your page colours, hero photo and gallery.', body, sticky: null, noFinal: true });
+}
+
 // ============================================================ LAB: section divider options (27 Nov 2026, for the client to pick one)
 // Rule from the client: a divider only sits where the next section's background colour changes.
 function labDividers() {
@@ -863,6 +933,8 @@ export function pages() {
   add('/play/', play);
   add('/gallery/', gallery);
   add('/help/', help);
+  add('/account/', account);
+  add('/owner/studio/', studio);
   add('/lab/dividers/', labDividers);
   add('/about/', about);
   add('/404', notFound);
