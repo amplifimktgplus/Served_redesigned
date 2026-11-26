@@ -1,0 +1,62 @@
+/* ================================================================ motion: subtle, purposeful, all of it off under reduced motion */
+/* reveal: content lights on as it enters. translate, never transform, so hover transforms keep working */
+html.js [data-reveal] { opacity: 0; translate: 0 28px; filter: blur(8px) brightness(.7); transition: opacity .9s var(--ease) calc(var(--i, 0) * 90ms), translate 1.1s var(--ease) calc(var(--i, 0) * 90ms), filter .9s var(--ease) calc(var(--i, 0) * 90ms); }
+html.js [data-reveal].is-in, html.reveal-all [data-reveal] { opacity: 1; translate: 0 0; filter: none; }
+html.js [data-draw] { stroke-dasharray: 1; stroke-dashoffset: 1; }
+html.js [data-draw].is-drawn, html.reveal-all [data-draw] { stroke-dashoffset: 0; transition: stroke-dashoffset 2s var(--ease); }
+html.no-js .hero__court path, html.no-js .how__arc path { stroke-dashoffset: 0; }
+html.js [data-mask] img { clip-path: inset(100% 0 0 0); scale: 1.25; transition: clip-path 1.4s var(--ease), scale 1.8s var(--ease); }
+html.js [data-mask].is-in img, html.reveal-all [data-mask] img { clip-path: inset(0 0 0 0); scale: 1; }
+
+/* hero entrance after the splash */
+html.js .hero__h > span, html.js .hero__lede, html.js .hero .kicker, html.js .search, html.js .hero__stats { opacity: 0; translate: 0 40px; }
+html.js .hero__media { opacity: 0; scale: .94; }
+html.is-ready .hero__h > span, html.is-ready .hero__lede, html.is-ready .hero .kicker, html.is-ready .search, html.is-ready .hero__stats, html.reveal-all .hero__h > span, html.reveal-all .hero__lede, html.reveal-all .hero .kicker, html.reveal-all .search, html.reveal-all .hero__stats { opacity: 1; translate: 0 0; transition: opacity 1s var(--ease), translate 1.2s var(--ease); }
+html.is-ready .hero__media, html.reveal-all .hero__media { opacity: 1; scale: 1; transition: opacity 1.2s var(--ease) .15s, scale 1.6s var(--ease) .15s; }
+html.is-ready .hero .kicker { transition-delay: .05s; }
+html.is-ready .hero__l1 { transition-delay: .12s; }
+html.is-ready .hero__l2 { transition-delay: .24s; }
+html.is-ready .hero__lede { transition-delay: .36s; }
+html.is-ready .search { transition-delay: .48s; }
+html.is-ready .hero__stats { transition-delay: .6s; }
+html.is-ready .hero__court path { stroke-dashoffset: 0; transition: stroke-dashoffset 2.6s var(--ease) .3s; }
+html.is-ready .how__arc path.is-drawn { stroke-dashoffset: 0; }
+
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes megaIn { from { opacity: 0; translate: 0 -10px; scale: .98; } }
+@keyframes drawerIn { from { opacity: 0; clip-path: inset(0 0 100% 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+@keyframes drawerLink { from { opacity: 0; translate: 0 24px; } }
+@keyframes panelIn { from { opacity: 0; translate: 0 14px; } }
+@keyframes faqIn { from { opacity: 0; translate: 0 -6px; } }
+@keyframes lbIn { from { opacity: 0; scale: .94; } }
+@keyframes sheetUp { from { opacity: 0; translate: 0 50px; } }
+@keyframes livePulse { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .7); } 70% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); } }
+@keyframes stickBall { 0%, 100% { translate: 0 0; } 45% { translate: 0 -5px; } 55% { translate: 0 -5px; } }
+@keyframes foil { to { background-position: -250% 0; } }
+@keyframes spin { to { rotate: 360deg; } }
+@keyframes bounce { from { translate: 0 0; scale: 1.12 .86; } 18% { scale: 1 1; } to { translate: 0 42px; scale: 1 1; } }
+@keyframes bounceSm { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+@keyframes lightDrift { 0% { translate: 0 0; } 50% { translate: -4% 3%; } 100% { translate: 3% -2%; } }
+@keyframes frameIn { to { clip-path: inset(0 0 0 0); } }
+@keyframes rotIn { from { opacity: 0; translate: 0 .5em; filter: blur(4px); } }
+@keyframes cardFlash { 0% { box-shadow: 0 0 0 0 rgba(198, 234, 43, .7); } 100% { box-shadow: 0 0 0 18px rgba(198, 234, 43, 0); } }
+@keyframes pinPulse { 0% { scale: .6; opacity: .5; } 100% { scale: 2.2; opacity: 0; } }
+@keyframes popIn { from { scale: .2; } }
+@keyframes snap { 0% { scale: .92; } 60% { scale: 1.05; } 100% { scale: 1; } }
+@keyframes shake { 20%, 60% { translate: -5px 0; } 40%, 80% { translate: 5px 0; } }
+@keyframes ballHop { 0% { translate: -60px -40px; opacity: 0; } 40% { translate: -20px 0; opacity: 1; } 60% { translate: -8px -12px; } 80% { translate: 0 0; } 90% { translate: 0 -3px; } 100% { translate: 0 0; } }
+@keyframes ballDrop { 0% { translate: 0 -220%; } 40% { translate: 0 0; scale: 1.15 .85; } 55% { translate: 0 -55%; scale: 1; } 70% { translate: 0 0; scale: 1.08 .92; } 82% { translate: 0 -18%; scale: 1; } 92% { translate: 0 0; } 100% { translate: 0 0; } }
+@keyframes ballDropSm { 0% { translate: 0 -160px; opacity: 0; } 30% { opacity: 1; } 45% { translate: 0 0; scale: 1.2 .8; } 60% { translate: 0 -40px; scale: 1; } 75% { translate: 0 0; scale: 1.1 .9; } 86% { translate: 0 -10px; scale: 1; } 100% { translate: 0 0; } }
+@keyframes serveBall { 0% { translate: -30vw 40vh; scale: .6; } 35% { translate: -8vw -22vh; scale: 1.2; } 62% { translate: 0 0; scale: 1.25 .8; } 74% { translate: 0 -40px; scale: 1; } 86% { translate: 0 0; scale: 1.08 .94; } 100% { translate: 0 0; scale: 1; } }
+@keyframes wipeIn { to { clip-path: inset(0 0 0 0); } }
+@keyframes splashOut { 0% { clip-path: inset(0 0 0 0); } 100% { clip-path: inset(0 0 100% 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; animation-delay: 0s !important; transition-duration: .001ms !important; transition-delay: 0s !important; scroll-behavior: auto !important; }
+  html.js [data-reveal], html.js .hero__h > span, html.js .hero__lede, html.js .hero .kicker, html.js .search, html.js .hero__stats, html.js .hero__media { opacity: 1 !important; translate: none !important; filter: none !important; scale: none !important; }
+  html.js [data-draw], .hero__court path, .how__arc path, .cl path { stroke-dashoffset: 0 !important; }
+  html.js [data-mask] img { clip-path: none !important; scale: none !important; }
+  html.splash-on .splash { display: none !important; }
+  .rotbadge svg, .hero__light, .ftr__w { animation: none !important; }
+}

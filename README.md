@@ -1,0 +1,39 @@
+# Served. redesign concept
+
+A design concept for **Served.**, the sports court discovery and booking platform for the Philippines.
+Static, dependency-free, and built from the current Served. site's own content and venue data.
+
+**Preview:** https://amplifimktgplus.github.io/Served_redesigned/
+Every page carries `noindex, nofollow`. Forms, sign-in and payment are demonstrations: nothing is sent, charged or booked.
+
+## What is in it
+
+| Area | Pages |
+|---|---|
+| Discovery | Home, Courts (list and map, filters, "near me"), 6 venue pages, Rally X |
+| Booking | Availability and slot pages for every venue (live-style date rail, court picker, slot grid, summary, payment and confirmation) |
+| Sports and cities | Sports hub plus pickleball, tennis and badminton; cities hub plus Taguig, Pasig, Quezon City, Marikina, Muntinlupa, Nasugbu |
+| Community | Play mode (open play, find players, clubs and ranking, tournaments, events), marked as concepts |
+| Company | Pricing, List Your Court, Help centre and FAQ, About, Contact, Court Gallery |
+| Account | Sign in, Register, Forgot password, Staff sign in |
+
+44 pages in all, URLs kept from the current site (`/courts`, `/courts/<venue>`, `/courts/<venue>/availability`, `/courts/<venue>/slots`, `/pricing`, `/list-your-court`, `/contact`, `/sign-in`, `/sign-up`, `/forgot-password`, `/staff/sign-in`).
+
+## Build
+
+```bash
+node src/build.mjs          # renders src/ into dist/
+node tools/linkcheck.mjs    # every local link and image resolves; every Book link lands on bookable courts
+python3 tools/images.py     # re-encodes the photo set to WebP (needs Pillow)
+```
+
+No npm packages. `dist/` is what GitHub Pages serves (branch `gh-pages`).
+
+## Sources
+
+- Words, venue facts, rates, slot boards, amenities and reviews: the current Served. site, captured 26 Nov 2026.
+- Rally X photos: supplied by the venue.
+- Venue photos marked "Representative photo": the current Served. site's own sport images.
+- City and sport photos: Wikimedia Commons, credited on the Court Gallery page.
+
+See `docs/PITCH-NOTES.md` for what was kept, what is new, and the questions for the Served. team.

@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+Thumbs.db
+.tmp/
+.playwright-mcp/
+# Kept on the local machine, not published: the untouched staging capture (the evidence), source photos,
+# the site-reforge project record and the extractor that reads the capture.
+audit/
+refs/
+assets/live/
+project.json
+facts/
+presets/
+tools/extract.mjs
