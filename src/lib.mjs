@@ -57,7 +57,8 @@ const I = {
   shirt: '<path d="M8.5 4 4 7l2 3.2 2-1V20h8V9.2l2 1L20 7l-4.5-3c-.6 1.4-1.9 2.3-3.5 2.3S9.1 5.4 8.5 4z"/>',
   racket: '<ellipse cx="14.5" cy="9.5" rx="5" ry="6.2" transform="rotate(38 14.5 9.5)"/><path d="m10.6 14.2-6.1 6.1M11.6 6.6l6.3 5.6M13.9 4.9l3.4 9.6"/>',
   tennis: '<circle cx="12" cy="12" r="8.5"/><path d="M5.4 6.6c3 2.6 3 8.2 0 10.8M18.6 6.6c-3 2.6-3 8.2 0 10.8"/>',
-  pickleball: '<path d="M5.3 4.4a5.2 5.2 0 0 1 7.4 0l1.6 1.6a5.2 5.2 0 0 1 0 7.4l-1.7 1.7-8.9-8.9z"/><path d="m3.7 6.2-.4.4a1.4 1.4 0 0 0 0 2l5.6 5.6a1.4 1.4 0 0 0 2 0l.4-.4M7.6 12.4 4.2 15.8"/><circle cx="18" cy="17.5" r="3.2"/><path d="M17.2 16.7h.01M18.9 18.2h.01M17.3 18.4h.01"/>',
+  // paddle face and wrapped grip on the diagonal, perforated ball top right (client style, 27 Nov 2026)
+  pickleball: '<g transform="translate(10.6 12.3) rotate(-45)"><path d="M1.1 2a3.6 3.6 0 0 0 3.6-3.6v-3.2a3.6 3.6 0 0 0-3.6-3.6h-2.2a3.6 3.6 0 0 0-3.6 3.6v3.2a3.6 3.6 0 0 0 3.6 3.6v7.4a1.1 1.1 0 0 0 2.2 0z"/><path d="M-1.1 5.5 1.1 4.4M-1.1 7.7 1.1 6.6"/></g><circle cx="18.4" cy="5.6" r="3.4"/><path d="M18.4 4.2h.01M18.4 7h.01M17 5.6h.01M19.8 5.6h.01" stroke-width="1.4"/>',
   badminton: '<path d="M7.5 14.5 4 4.5l3.8 1.6L10.4 3l1.6 3.3L13.6 3l2.6 3.1L20 4.5l-3.5 10z"/><path d="M7.5 14.5h9"/><path d="M8.3 14.5a3.7 3.7 0 0 0 7.4 0"/>',
   basketball: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5v17M6.3 5.7c2.6 2.2 2.6 10.4 0 12.6M17.7 5.7c-2.6 2.2-2.6 10.4 0 12.6"/>',
   padel: '<path d="M12 2.8c3.6 0 6.2 2.7 6.2 6.3 0 3.4-2.4 6.3-5 6.9v4.2a1.2 1.2 0 0 1-2.4 0V16c-2.6-.6-5-3.5-5-6.9 0-3.6 2.6-6.3 6.2-6.3z"/><path d="M9.6 7.4h.01M12 7.4h.01M14.4 7.4h.01M10.8 9.8h.01M13.2 9.8h.01M12 12.2h.01"/>',
@@ -74,7 +75,8 @@ const I = {
   moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
   info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>',
-  court: '<rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M12 5v14M3 12h18M7.5 5v14M16.5 5v14" opacity=".9"/>',
+  // a real pickleball court from above: kitchen lines either side of the net, centre lines to the baselines
+  court: '<rect x="2" y="7" width="20" height="10" rx="2"/><path d="M8.6 7v10M12 7v10M15.4 7v10M2 12h6.6M15.4 12H22"/>',
   locate: '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22"/>',
   download: '<path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/>',
   image: '<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="9.5" r="1.8"/><path d="m21 16-5-5-8 9"/>',
@@ -100,12 +102,26 @@ export const chipSport = (s, cls = '') => { const sp = sportOf(s); return `<span
 export const score = (v) => v.reviewCount ? `<span class="score" title="${v.rating} out of 5 from ${v.reviewCount} reviews">${icon('star', 'ico--fill')}<b>${v.rating.toFixed(1)}</b><small>${v.reviewCount} reviews</small></span>` : `<span class="score score--new">${icon('sparkle')}<b>New</b><small>no reviews yet</small></span>`;
 export const priceTag = (v, big = false) => `<p class="price${big ? ' price--big' : ''}"><b>${peso(v.rate)}</b><span>/ hr</span><small>exclusive of service fees</small></p>`;
 export const nextTag = (v) => `<p class="next" data-next="${esc(v.open.join(','))}">${icon('cal')}<span>Next: <b>${fmtDate(v.open[0])}</b></span></p>`;
-export const linesSvg = () => `<svg class="cl" viewBox="0 0 400 240" preserveAspectRatio="none" aria-hidden="true"><path d="M8 8h384v224H8zM8 44h384M8 196h384M200 44v152M104 44v152M296 44v152" pathLength="1"/></svg>`;
+export const linesSvg = () => `<svg class="cl" viewBox="0 0 400 240" preserveAspectRatio="none" aria-hidden="true"><path d="M8 8h384v224H8zM8 44h384M8 196h384M200 8v224M104 44v152M296 44v152M104 120h192" pathLength="1"/></svg>`;
+
+// a court of the venue's sport seen from above, length across: line positions are the real court's, in feet
+export function courtPath(sport, x0, y0, w, h) {
+  const X = (f) => +(x0 + w * f).toFixed(2), Y = (f) => +(y0 + h * f).toFixed(2);
+  const v = (f, a = 0, b = 1) => `M${X(f)} ${Y(a)}V${Y(b)}`;
+  const hz = (f, a = 0, b = 1) => `M${X(a)} ${Y(f)}H${X(b)}`;
+  const s = String(sport).toLowerCase();
+  if (s === 'tennis') { const al = 4.5 / 36, sv = 18 / 78; return hz(al) + hz(1 - al) + v(.5) + v(sv, al, 1 - al) + v(1 - sv, al, 1 - al) + hz(.5, sv, 1 - sv); }
+  if (s === 'badminton') { const al = 1.5 / 20, lb = 2.5 / 44, ss = 15.5 / 44; return hz(al) + hz(1 - al) + v(lb) + v(1 - lb) + v(ss) + v(1 - ss) + v(.5) + hz(.5, 0, ss) + hz(.5, 1 - ss, 1); }
+  const k = 15 / 44; return v(k) + v(.5) + v(1 - k) + hz(.5, 0, k) + hz(.5, 1 - k, 1);
+}
+const roundRect = (x, y, w, h, r) => `M${x + r} ${y}h${w - 2 * r}a${r} ${r} 0 0 1 ${r} ${r}v${h - 2 * r}a${r} ${r} 0 0 1-${r} ${r}h-${w - 2 * r}a${r} ${r} 0 0 1-${r}-${r}v-${h - 2 * r}a${r} ${r} 0 0 1 ${r}-${r}z`;
+export const courtSvg = (sport, cls = '') => `<svg class="${cls}" viewBox="0 0 90 42" aria-hidden="true" focusable="false"><path d="${roundRect(1, 1, 88, 40, 4)}${courtPath(sport, 1, 1, 88, 40)}"/></svg>`;
+export const courtD = (sport, x, y, w, h, r = 4) => roundRect(x, y, w, h, r) + courtPath(sport, x, y, w, h);
 
 export function vcard(v, { variant = '', lazy = true } = {}) {
   const sp = sportOf(v.sport);
   return `<article class="vcard ${variant}" data-tone="${sp.tone}" data-tilt data-reveal>
-  <a class="vcard__media" href="${u(`/courts/${v.slug}/`)}" tabindex="-1" aria-hidden="true">${img(v.img, { alt: '', sizes: '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${linesSvg()}${v.featured ? '<span class="ribbon">Featured</span>' : ''}</a>
+  <a class="vcard__media" href="${u(`/courts/${v.slug}/`)}" tabindex="-1" aria-hidden="true">${img(v.img, { alt: '', sizes: '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${v.featured ? '<span class="ribbon">Featured</span>' : ''}</a>
   <div class="vcard__tags">${chipSport(v.sport)}${score(v)}</div>
   <div class="vcard__body">
     <h3 class="vcard__name"><a href="${u(`/courts/${v.slug}/`)}">${esc(v.name)}</a></h3>
@@ -120,7 +136,7 @@ export function vcard(v, { variant = '', lazy = true } = {}) {
 
 export function rallyCard(cls = '') {
   return `<article class="vcard vcard--soon ${cls}" data-tone="heat" data-tilt data-reveal>
-  <a class="vcard__media" href="${u('/courts/rally-x/')}" tabindex="-1" aria-hidden="true">${img('rallyx-court-logo', { alt: '', sizes: '(min-width: 1100px) 33vw, 100vw', pos: '50% 60%' })}${linesSvg()}<span class="ribbon ribbon--rust">Now open</span></a>
+  <a class="vcard__media" href="${u('/courts/rally-x/')}" tabindex="-1" aria-hidden="true">${img('rallyx-court-logo', { alt: '', sizes: '(min-width: 1100px) 33vw, 100vw', pos: '50% 60%' })}<span class="ribbon ribbon--rust">Now open</span></a>
   <div class="vcard__tags">${chipSport('Pickleball')}${chipSport('Tennis')}</div>
   <div class="vcard__body">
     <h3 class="vcard__name"><a href="${u('/courts/rally-x/')}">Rally X</a></h3>
@@ -133,9 +149,10 @@ export function rallyCard(cls = '') {
 </article>`;
 }
 
-export function marquee(words, cls = '') {
+// speed: a multiple of the base marquee speed (1 = the hero board's pace)
+export function marquee(words, cls = '', speed = 1) {
   const run = words.map((w, i) => `<span class="mq__w${i % 2 ? ' mq__w--o' : ''}">${w}</span><span class="mq__ball" aria-hidden="true"></span>`).join('');
-  return `<div class="mq ${cls}" data-marquee aria-hidden="true"><div class="mq__track"><div class="mq__run">${run}</div><div class="mq__run">${run}</div></div></div>`;
+  return `<div class="mq ${cls}" data-marquee${speed === 1 ? '' : `="${speed}"`} aria-hidden="true"><div class="mq__track"><div class="mq__run">${run}</div><div class="mq__run">${run}</div></div></div>`;
 }
 
 // a court-line section divider: baseline, service line tick and a net that draws itself on scroll
@@ -301,6 +318,8 @@ export function layout({ path, title, desc, body, active = '', bodyCls = '', sti
 <meta property="og:type" content="website"><meta property="og:site_name" content="Served."><meta property="og:title" content="${esc(full)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:image" content="${SITE.url}assets/img/${ogImg}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="${a('assets/favicon.svg')}" type="image/svg+xml">
+<link rel="manifest" href="${a('manifest.webmanifest')}">
+<link rel="apple-touch-icon" href="${a('assets/img/app-icon-180.png')}">
 <link rel="preload" href="${a('assets/fonts/archivo-var.woff2')}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="${a('assets/fonts/jakarta-var.woff2')}" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${a('assets/site.css')}">

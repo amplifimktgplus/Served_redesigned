@@ -1,6 +1,6 @@
 // src/pages.mjs: one function per page type. Captured words are carried verbatim; new pages are written for Served.
 import { SITE, SPORTS, CITIES, VENUES, RALLYX, COLLECTIONS, FAQ, PLAY, ROADMAP, CREDITS, CAPTURED_ON, IMAGES } from './content.mjs';
-import { layout, u, a, esc, peso, json, dot, fmtDate, img, icon, kicker, sh, btn, ctas, chipSport, score, priceTag, nextTag, linesSvg,
+import { layout, u, a, esc, peso, json, dot, fmtDate, img, icon, kicker, sh, btn, ctas, chipSport, score, priceTag, nextTag, courtSvg, courtD,
   vcard, rallyCard, marquee, divider, faqList, sportOf, amenityIcon, setPage } from './lib.mjs';
 
 const TOTAL_COURTS = VENUES.reduce((n, v) => n + v.courts, 0);
@@ -11,7 +11,7 @@ const venueHref = (v) => u(`/courts/${v.slug}/`);
 
 function phero({ k, h1, lede, crumb, img: im, tone = '', cls = '', extra = '', pos = '' }) {
   return `<section class="phero band band--night ${cls}"${tone ? ` data-tone="${tone}"` : ''}>
-  <div class="band__clip" aria-hidden="true">${im ? `<figure class="phero__bg" data-depth="0.12">${img(im, { alt: '', sizes: '100vw', eager: true, pos })}</figure>` : ''}<span class="phero__scrim"></span><span class="band__grid"></span></div>
+  <div class="band__clip" aria-hidden="true">${im ? `<figure class="phero__bg" data-depth="0.12">${img(im, { alt: '', sizes: '100vw', eager: true, pos })}</figure>` : ''}<span class="phero__scrim"></span>${im ? '' : '<span class="band__grid"></span>'}</div>
   <div class="wrap phero__in">${crumb ? crumbs(crumb) : ''}${k ? kicker(k) : ''}<h1 class="d1 phero__h" data-reveal>${h1}</h1>${lede ? `<p class="lede phero__lede" data-reveal>${lede}</p>` : ''}${extra}</div>
 </section>`;
 }
@@ -45,7 +45,7 @@ function home({ path = '/', hero = heroB(), bodyCls = 'pg-home' } = {}) {
   }).join('');
   const body = `
 ${hero}
-${marquee(['Pickleball', 'Tennis', 'Badminton', 'No calls', 'No waiting', 'No guesswork', 'Book instantly', 'Game on'])}
+${marquee(['Pickleball', 'Tennis', 'Badminton', 'No calls', 'No waiting', 'No guesswork', 'Book instantly', 'Game on'], 'mq--sm', 0.3)}
 <section class="band band--night sports" aria-labelledby="sp-h">
   <div class="wrap">
     ${sh({ k: 'Pick your sport', h: '<span id="sp-h">Three sports live. <em>More</em> on the way.</span>', lede: 'Every sport gets its own colour, its own courts and its own crowd. Tap one to see open courts.', cls: 'sh--split' })}
@@ -53,7 +53,6 @@ ${marquee(['Pickleball', 'Tennis', 'Badminton', 'No calls', 'No waiting', 'No gu
     <div class="sports__soon">${soon}</div>
   </div>
 </section>
-${divider()}
 <section class="band band--night feat" aria-labelledby="fv-h">
   <div class="wrap">
     ${sh({ k: 'Courts now serving', h: '<span id="fv-h">Featured Venues</span>', lede: 'Advanced sports venues offering the latest facilities, dynamic and unique environments built for serious play.', cls: 'sh--split' })}
@@ -149,19 +148,24 @@ ${divider()}
 
 // ============================================================ HOME HERO: live board (option B, picked 27 Nov 2026)
 const liveSports = () => SPORTS.filter((x) => x.live).map((x) => { const list = VENUES.filter((v) => v.sport === x.name); return { ...x, n: list.length, from: minRate(list) }; });
-// Option B, "Live board": kinetic sport word, one-tap sport buttons, a light that follows the pointer and a board of next open slots
+// Option B, "Live board", on the current site's hero photo and shade: the Served. wordmark down the right edge (turned to
+// read upward, baseline on the edge), kinetic sport word, sport buttons and search of one width, Install App, next open slots
 function heroB() {
   const board = [...VENUES].sort((x, y) => x.open[0].localeCompare(y.open[0]) || y.rating - x.rating).map((v) => `<a class="bitem" href="${u(`/courts/${v.slug}/availability/`)}" data-tone="${v.tone}"><i class="bitem__dot"></i><b>${esc(v.name)}</b><span>${esc(v.city)}</span><span class="bitem__next" data-next="${v.open.join(',')}">Next <b>${fmtDate(v.open[0])}</b></span><em>${peso(v.rate)}/hr</em><span class="bitem__go">Book ${icon('arrow')}</span></a>`).join('');
   return `<section class="hb" data-hx data-spot aria-labelledby="hb-h">
   <div class="hb__media" aria-hidden="true">
-    <figure class="hb__bg">${img('hero-run', { alt: '', sizes: '100vw', eager: true, pos: '72% 45%' })}</figure>
-    <span class="hb__glow"></span><span class="hb__shade"></span>
+    <figure class="hb__bg">${img('live-hero-court', { alt: '', sizes: '100vw', eager: true, pos: '50% 32%' })}</figure>
+    <span class="hb__shade"></span><span class="hb__glow"></span>
   </div>
+  <span class="hb__mark" aria-hidden="true">Served<i></i></span>
   <div class="wrap hb__in">
     <p class="hb__live"><i></i>Live availability <span class="sep">/</span> ${VENUES.length} venues, ${TOTAL_COURTS} courts</p>
     <h1 class="hb__h" id="hb-h"><span class="sr">Choose Your Court. Get Ready To Play.</span><span aria-hidden="true" class="hb__l hb__l--sm">Find your</span><span aria-hidden="true" class="hb__word"><span class="rot" data-rotate="Pickleball|Tennis|Badminton">Pickleball</span></span><span aria-hidden="true" class="hb__l">court<span class="pd">.</span></span></h1>
-    <div class="hb__sports">${liveSports().map((x) => `<a class="hb__sport" href="${u(`/courts/?sport=${x.name}`)}" data-tone="${x.tone}">${icon(x.icon)}<span><b>${x.name}</b><small>${x.n} venues <span class="sep">/</span> from ${peso(x.from)}/hr</small></span>${icon('arrow', 'hb__arrow')}</a>`).join('')}</div>
-    <form class="hb__search" action="${u('/courts/')}" method="get" role="search" aria-label="Search courts">${icon('search')}<label class="sr" for="hbq">Court name or city</label><input id="hbq" name="q" type="search" placeholder="Court name or city" autocomplete="off"><label class="sr" for="hbd">When</label><select id="hbd" name="date" data-date-select><option value="">Any day</option></select><button type="submit" aria-label="Search courts">${icon('arrow')}</button></form>
+    <div class="hb__deck">
+      <div class="hb__sports">${liveSports().map((x) => `<a class="hb__sport" href="${u(`/courts/?sport=${x.name}`)}" data-tone="${x.tone}">${icon(x.icon)}<span><b>${x.name}</b><small>${x.n} venues <span class="sep">/</span> from ${peso(x.from)}/hr</small></span>${icon('arrow', 'hb__arrow')}</a>`).join('')}</div>
+      <form class="hb__search" action="${u('/courts/')}" method="get" role="search" aria-label="Search courts">${icon('search')}<label class="sr" for="hbq">Court name or city</label><input id="hbq" name="q" type="search" placeholder="Court name or city" autocomplete="off"><label class="sr" for="hbd">When</label><select id="hbd" name="date" data-date-select><option value="">Any day</option></select><button type="submit" aria-label="Search courts">${icon('arrow')}</button></form>
+    </div>
+    <div class="hb__act"><button class="btn btn--accent hb__install" type="button" data-install>${icon('download')}<span>Install App</span></button><p class="hb__hint" data-install-hint role="status"></p></div>
   </div>
   <div class="hb__board"><p class="hb__label"><i></i>Next open</p><div class="mq mq--board" data-marquee><div class="mq__track"><div class="mq__run">${board}</div><div class="mq__run" aria-hidden="true">${board.replace(/<a /g, '<a tabindex="-1" ')}</div></div></div></div>
 </section>`;
@@ -240,7 +244,7 @@ function booking(v, mode) {
           <div class="book__bh"><h3 class="d4">${icon('clock')}Pick time &amp; court</h3>${evening ? `<p class="ratekey"><span class="rk rk--std">Standard</span><span class="rk rk--eve">${icon('moon')}Evening rate</span></p>` : ''}</div>
           <p class="book__rule">Pick up to 4 hours on a court &mdash; they do not have to be next to each other. To book another court as well, choose it and pick its hours; what you picked on the first is kept. Struck-through slots are already taken on the selected court.</p>
           <p class="book__lbl">Court selection</p>
-          <div class="courtpick" data-courts role="radiogroup" aria-label="Court selection"></div>
+          <template data-court-tpl>${courtSvg(v.sport, 'cpk__court')}</template><div class="courtpick" data-courts role="radiogroup" aria-label="Court selection"></div>
           <p class="book__lbl">Time slots</p>
           <div class="slots" data-slots aria-label="Time slots"><p class="slots__empty">Choose a date to see times.</p></div>
         </div>
@@ -270,7 +274,7 @@ function booking(v, mode) {
     ${demoNote('Preview build: no payment is taken and no court is booked.')}
   </div></div>
   <div class="sheet sheet--done" data-done hidden role="dialog" aria-modal="true" aria-labelledby="done-h"><div class="sheet__in board done">
-    <div class="done__anim" aria-hidden="true"><svg viewBox="0 0 200 120"><path class="done__court" d="M10 10h180v100H10zM100 10v100M10 60h180" pathLength="1"/></svg><span class="done__ball"></span></div>
+    <div class="done__anim" aria-hidden="true"><svg viewBox="0 0 200 120"><path class="done__court" d="${courtD(v.sport, 10, 19, 180, 82, 6)}" pathLength="1"/></svg><span class="done__ball"></span></div>
     <p class="kicker"><span class="kicker__ball"></span>Step 4 of 4</p>
     <h2 class="d2" id="done-h">Court secured<span class="pd">.</span></h2>
     <p class="done__sub">Booked and served. You’re on.</p>
@@ -290,7 +294,7 @@ function venuePage(v) {
   const q = encodeURIComponent(`${v.name}, ${v.address}`);
   const body = `
 <section class="vhero band band--night" data-tone="${v.tone}">
-  <div class="band__clip" aria-hidden="true"><figure class="vhero__bg" data-depth="0.1">${img(v.img, { alt: '', sizes: '100vw', eager: true })}</figure><span class="vhero__scrim"></span><span class="band__grid"></span></div>
+  <div class="band__clip" aria-hidden="true"><figure class="vhero__bg" data-depth="0.1">${img(v.img, { alt: '', sizes: '100vw', eager: true })}</figure><span class="vhero__scrim"></span></div>
   <div class="wrap vhero__in">
     ${crumbs([['Home', '/'], ['Courts', '/courts/'], [v.name, `/courts/${v.slug}/`]])}
     <div class="vhero__grid">
@@ -385,7 +389,7 @@ function rallyx() {
   const nearby = VENUES.filter((v) => ['Pickleball', 'Tennis'].includes(v.sport));
   const body = `
 <section class="vhero vhero--rx band band--night" data-tone="heat">
-  <div class="band__clip" aria-hidden="true"><figure class="vhero__bg" data-depth="0.1">${img('rallyx-now-open', { alt: '', sizes: '100vw', eager: true, pos: '50% 40%' })}</figure><span class="vhero__scrim"></span><span class="band__grid"></span></div>
+  <div class="band__clip" aria-hidden="true"><figure class="vhero__bg" data-depth="0.1">${img('rallyx-now-open', { alt: '', sizes: '100vw', eager: true, pos: '50% 40%' })}</figure><span class="vhero__scrim"></span></div>
   <div class="wrap vhero__in">
     ${crumbs([['Home', '/'], ['Courts', '/courts/'], ['Rally X', '/courts/rally-x/']])}
     <div class="vhero__grid">
@@ -533,7 +537,7 @@ ${phero({ k: 'Contact', h1: 'Contact Us', lede: 'Questions about a booking, or a
 // ============================================================ AUTH
 function auth({ path, title, desc, side, form, photo = 'rallyx-ready-position', pos = '50% 30%' }) {
   const body = `<section class="auth">
-  <div class="auth__vis" aria-hidden="true">${img(photo, { alt: '', sizes: '(min-width: 900px) 45vw, 100vw', eager: true, pos })}<span class="auth__scrim"></span>${linesSvg()}<div class="auth__side">${side}</div></div>
+  <div class="auth__vis" aria-hidden="true">${img(photo, { alt: '', sizes: '(min-width: 900px) 45vw, 100vw', eager: true, pos })}<span class="auth__scrim"></span><div class="auth__side">${side}</div></div>
   <div class="auth__main"><div class="auth__card">${form}</div></div>
 </section>`;
   return layout({ path, title, desc, body, bodyCls: 'pg-auth', sticky: null, noFinal: true });
@@ -541,7 +545,7 @@ function auth({ path, title, desc, side, form, photo = 'rallyx-ready-position', 
 const roleSeg = (name = 'role') => `<fieldset class="seg seg--role" data-role-seg><legend class="field__l">${name === 'role' ? 'Sign in as' : 'Register as'}</legend><label><input type="radio" name="role" value="player" checked><span>${icon('user')}I am a Player</span></label><label><input type="radio" name="role" value="owner"><span>${icon('court')}I am a Court Owner</span></label></fieldset>`;
 const pw = (n, ph, ac) => `<label class="field"><span class="field__l">${ph === 'Password' ? 'Password' : 'Confirm password'}</span><input name="${n}" type="password" required placeholder="${ph}" autocomplete="${ac}"><button class="field__eye" type="button" data-eye aria-label="Show password">${icon('sun')}</button></label>`;
 function signIn() {
-  return auth({ path: '/sign-in/', title: 'Sign in', desc: 'Sign in to Served as a player or court owner. Your game, your court, let’s play.',
+  return auth({ path: '/sign-in/', title: 'Sign in', desc: 'Sign in to Served as a player or court owner. Your game, your court, let’s play.', photo: 'signin-tennis', pos: '50% 45%',
     side: `<p class="kicker"><span class="kicker__ball"></span>Login User &amp; Court Owner</p><p class="auth__big">Your game, your court, Let’s play!</p>`,
     form: `<a class="logo" href="${u('/')}" aria-label="Served. home"><span class="logo__w">Served</span><span class="logo__d"></span></a><h1 class="d2">You’re Up!</h1><p class="auth__sub">Ready for your next match?</p>
     <form data-demo-form>${roleSeg('role')}

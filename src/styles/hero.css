@@ -1,13 +1,23 @@
 /* =====================================================================================================
-   HOME HERO, "Live board" (option B, picked 27 Nov 2026): the client's orange photo full width, a rotating
-   sport word, one-tap sport buttons, a pill search and a scrolling board of the next open slots.
+   HOME HERO, "Live board" (option B, picked 27 Nov 2026) on the current site's own hero photo, shade and
+   orange glow (the glow drifts toward the pointer). The Served. wordmark runs up the right edge with its
+   baseline on the edge. A rotating sport word, compact sport buttons with a search of the same width, an
+   Install App button, and a scrolling board of the next open slots.
    ===================================================================================================== */
 .hb { --px: 0; --py: 0; position: relative; isolation: isolate; overflow: clip; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto; min-height: clamp(620px, 86svh, 780px); padding-top: var(--hdr-h); background: var(--ink); color: #fff; }
 .hb__media { position: absolute; inset: 0; z-index: -1; perspective: 1400px; }
 .hb__bg { position: absolute; inset: -5%; transform: rotateY(calc(var(--px) * -2.4deg)) rotateX(calc(var(--py) * 1.6deg)) scale(1.04); transition: transform 1s var(--ease); }
 .hb__bg img { width: 100%; height: 100%; object-fit: cover; }
-.hb__glow { position: absolute; inset: 0; background: radial-gradient(24% 34% at var(--lx, 70%) var(--ly, 42%), rgba(255, 120, 40, .5), transparent 72%); mix-blend-mode: screen; transition: opacity .4s; }
-.hb__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10, 10, 10, .94) 0%, rgba(10, 10, 10, .55) 40%, rgba(10, 10, 10, 0) 66%), linear-gradient(0deg, rgba(10, 10, 10, .9) 0%, rgba(10, 10, 10, 0) 38%); }
+.hb__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0, 0, 0, .82) 0%, rgba(0, 0, 0, .55) 45%, rgba(0, 0, 0, .3) 100%), linear-gradient(0deg, rgba(10, 10, 10, .6) 0%, rgba(10, 10, 10, 0) 26%); }
+.hb__glow { position: absolute; inset: 0; background: radial-gradient(46% 66% at var(--lx, 60%) var(--ly, 42%), rgba(255, 107, 24, .26), rgba(255, 107, 24, 0) 70%); transition: opacity .4s; }
+
+/* wordmark: set as one horizontal line so the ball keeps to the baseline, then turned a quarter turn
+   anticlockwise about its bottom right corner. "Served" plus the ball measures 3.23em; the baseline sits
+   .08em above the line box bottom, so the box hangs .08em past the edge and the baseline lands on it.
+   Sized to fill about 78% of the space between the header and the board. */
+.hb__mark { --mk: min(11vw, 10rem, calc((clamp(620px, 86svh, 780px) - 137px) * .24)); position: absolute; z-index: 1; right: calc(var(--mk) * -.08); top: calc((100% + var(--hdr-h) - 61px) / 2 - var(--mk) * 2.615); font: 400 var(--mk) / 1 var(--f-script); color: #fff; white-space: nowrap; opacity: .95; transform-origin: 100% 100%; transform: rotate(-90deg); pointer-events: none; user-select: none; }
+.hb__mark i { display: inline-block; width: .26em; height: .26em; margin-left: .06em; border-radius: 50%; background: var(--accent); box-shadow: 0 0 .25em rgba(255, 107, 24, .55); }
+
 .hb__in { align-self: center; position: relative; z-index: 2; padding: 34px 0 40px; }
 .hb__live { display: inline-flex; align-items: center; gap: 10px; padding: 9px 15px; border-radius: var(--pill); background: rgba(10, 10, 10, .6); border: 1px solid rgba(255, 255, 255, .16); backdrop-filter: blur(8px); font: 700 13px/1 var(--f-ui); color: rgba(255, 255, 255, .85); }
 .hb__live i { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: livePulse 1.8s var(--ease) infinite; }
@@ -17,24 +27,36 @@
 .hb__word { display: block; height: .9em; overflow: hidden; font-stretch: 125%; }
 .hb__word .rot { display: inline-block; min-width: 0; color: var(--accent); }
 .hb__word .rot.is-swap { animation: wordIn .6s var(--ease); }
-.hb__sports { display: flex; flex-wrap: wrap; gap: 10px; }
-.hb__sport { --tone: var(--accent); display: inline-flex; align-items: center; gap: 12px; min-height: 64px; padding: 0 16px 0 10px; border-radius: 18px; background: rgba(10, 10, 10, .55); border: 1px solid rgba(255, 255, 255, .18); backdrop-filter: blur(10px); color: #fff; text-decoration: none; transition: border-color .25s, background .25s, transform .5s var(--ease); }
-.hb__sport > .ico:first-child { width: 42px; height: 42px; padding: 9px; border-radius: 13px; background: var(--tone); color: var(--ink); stroke-width: 2; flex: none; }
-.hb__sport > span { display: grid; gap: 3px; text-align: left; }
-.hb__sport b { font: 850 17px/1 var(--f-display); text-transform: uppercase; font-stretch: 106%; }
-.hb__sport small { font-size: 12.5px; color: rgba(255, 255, 255, .7); }
-.hb__arrow { width: 18px; height: 18px; margin-left: 6px; color: var(--tone); transition: transform .4s var(--ease); }
+
+/* the deck is exactly as wide as the three sport buttons, and the search stretches to match */
+.hb__deck { display: grid; grid-template-columns: minmax(0, 1fr); width: fit-content; max-width: 100%; gap: 10px; }
+.hb__sports { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.hb__sport { --tone: var(--accent); display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 54px; padding: 0 14px 0 8px; border-radius: 16px; background: rgba(10, 10, 10, .55); border: 1px solid rgba(255, 255, 255, .18); backdrop-filter: blur(10px); color: #fff; text-decoration: none; transition: border-color .25s, background .25s, transform .5s var(--ease); }
+.hb__sport > .ico:first-child { width: 36px; height: 36px; padding: 7px; border-radius: 11px; background: var(--tone); color: var(--ink); stroke-width: 2; flex: none; }
+.hb__sport > span { display: grid; gap: 3px; min-width: 0; text-align: left; }
+.hb__sport b { font: 850 15px/1 var(--f-display); text-transform: uppercase; font-stretch: 106%; }
+.hb__sport small { font-size: 12px; color: rgba(255, 255, 255, .7); white-space: nowrap; }
+.hb__arrow { width: 16px; height: 16px; margin-left: auto; color: var(--tone); flex: none; transition: transform .4s var(--ease); }
 .hb__sport:hover { border-color: var(--tone); background: rgba(10, 10, 10, .78); transform: translateY(-3px); }
 .hb__sport:hover .hb__arrow { transform: translateX(4px); }
-.hb__search { display: flex; align-items: center; gap: 8px; width: min(600px, 100%); margin-top: 14px; padding: 6px 6px 6px 18px; border-radius: var(--pill); background: #fff; color: #101a2e; box-shadow: 0 30px 60px -28px rgba(0, 0, 0, .9); }
-.hb__search > .ico { width: 20px; height: 20px; color: #6b7280; flex: none; }
-.hb__search input { flex: 1; min-width: 0; min-height: 48px; border: 0; outline: 0; background: transparent; color: #101a2e; font: 600 16px/1 var(--f-ui); }
+.hb__search { display: flex; align-items: center; gap: 8px; min-height: 54px; padding: 5px 5px 5px 16px; border-radius: var(--pill); background: #fff; color: #101a2e; box-shadow: 0 30px 60px -28px rgba(0, 0, 0, .9); }
+.hb__search > .ico { width: 19px; height: 19px; color: #6b7280; flex: none; }
+.hb__search input { flex: 1; min-width: 0; min-height: 44px; border: 0; outline: 0; background: transparent; color: #101a2e; font: 600 15px/1 var(--f-ui); }
 .hb__search input::placeholder { color: #8a909b; }
-.hb__search select { min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--pill); background: #f4f4f2; color: #101a2e; font: 750 14px/1 var(--f-ui); cursor: pointer; outline: none; max-width: 42%; }
+.hb__search select { min-height: 40px; padding: 0 12px; border: 0; border-radius: var(--pill); background: #f4f4f2; color: #101a2e; font: 750 14px/1 var(--f-ui); cursor: pointer; outline: none; max-width: 42%; }
 .hb__search select option { color: #101a2e; background: #fff; }
-.hb__search button { width: 50px; height: 50px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--ink); transition: background .2s, transform .4s var(--ease); }
+.hb__search button { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--ink); transition: background .2s, transform .4s var(--ease); }
 .hb__search button:hover { background: var(--accent-hot); transform: rotate(-12deg); }
-.hb__search button .ico { width: 20px; height: 20px; }
+.hb__search button .ico { width: 19px; height: 19px; }
+
+/* Install App: the browser's own install prompt where it offers one, the steps where it does not (site.js) */
+.hb__act { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 14px; }
+.hb__install { --bh: 54px; padding-inline: 1.3em 1.6em; font-size: 15.5px; }
+.hb__install .ico { width: 20px; height: 20px; }
+.hb__install:hover .ico { transform: translateY(2px); }
+.hb__install[hidden] { display: none; }
+.hb__hint { margin: 0; max-width: 44ch; font-size: 14px; line-height: 1.45; color: rgba(255, 255, 255, .86); }
+
 .hb__board { position: relative; z-index: 2; display: flex; align-items: stretch; background: rgba(10, 10, 10, .82); border-top: 1px solid rgba(255, 255, 255, .12); backdrop-filter: blur(14px); }
 .hb__label { flex: none; display: flex; align-items: center; gap: 9px; padding: 0 22px; border-right: 1px solid rgba(255, 255, 255, .12); font: 800 12px/1 var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
 .hb__label i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: livePulse 1.8s var(--ease) infinite; }
@@ -51,16 +73,22 @@
 
 @keyframes wordIn { from { transform: translateY(100%); opacity: 0; } to { transform: none; opacity: 1; } }
 
-/* entrance: the hero rises in after the splash */
+/* entrance: the hero rises in after the splash, the wordmark slides in from the edge */
 html.js .hb__in > * { opacity: 0; translate: 0 30px; }
 html.is-ready .hb__in > *, html.reveal-all .hb__in > * { opacity: 1; translate: 0 0; transition: opacity .9s var(--ease), translate 1.1s var(--ease); }
 html.is-ready .hb__in > :nth-child(2) { transition-delay: .1s; }
 html.is-ready .hb__in > :nth-child(3) { transition-delay: .2s; }
 html.is-ready .hb__in > :nth-child(4) { transition-delay: .3s; }
+html.js .hb__mark { opacity: 0; translate: 48px 0; }
+html.is-ready .hb__mark, html.reveal-all .hb__mark { opacity: .95; translate: 0 0; transition: opacity 1s var(--ease) .2s, translate 1.3s var(--ease) .2s; }
 
+/* the wordmark needs the right edge to itself: below 900px the buttons reach it, so it steps out */
+@media (max-width: 900px) {
+  .hb__mark { display: none; }
+  .hb__sport small { white-space: normal; }
+}
 @media (max-width: 640px) {
   .hb { min-height: 0; padding-top: calc(var(--hdr-h) + 130px); }
-  .hb__bg img { object-position: 82% 40%; }
   .hb__bg { transform: none; }
   .hb__shade { background: linear-gradient(0deg, rgba(10, 10, 10, .96) 0%, rgba(10, 10, 10, .8) 52%, rgba(10, 10, 10, .15) 82%, rgba(10, 10, 10, .45) 100%); }
   .hb__glow { display: none; }
@@ -68,16 +96,20 @@ html.is-ready .hb__in > :nth-child(4) { transition-delay: .3s; }
   .hb__h { justify-items: center; font-size: clamp(2.3rem, 11.4vw, 3.4rem); margin: 16px 0 20px; }
   .hb__word { font-stretch: 108%; }
   .hb__live { font-size: 12px; }
-  .hb__sports { display: grid; grid-template-columns: 1fr; gap: 8px; }
-  .hb__sport { min-height: 60px; }
-  .hb__arrow { margin-left: auto; }
+  .hb__deck { width: 100%; }
+  .hb__sports { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .hb__search { padding-left: 14px; }
   .hb__search select { max-width: 38%; padding: 0 10px; font-size: 13px; }
+  .hb__act { display: grid; gap: 0; }
+  .hb__install { width: 100%; }
+  .hb__hint { max-width: none; }
+  .hb__hint:not(:empty) { margin-top: 10px; }
   .hb__label { padding: 0 14px; font-size: 0; gap: 0; }
   .hb__label i { width: 10px; height: 10px; }
   .bitem { padding: 16px 20px; gap: 11px; }
   .bitem > span:nth-of-type(1) { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  html.js .hb__in > * { opacity: 1 !important; translate: none !important; }
+  html.js .hb__in > *, html.js .hb__mark { opacity: 1 !important; translate: none !important; }
+  html.js .hb__mark { opacity: .95 !important; }
 }

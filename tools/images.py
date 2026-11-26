@@ -25,15 +25,24 @@ jobs.append((os.path.join(ROOT, "refs/client/hero-run.png"), "hero-run"))
 # sport card photos supplied by the user, 26 Nov 2026
 jobs.append((os.path.join(ROOT, "refs/client/card-tennis.png"), "card-tennis"))
 jobs.append((os.path.join(ROOT, "refs/client/card-badminton.png"), "card-badminton"))
+# sign-in panel photo supplied by the user, 27 Nov 2026 (Unsplash, Moises Alex)
+jobs.append((os.path.join(ROOT, "refs/client/signin-tennis.jpg"), "signin-tennis"))
 for c in json.load(open(os.path.join(ROOT, "refs/commons/credits.json"))):
     jobs.append((os.path.join(ROOT, f"refs/commons/full/{c['file']}.jpg"), c["file"]))
 
-manifest = {}
+# the home hero runs full width, so it also gets the source's full 1920 for large and dense screens
+WIDE = {"live-hero-court": (1920, 1600, 1000, 600)}
+# optional names on the command line re-encode only those and keep every other manifest entry
+ONLY = set(sys.argv[1:])
+MANIFEST = os.path.join(ROOT, "src/data/images.json")
+manifest = json.load(open(MANIFEST)) if ONLY else {}
 for src, name in jobs:
+    if ONLY and name not in ONLY:
+        continue
     im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
     w, h = im.size
     # file names carry the ACTUAL width, so srcset w-descriptors are true
-    sizes = sorted(set(min(t, w) for t in (1600, 1000, 600)))
+    sizes = sorted(set(min(t, w) for t in WIDE.get(name, (1600, 1000, 600))))
     for s in sizes:
         r = im if s >= w else im.resize((s, round(h * s / w)), Image.LANCZOS)
         r.save(os.path.join(OUT, f"{name}-{s}.webp"), "WEBP", quality=78 if s > 600 else 74, method=6)
@@ -41,9 +50,10 @@ for src, name in jobs:
     print(name, w, h, sizes)
 
 # brand wordmark (kept as supplied) + social card
-wm = Image.open(os.path.join(ROOT, "assets/live/served-wordmark.png"))
-wm.save(os.path.join(OUT, "served-wordmark.png"))
-og = ImageOps.fit(ImageOps.exif_transpose(Image.open(os.path.join(ROOT, "refs/rallyx/rx-1.png"))).convert("RGB"), (1200, 630), Image.LANCZOS, centering=(0.5, 0.45))
-og.save(os.path.join(OUT, "og-served.jpg"), "JPEG", quality=82, optimize=True)
-json.dump(manifest, open(os.path.join(ROOT, "src/data/images.json"), "w"), indent=1)
+if not ONLY:
+    wm = Image.open(os.path.join(ROOT, "assets/live/served-wordmark.png"))
+    wm.save(os.path.join(OUT, "served-wordmark.png"))
+    og = ImageOps.fit(ImageOps.exif_transpose(Image.open(os.path.join(ROOT, "refs/rallyx/rx-1.png"))).convert("RGB"), (1200, 630), Image.LANCZOS, centering=(0.5, 0.45))
+    og.save(os.path.join(OUT, "og-served.jpg"), "JPEG", quality=82, optimize=True)
+json.dump(manifest, open(MANIFEST, "w"), indent=1)
 print("images:", len(manifest))

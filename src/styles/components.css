@@ -49,6 +49,10 @@
 .mq--accent .mq__w { color: var(--ink); }
 .mq--accent .mq__w--o { color: rgba(10, 10, 10, .32); }
 .mq--accent .mq__ball { background: var(--ink); box-shadow: none; }
+/* half-size band (home, under the hero's live board): every measure is half the default */
+.mq--sm { padding-block: clamp(8px, 1.2vw, 14px); }
+.mq--sm .mq__w { font-size: clamp(21px, 3.7vw, 56px); }
+.mq--sm .mq__ball { width: clamp(8px, 1vw, 13px); height: clamp(8px, 1vw, 13px); box-shadow: 0 0 12px rgba(255, 107, 24, .5); }
 
 /* ================================================================ venue card: front plane, tilts, glints, draws its lines */
 .vcard { --tone: var(--accent); position: relative; display: flex; flex-direction: column; min-width: 0; background: linear-gradient(180deg, #1f2727, #171e1e); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; transform-style: preserve-3d; transition: border-color var(--d-2), box-shadow var(--d-2) var(--ease), transform .7s var(--ease); }
@@ -57,8 +61,6 @@
 .vcard__media img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.03); filter: saturate(.92) contrast(1.04); transition: transform 1.4s var(--ease), filter .6s; }
 .vcard:hover .vcard__media img { transform: scale(1.09); filter: saturate(1.05) contrast(1.06); }
 .vcard__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 10, 10, .15) 0%, transparent 35%, rgba(23, 30, 30, .92) 100%), linear-gradient(90deg, color-mix(in srgb, var(--tone) 22%, transparent), transparent 45%); mix-blend-mode: normal; }
-.vcard:hover .cl path { stroke-dashoffset: 0; }
-.vcard .cl { z-index: 1; stroke: color-mix(in srgb, var(--tone) 70%, white); opacity: .65; }
 .ribbon { position: absolute; z-index: 2; top: 14px; left: 14px; padding: 7px 11px; border-radius: 8px; background: var(--accent); color: var(--ink); font: 800 11px/1 var(--f-ui); letter-spacing: .14em; text-transform: uppercase; }
 .ribbon--rust { background: var(--rust); color: #fff; }
 .vcard__tags { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: -50px 14px 0; }
@@ -85,7 +87,7 @@
 .vcard--lead .price b { font-size: 40px; }
 
 /* sport cards */
-.scard { --tone: var(--accent); position: relative; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between; min-height: clamp(380px, 40vw, 540px); padding: 22px; border-radius: var(--r-xl); overflow: hidden; color: #fff; text-decoration: none; border: 1px solid var(--line); transform-style: preserve-3d; transition: border-color var(--d-2), transform .7s var(--ease), box-shadow var(--d-2); }
+.scard { --tone: var(--accent); position: relative; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between; min-height: clamp(266px, 28vw, 378px); padding: 22px; border-radius: var(--r-xl); overflow: hidden; color: #fff; text-decoration: none; border: 1px solid var(--line); transform-style: preserve-3d; transition: border-color var(--d-2), transform .7s var(--ease), box-shadow var(--d-2); }
 .scard:hover { border-color: var(--tone); box-shadow: 0 40px 80px -40px color-mix(in srgb, var(--tone) 60%, black); }
 .scard__img { position: absolute; inset: 0; z-index: -2; }
 .scard__img img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.06); transition: transform 1.6s var(--ease), filter .8s; filter: saturate(.85) brightness(.8); }
