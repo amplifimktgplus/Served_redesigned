@@ -49,7 +49,10 @@ html.is-ready .how__arc path.is-drawn { stroke-dashoffset: 0; }
 @keyframes ballDrop { 0% { translate: 0 -220%; } 40% { translate: 0 0; scale: 1.15 .85; } 55% { translate: 0 -55%; scale: 1; } 70% { translate: 0 0; scale: 1.08 .92; } 82% { translate: 0 -18%; scale: 1; } 92% { translate: 0 0; } 100% { translate: 0 0; } }
 @keyframes ballDropSm { 0% { translate: 0 -160px; opacity: 0; } 30% { opacity: 1; } 45% { translate: 0 0; scale: 1.2 .8; } 60% { translate: 0 -40px; scale: 1; } 75% { translate: 0 0; scale: 1.1 .9; } 86% { translate: 0 -10px; scale: 1; } 100% { translate: 0 0; } }
 @keyframes serveBall { 0% { translate: -30vw 40vh; scale: .6; } 35% { translate: -8vw -22vh; scale: 1.2; } 62% { translate: 0 0; scale: 1.25 .8; } 74% { translate: 0 -40px; scale: 1; } 86% { translate: 0 0; scale: 1.08 .94; } 100% { translate: 0 0; scale: 1; } }
-@keyframes wipeIn { to { clip-path: inset(-.45em -.45em -.55em -.45em); } }
+@keyframes wipeIn { to { clip-path: inset(-4% -2% -4% -2%); } }
+/* the logo's full stop dropping into place: the element is the whole logo frame, and the stop is about a fifth of
+   its height, so these steps are the earlier ball drop scaled to the frame */
+@keyframes dotDrop { 0% { translate: 0 -90%; } 40% { translate: 0 0; scale: 1.15 .85; } 55% { translate: 0 -11%; scale: 1; } 70% { translate: 0 0; scale: 1.08 .92; } 82% { translate: 0 -3.6%; scale: 1; } 92%, 100% { translate: 0 0; } }
 @keyframes splashOut { 0% { clip-path: inset(0 0 0 0); } 100% { clip-path: inset(0 0 100% 0); } }
 
 @media (prefers-reduced-motion: reduce) {

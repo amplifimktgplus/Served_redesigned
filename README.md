@@ -26,6 +26,7 @@ Every page carries `noindex, nofollow`. Forms, sign-in and payment are demonstra
 node src/build.mjs          # renders src/ into dist/
 node tools/linkcheck.mjs    # every local link and image resolves; every Book link lands on bookable courts
 python3 tools/images.py     # re-encodes the photo set to WebP (needs Pillow); pass names to redo only those
+python3 tools/logo.py       # traces the supplied logo into src/data/logo.json (needs OpenCV and Pillow)
 ```
 
 No npm packages. `dist/` is what GitHub Pages serves (branch `gh-pages`).
@@ -34,6 +35,7 @@ No npm packages. `dist/` is what GitHub Pages serves (branch `gh-pages`).
 
 - Words, venue facts, rates, slot boards, amenities and reviews: the current Served. site, captured 26 Nov 2026.
 - Rally X photos: supplied by the venue.
+- Logo: the official Served. logo, supplied 27 Nov 2026, traced to vector by `tools/logo.py` (favicon and app icons use its S).
 - Tennis and badminton card photos: supplied for this concept on 26 Nov 2026; licence to be confirmed before launch.
 - Sign-in photo: supplied for this concept on 27 Nov 2026 (Unsplash, Moises Alex).
 - Home hero photo: the current Served. site's own hero image.

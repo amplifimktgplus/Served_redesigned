@@ -44,10 +44,11 @@
   --f-display: "Archivo", "Archivo Fallback", system-ui, sans-serif;
   --f-ui: "Plus Jakarta Sans", "Jakarta Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-script: "Pacifico", "Brush Script MT", cursive;
-  --fs-mega: clamp(2.7rem, 7.4vw, 7.6rem);
-  --fs-d1: clamp(2.5rem, 5.6vw, 5.6rem);
-  --fs-d2: clamp(2rem, 3.9vw, 3.6rem);
-  --fs-d3: clamp(1.45rem, 2.3vw, 2.05rem);
+  /* compact scale (27 Nov 2026): every display size about a fifth smaller than the first pass */
+  --fs-mega: clamp(2.4rem, 6vw, 6rem);
+  --fs-d1: clamp(2.2rem, 4.6vw, 4.4rem);
+  --fs-d2: clamp(1.8rem, 3.2vw, 2.9rem);
+  --fs-d3: clamp(1.35rem, 2vw, 1.8rem);
   --fs-d4: 1.15rem;
   --fs-body: 17px;
   --lh-body: 1.65;
@@ -55,7 +56,7 @@
   --r-sm: 12px; --r: 18px; --r-lg: 24px; --r-xl: 36px; --pill: 999px;
   --gutter: clamp(20px, 4.2vw, 64px);
   --wrap: 1360px;
-  --sec-y: clamp(84px, 11vw, 150px);
+  --sec-y: clamp(56px, 7.2vw, 100px);
   --hdr-h: 76px;
   --bottom-stack: 0px;
   /* motion */
@@ -100,7 +101,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 200; pointer-even
 
 /* ---------------------------------------------------------------- layout */
 .wrap { width: min(100% - 2 * var(--gutter), var(--wrap)); margin-inline: auto; }
-.ico { width: 20px; height: 20px; flex: none; }
+.ico { width: 20px; height: 20px; flex: none; overflow: visible; }
 .ico--fill { fill: currentColor; }
 .sep { opacity: .45; padding-inline: .15em; }
 

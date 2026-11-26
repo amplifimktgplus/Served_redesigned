@@ -1,10 +1,14 @@
 // src/lib.mjs: helpers, layout chrome and shared components for the Served. rebuild.
 // Every URL is written RELATIVE to the page that carries it, so the build serves from any sub-path.
-import { SITE, IMAGES, SPORTS, CITIES, VENUES, RALLYX, CAPTURED_ON } from './content.mjs';
+import { SITE, IMAGES, SPORTS, CITIES, VENUES, RALLYX, CAPTURED_ON, LOGO } from './content.mjs';
 
 // ---------------------------------------------------------------- page context + url helpers
 let CUR = '/';
 export const setPage = (p) => { CUR = p; };
+// a hash of this build's stylesheet, script and logo, added to their URLs so a deploy never pairs new
+// pages with a stylesheet the browser cached from the last one
+let ASSET_V = 'dev';
+export const setAssetVersion = (v) => { ASSET_V = v; };
 const depth = () => CUR.split('/').filter(Boolean).length;
 export const root = () => '../'.repeat(depth()) || './';
 export function u(to) {
@@ -13,6 +17,11 @@ export function u(to) {
   return r === '' ? './' : (r.startsWith('?') ? './' + r : r);
 }
 export const a = (p) => '../'.repeat(depth()) + p;
+// the official logo from the sprite the build writes: letters and full stop as two shapes, one colour
+export const LOGO_VB = `0 0 ${LOGO.w} ${LOGO.h}`;
+const logoUse = (id) => `${a('assets/served-logo.svg')}?v=${ASSET_V}#${id}`;
+export const logoMark = (cls = 'logo__svg') => `<svg class="${cls}" viewBox="${LOGO_VB}" aria-hidden="true" focusable="false"><use href="${logoUse('letters')}"/><use class="logo__d" href="${logoUse('dot')}"/></svg>`;
+export const logoPart = (id) => `<svg viewBox="${LOGO_VB}" aria-hidden="true" focusable="false"><use href="${logoUse(id)}"/></svg>`;
 export const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 export const peso = (n) => '₱' + Number(n).toLocaleString('en-PH', { maximumFractionDigits: 2 });
 export const json = (o) => esc(JSON.stringify(o));
@@ -58,7 +67,8 @@ const I = {
   racket: '<ellipse cx="14.5" cy="9.5" rx="5" ry="6.2" transform="rotate(38 14.5 9.5)"/><path d="m10.6 14.2-6.1 6.1M11.6 6.6l6.3 5.6M13.9 4.9l3.4 9.6"/>',
   tennis: '<circle cx="12" cy="12" r="8.5"/><path d="M5.4 6.6c3 2.6 3 8.2 0 10.8M18.6 6.6c-3 2.6-3 8.2 0 10.8"/>',
   // paddle face and wrapped grip on the diagonal, perforated ball top right (client style, 27 Nov 2026)
-  pickleball: '<g transform="translate(10.6 12.3) rotate(-45)"><path d="M1.1 2a3.6 3.6 0 0 0 3.6-3.6v-3.2a3.6 3.6 0 0 0-3.6-3.6h-2.2a3.6 3.6 0 0 0-3.6 3.6v3.2a3.6 3.6 0 0 0 3.6 3.6v7.4a1.1 1.1 0 0 0 2.2 0z"/><path d="M-1.1 5.5 1.1 4.4M-1.1 7.7 1.1 6.6"/></g><circle cx="18.4" cy="5.6" r="3.4"/><path d="M18.4 4.2h.01M18.4 7h.01M17 5.6h.01M19.8 5.6h.01" stroke-width="1.4"/>',
+  // the face is taller than wide so it reads as a paddle, not a lens; everything sits a full stroke inside the box
+  pickleball: '<g transform="translate(10.2 13.6) rotate(-45)"><path d="M1.3 1.8a3 3 0 0 0 3-3v-5.6a3 3 0 0 0-3-3h-2.6a3 3 0 0 0-3 3v5.6a3 3 0 0 0 3 3v6.8a1.3 1.3 0 0 0 2.6 0z"/><path d="M-1.3 5.2 1.3 4M-1.3 7.4 1.3 6.2"/></g><circle cx="18.2" cy="5.8" r="3.4"/><path d="M18.2 4.5h.01M18.2 7.1h.01M16.9 5.8h.01M19.5 5.8h.01" stroke-width="1.25"/>',
   badminton: '<path d="M7.5 14.5 4 4.5l3.8 1.6L10.4 3l1.6 3.3L13.6 3l2.6 3.1L20 4.5l-3.5 10z"/><path d="M7.5 14.5h9"/><path d="M8.3 14.5a3.7 3.7 0 0 0 7.4 0"/>',
   basketball: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5v17M6.3 5.7c2.6 2.2 2.6 10.4 0 12.6M17.7 5.7c-2.6 2.2-2.6 10.4 0 12.6"/>',
   padel: '<path d="M12 2.8c3.6 0 6.2 2.7 6.2 6.3 0 3.4-2.4 6.3-5 6.9v4.2a1.2 1.2 0 0 1-2.4 0V16c-2.6-.6-5-3.5-5-6.9 0-3.6 2.6-6.3 6.2-6.3z"/><path d="M9.6 7.4h.01M12 7.4h.01M14.4 7.4h.01M10.8 9.8h.01M13.2 9.8h.01M12 12.2h.01"/>',
@@ -212,7 +222,7 @@ export function header(active = '') {
   return `<a class="skip" href="#main">Skip to content</a>
 <header class="hdr" data-hdr>
   <div class="hdr__in">
-    <a class="logo" href="${u('/')}" aria-label="Served. home"><span class="logo__w">Served</span><span class="logo__d" aria-hidden="true"></span></a>
+    <a class="logo" href="${u('/')}" aria-label="Served. home">${logoMark()}</a>
     <nav class="nav" aria-label="Main"><ul class="nav__list">
       ${item('courts', 'Courts', m.courts)}
       ${item('play', 'Play', m.play)}
@@ -281,7 +291,7 @@ export function footer() {
   return `<footer class="ftr" data-ftr>
   <div class="wrap ftr__top">
     <div class="ftr__brand">
-      <a class="logo logo--lg" href="${u('/')}" aria-label="Served. home"><span class="logo__w">Served</span><span class="logo__d" aria-hidden="true"></span></a>
+      <a class="logo logo--lg" href="${u('/')}" aria-label="Served. home">${logoMark()}</a>
       <p>${esc(SITE.blurb)}</p>
       <p class="ftr__contact"><a href="mailto:${SITE.email}">${icon('mail')}${SITE.email}</a><span>${icon('clock')}${SITE.hours}</span></p>
     </div>
@@ -291,7 +301,7 @@ export function footer() {
       ${col('Served.', [['About', '/about/'], ['Play mode', '/play/'], ['Pricing', '/pricing/'], ['List Your Court', '/list-your-court/'], ['Help and FAQ', '/help/'], ['Contact Us', '/contact/']])}
     </div>
   </div>
-  <div class="ftr__word" aria-hidden="true"><span class="ftr__w">Served</span><span class="ftr__d" data-bounce></span></div>
+  <div class="ftr__word" aria-hidden="true"><span class="ftr__w"></span><span class="ftr__d" data-bounce></span></div>
   <div class="wrap ftr__base">
     <p>&copy; Copyright 2026 Served. All Rights Reserved.</p>
     <p class="ftr__pill">Design concept preview <span class="sep">/</span> not the live Served. website</p>
@@ -300,7 +310,7 @@ export function footer() {
 </footer>`;
 }
 
-const splash = () => `<div class="splash" aria-hidden="true" data-splash><div class="splash__court">${linesSvg()}</div><div class="splash__mark"><span class="splash__w">Served</span><span class="splash__ball"></span></div></div>`;
+const splash = () => `<div class="splash" aria-hidden="true" data-splash><div class="splash__court">${linesSvg()}</div><div class="splash__mark"><span class="splash__w">${logoPart('letters')}</span><span class="splash__ball">${logoPart('dot')}</span></div></div>`;
 
 export function layout({ path, title, desc, body, active = '', bodyCls = '', sticky = 'site', venue = null, schema = null, ogImg = 'og-served.jpg', noFinal = false }) {
   setPage(path);
@@ -322,9 +332,9 @@ export function layout({ path, title, desc, body, active = '', bodyCls = '', sti
 <link rel="apple-touch-icon" href="${a('assets/img/app-icon-180.png')}">
 <link rel="preload" href="${a('assets/fonts/archivo-var.woff2')}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="${a('assets/fonts/jakarta-var.woff2')}" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="${a('assets/site.css')}">
+<link rel="stylesheet" href="${a('assets/site.css')}?v=${ASSET_V}">
 <script>(function(d){d.classList.remove('no-js');d.classList.add('js');try{if(!sessionStorage.getItem('srv.splash')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('splash-on')}catch(e){}setTimeout(function(){if(!window.__srv){d.classList.remove('splash-on');d.classList.add('reveal-all')}},3000)})(document.documentElement)</script>
-<script defer src="${a('assets/site.js')}"></script>
+<script defer src="${a('assets/site.js')}?v=${ASSET_V}"></script>
 ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ''}
 </head>
 <body class="${bodyCls}">

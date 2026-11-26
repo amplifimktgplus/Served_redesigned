@@ -12,7 +12,7 @@
 .band--cream::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background-image: linear-gradient(rgba(10, 10, 10, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(10, 10, 10, .05) 1px, transparent 1px); background-size: var(--grid) var(--grid); mask-image: linear-gradient(180deg, #000, transparent 85%); -webkit-mask-image: linear-gradient(180deg, #000, transparent 85%); }
 
 /* section heads */
-.sh { margin-bottom: clamp(36px, 5vw, 64px); max-width: 760px; }
+.sh { margin-bottom: clamp(26px, 3.4vw, 44px); max-width: 760px; }
 .sh .lede { margin-top: 18px; }
 .sh--center { margin-inline: auto; text-align: center; }
 .sh--center .lede { margin-inline: auto; }
@@ -39,12 +39,12 @@
 .cdiv.is-in .cdiv__ball { animation: ballHop 1.4s var(--ease-io) .4s both; }
 
 /* marquee band: kinetic type whose speed follows the scroll */
-.mq { position: relative; z-index: 2; overflow: hidden; padding: clamp(16px, 2.4vw, 28px) 0; background: var(--ink); border-block: 1px solid var(--line); -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.mq { position: relative; z-index: 2; overflow: hidden; padding: clamp(12px, 1.7vw, 20px) 0; background: var(--ink); border-block: 1px solid var(--line); -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
 .mq__track { display: flex; width: max-content; will-change: transform; }
 .mq__run { display: flex; align-items: center; flex: none; }
-.mq__w { font: 900 clamp(42px, 7.4vw, 112px)/1 var(--f-display); font-stretch: 125%; text-transform: uppercase; letter-spacing: -.015em; color: var(--text); padding-inline: .28em; white-space: nowrap; }
+.mq__w { font: 900 clamp(30px, 5vw, 76px)/1 var(--f-display); font-stretch: 125%; text-transform: uppercase; letter-spacing: -.015em; color: var(--text); padding-inline: .28em; white-space: nowrap; }
 .mq__w--o { color: var(--iron-3); }
-.mq__ball { width: clamp(16px, 2vw, 26px); height: clamp(16px, 2vw, 26px); border-radius: 50%; background: var(--accent); flex: none; box-shadow: 0 0 24px rgba(255, 107, 24, .5); }
+.mq__ball { width: clamp(11px, 1.4vw, 18px); height: clamp(11px, 1.4vw, 18px); border-radius: 50%; background: var(--accent); flex: none; box-shadow: 0 0 24px rgba(255, 107, 24, .5); }
 .mq--accent { background: var(--accent); border-color: transparent; }
 .mq--accent .mq__w { color: var(--ink); }
 .mq--accent .mq__w--o { color: rgba(10, 10, 10, .32); }
@@ -57,14 +57,14 @@
 /* ================================================================ venue card: front plane, tilts, glints, draws its lines */
 .vcard { --tone: var(--accent); position: relative; display: flex; flex-direction: column; min-width: 0; background: linear-gradient(180deg, #1f2727, #171e1e); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; transform-style: preserve-3d; transition: border-color var(--d-2), box-shadow var(--d-2) var(--ease), transform .7s var(--ease); }
 .vcard:hover { border-color: color-mix(in srgb, var(--tone) 55%, transparent); box-shadow: 0 40px 70px -36px rgba(0, 0, 0, .9), 0 0 0 1px color-mix(in srgb, var(--tone) 25%, transparent); }
-.vcard__media { position: relative; display: block; aspect-ratio: 16 / 11; overflow: hidden; background: var(--iron); }
+.vcard__media { position: relative; display: block; aspect-ratio: 16 / 9.5; overflow: hidden; background: var(--iron); }
 .vcard__media img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.03); filter: saturate(.92) contrast(1.04); transition: transform 1.4s var(--ease), filter .6s; }
 .vcard:hover .vcard__media img { transform: scale(1.09); filter: saturate(1.05) contrast(1.06); }
 .vcard__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 10, 10, .15) 0%, transparent 35%, rgba(23, 30, 30, .92) 100%), linear-gradient(90deg, color-mix(in srgb, var(--tone) 22%, transparent), transparent 45%); mix-blend-mode: normal; }
 .ribbon { position: absolute; z-index: 2; top: 14px; left: 14px; padding: 7px 11px; border-radius: 8px; background: var(--accent); color: var(--ink); font: 800 11px/1 var(--f-ui); letter-spacing: .14em; text-transform: uppercase; }
 .ribbon--rust { background: var(--rust); color: #fff; }
 .vcard__tags { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: -50px 14px 0; }
-.vcard__body { position: relative; z-index: 2; display: flex; flex-direction: column; flex: 1; padding: 16px 20px 20px; }
+.vcard__body { position: relative; z-index: 2; display: flex; flex-direction: column; flex: 1; padding: 14px 18px 18px; }
 .vcard__name { font: 850 clamp(20px, 1.7vw, 24px)/1.04 var(--f-display); font-stretch: 108%; text-transform: uppercase; letter-spacing: -.005em; margin-top: 4px; }
 .vcard__name a { text-decoration: none; background: linear-gradient(currentColor, currentColor) 0 100% / 0 2px no-repeat; transition: background-size .5s var(--ease); }
 .vcard__name a:hover { background-size: 100% 2px; }
@@ -72,7 +72,7 @@
 .vcard__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; margin-top: 10px; font-size: 13.5px; color: var(--text-3); }
 .vcard__meta .ico { width: 16px; height: 16px; color: var(--tone); }
 .vcard__desc { margin-top: 10px; font-size: 15px; line-height: 1.55; color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.vcard__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 18px; border-top: 1px dashed var(--line-2); margin-top: 18px; }
+.vcard__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 14px; border-top: 1px dashed var(--line-2); margin-top: 14px; }
 .vcard__foot .price small { display: none; }
 .vcard .ctas--card { position: relative; z-index: 3; }
 .vcard .ctas--card .btn { flex: 1; }
@@ -94,7 +94,7 @@
 .scard:hover .scard__img img { transform: scale(1.14); filter: saturate(1) brightness(.9); }
 .scard__shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(185deg, rgba(10, 10, 10, .1) 20%, rgba(10, 10, 10, .92) 82%), linear-gradient(0deg, color-mix(in srgb, var(--tone) 40%, transparent), transparent 55%); transition: opacity var(--d-2); }
 .scard__top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.scard__top .ico { width: 46px; height: 46px; padding: 10px; border-radius: 50%; background: var(--tone); color: var(--ink); stroke-width: 2; }
+.scard__top .ico { width: 46px; height: 46px; padding: 9px; border-radius: 50%; background: var(--tone); color: var(--ink); stroke-width: 2; }
 .scard__top em { font-style: normal; font: 700 12.5px/1 var(--f-ui); letter-spacing: .06em; padding: 9px 12px; border-radius: var(--pill); background: rgba(10, 10, 10, .6); border: 1px solid rgba(255, 255, 255, .16); backdrop-filter: blur(8px); }
 .scard__body { display: grid; gap: 6px; }
 .scard__line { font: 400 clamp(22px, 2.2vw, 30px)/1 var(--f-script); color: var(--tone); transform: rotate(-4deg); transform-origin: left; }
@@ -112,7 +112,7 @@
 .scard--row .scard__go { position: absolute; right: 18px; bottom: 18px; margin: 0; padding: 12px; }
 
 /* city cards */
-.ccard { position: relative; isolation: isolate; display: flex; align-items: flex-end; min-height: 340px; border-radius: var(--r-lg); overflow: hidden; text-decoration: none; color: #fff; border: 1px solid var(--line); }
+.ccard { position: relative; isolation: isolate; display: flex; align-items: flex-end; min-height: 250px; border-radius: var(--r-lg); overflow: hidden; text-decoration: none; color: #fff; border: 1px solid var(--line); }
 .ccard img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform 1.6s var(--ease), filter .8s; filter: saturate(.8) brightness(.78); }
 .ccard::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, transparent 35%, rgba(11, 15, 15, .92)); }
 .ccard:hover img { transform: scale(1.08); filter: saturate(1) brightness(.9); }
@@ -122,7 +122,7 @@
 .ccard__body em { font-style: normal; font-size: 14px; color: rgba(255, 255, 255, .78); }
 .ccard__go { position: absolute; top: 18px; right: 18px; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: rgba(10, 10, 10, .55); border: 1px solid rgba(255, 255, 255, .2); backdrop-filter: blur(8px); transition: background var(--d-2), color var(--d-2), transform var(--d-2) var(--ease); }
 .ccard:hover .ccard__go { background: var(--accent); color: var(--ink); transform: rotate(-45deg); }
-.ccard--big { min-height: 420px; }
+.ccard--big { min-height: 310px; }
 
 /* mini card (collections rail) */
 .mcard { --tone: var(--accent); display: grid; grid-template-columns: 112px 1fr; gap: 0; width: 360px; flex: none; min-height: 132px; border-radius: 20px; overflow: hidden; background: var(--iron); border: 1px solid var(--line); text-decoration: none; color: var(--text); scroll-snap-align: start; transition: border-color var(--d-2), transform var(--d-2) var(--ease); }

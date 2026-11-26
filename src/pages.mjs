@@ -1,6 +1,6 @@
 // src/pages.mjs: one function per page type. Captured words are carried verbatim; new pages are written for Served.
 import { SITE, SPORTS, CITIES, VENUES, RALLYX, COLLECTIONS, FAQ, PLAY, ROADMAP, CREDITS, CAPTURED_ON, IMAGES } from './content.mjs';
-import { layout, u, a, esc, peso, json, dot, fmtDate, img, icon, kicker, sh, btn, ctas, chipSport, score, priceTag, nextTag, courtSvg, courtD,
+import { layout, u, a, esc, peso, json, dot, fmtDate, img, icon, kicker, sh, btn, ctas, chipSport, score, priceTag, nextTag, courtSvg, courtD, logoMark,
   vcard, rallyCard, marquee, divider, faqList, sportOf, amenityIcon, setPage } from './lib.mjs';
 
 const TOTAL_COURTS = VENUES.reduce((n, v) => n + v.courts, 0);
@@ -56,7 +56,7 @@ ${marquee(['Pickleball', 'Tennis', 'Badminton', 'No calls', 'No waiting', 'No gu
 <section class="band band--night feat" aria-labelledby="fv-h">
   <div class="wrap">
     ${sh({ k: 'Courts now serving', h: '<span id="fv-h">Featured Venues</span>', lede: 'Advanced sports venues offering the latest facilities, dynamic and unique environments built for serious play.', cls: 'sh--split' })}
-    <div class="feat__grid" data-rail-scroll>${featured.map((v, i) => vcard(v, { variant: i === 0 ? 'vcard--lead' : '' })).join('')}</div>
+    <div class="feat__grid" data-rail-scroll>${featured.map((v) => vcard(v)).join('')}</div>
     ${ctas(btn('View All Featured', '/courts/', 'btn--ghost'))}
   </div>
 </section>
@@ -152,20 +152,23 @@ const liveSports = () => SPORTS.filter((x) => x.live).map((x) => { const list = 
 // read upward, baseline on the edge), kinetic sport word, sport buttons and search of one width, Install App, next open slots
 function heroB() {
   const board = [...VENUES].sort((x, y) => x.open[0].localeCompare(y.open[0]) || y.rating - x.rating).map((v) => `<a class="bitem" href="${u(`/courts/${v.slug}/availability/`)}" data-tone="${v.tone}"><i class="bitem__dot"></i><b>${esc(v.name)}</b><span>${esc(v.city)}</span><span class="bitem__next" data-next="${v.open.join(',')}">Next <b>${fmtDate(v.open[0])}</b></span><em>${peso(v.rate)}/hr</em><span class="bitem__go">Book ${icon('arrow')}</span></a>`).join('');
-  return `<section class="hb" data-hx data-spot aria-labelledby="hb-h">
+  return `<section class="hb" aria-labelledby="hb-h">
   <div class="hb__media" aria-hidden="true">
     <figure class="hb__bg">${img('live-hero-court', { alt: '', sizes: '100vw', eager: true, pos: '50% 32%' })}</figure>
-    <span class="hb__shade"></span><span class="hb__glow"></span>
+    <span class="hb__sun"></span><span class="hb__shade"></span><span class="hb__grain"></span>
   </div>
-  <span class="hb__mark" aria-hidden="true">Served<i></i></span>
+  <span class="hb__mark" aria-hidden="true">${logoMark('hb__logo')}</span>
   <div class="wrap hb__in">
     <p class="hb__live"><i></i>Live availability <span class="sep">/</span> ${VENUES.length} venues, ${TOTAL_COURTS} courts</p>
-    <h1 class="hb__h" id="hb-h"><span class="sr">Choose Your Court. Get Ready To Play.</span><span aria-hidden="true" class="hb__l hb__l--sm">Find your</span><span aria-hidden="true" class="hb__word"><span class="rot" data-rotate="Pickleball|Tennis|Badminton">Pickleball</span></span><span aria-hidden="true" class="hb__l">court<span class="pd">.</span></span></h1>
+    <h1 class="hb__h" id="hb-h"><span class="sr">Choose Your Court. Get Ready To Play.</span><span aria-hidden="true" class="hb__l hb__l--sm">Find your</span><span aria-hidden="true" class="hb__word"><span class="rot" data-rotate="Pickleball|Tennis|Badminton">Pickleball</span></span><span aria-hidden="true" class="hb__l">court</span></h1>
     <div class="hb__deck">
       <div class="hb__sports">${liveSports().map((x) => `<a class="hb__sport" href="${u(`/courts/?sport=${x.name}`)}" data-tone="${x.tone}">${icon(x.icon)}<span><b>${x.name}</b><small>${x.n} venues <span class="sep">/</span> from ${peso(x.from)}/hr</small></span>${icon('arrow', 'hb__arrow')}</a>`).join('')}</div>
-      <form class="hb__search" action="${u('/courts/')}" method="get" role="search" aria-label="Search courts">${icon('search')}<label class="sr" for="hbq">Court name or city</label><input id="hbq" name="q" type="search" placeholder="Court name or city" autocomplete="off"><label class="sr" for="hbd">When</label><select id="hbd" name="date" data-date-select><option value="">Any day</option></select><button type="submit" aria-label="Search courts">${icon('arrow')}</button></form>
+      <div class="hb__find">
+        <form class="hb__search" action="${u('/courts/')}" method="get" role="search" aria-label="Search courts">${icon('search')}<label class="sr" for="hbq">Court name or city</label><input id="hbq" name="q" type="search" placeholder="Court name or city" autocomplete="off"><label class="sr" for="hbd">When</label><select id="hbd" name="date" data-date-select><option value="">Any day</option></select><button type="submit" aria-label="Search courts">${icon('arrow')}</button></form>
+        <button class="btn btn--accent hb__install" type="button" data-install>${icon('download')}<span>Install App</span></button>
+      </div>
     </div>
-    <div class="hb__act"><button class="btn btn--accent hb__install" type="button" data-install>${icon('download')}<span>Install App</span></button><p class="hb__hint" data-install-hint role="status"></p></div>
+    <p class="hb__hint" data-install-hint role="status"></p>
   </div>
   <div class="hb__board"><p class="hb__label"><i></i>Next open</p><div class="mq mq--board" data-marquee><div class="mq__track"><div class="mq__run">${board}</div><div class="mq__run" aria-hidden="true">${board.replace(/<a /g, '<a tabindex="-1" ')}</div></div></div></div>
 </section>`;
@@ -485,7 +488,7 @@ ${phero({ k: 'For venues', h1: 'List Your Court', lede: 'We already built the tr
     <div data-reveal>${kicker('Owner tools')}<h2 class="d2" id="dh-h">Run the desk from one screen<span class="pd">.</span></h2><p class="lede">Everything below is part of the free listing.</p>
       <ul class="ticks ticks--lg">${['Unlimited venues and courts', 'Public listing with a live availability calendar', 'Online payments by GCash, Maya, QR Ph, bank and card', 'Owner dashboard and front-desk walk-in bookings', 'Payouts to your bank, GCash or Maya'].map((x) => `<li>${icon('check')}${x}</li>`).join('')}</ul></div>
     <div class="dash__ui board" aria-hidden="true" data-tilt>
-      <div class="dash__top"><span class="logo logo--sm"><span class="logo__w">Served</span><span class="logo__d"></span></span><em>Owner dashboard</em><span class="dash__dot"></span></div>
+      <div class="dash__top"><span class="logo logo--sm">${logoMark()}</span><em>Owner dashboard</em><span class="dash__dot"></span></div>
       <div class="dash__cal">${['A', 'B', 'C', 'D'].map((c, ci) => `<div class="dash__row"><b>Court ${c}</b>${Array.from({ length: 12 }, (_, h) => `<i class="${(h * 7 + ci * 5) % 9 < 3 ? 'on' : ''}${(h + ci) % 11 === 0 ? ' walk' : ''}"></i>`).join('')}</div>`).join('')}</div>
       <p class="dash__lg"><i class="on"></i>Online booking <i class="walk"></i>Walk-in</p>
       <p class="fine">Illustration of the dashboard layout.</p>
@@ -547,7 +550,7 @@ const pw = (n, ph, ac) => `<label class="field"><span class="field__l">${ph === 
 function signIn() {
   return auth({ path: '/sign-in/', title: 'Sign in', desc: 'Sign in to Served as a player or court owner. Your game, your court, let’s play.', photo: 'signin-tennis', pos: '50% 45%',
     side: `<p class="kicker"><span class="kicker__ball"></span>Login User &amp; Court Owner</p><p class="auth__big">Your game, your court, Let’s play!</p>`,
-    form: `<a class="logo" href="${u('/')}" aria-label="Served. home"><span class="logo__w">Served</span><span class="logo__d"></span></a><h1 class="d2">You’re Up!</h1><p class="auth__sub">Ready for your next match?</p>
+    form: `<a class="logo" href="${u('/')}" aria-label="Served. home">${logoMark()}</a><h1 class="d2">You’re Up!</h1><p class="auth__sub">Ready for your next match?</p>
     <form data-demo-form>${roleSeg('role')}
       <label class="field"><span class="field__l">Email or username</span><input name="email" type="text" required placeholder="Email/Username" autocomplete="username"></label>${pw('password', 'Password', 'current-password')}
       <div class="auth__row"><label class="check"><input type="checkbox" name="remember"><span>Remember Password</span></label><a class="link" href="${u('/forgot-password/')}">Forgot Password</a></div>
@@ -557,7 +560,7 @@ function signIn() {
 function signUp() {
   return auth({ path: '/sign-up/', title: 'Register', desc: 'Create your Served account. Book your court. Start playing, or list your venue as a court owner.', photo: 'rallyx-forehand', pos: '50% 35%',
     side: `<p class="kicker"><span class="kicker__ball"></span>Register Now</p><p class="auth__big">Find your court. Book it. Show up. That’s it.</p><p class="auth__small">Served cuts out the calls, the waiting, the guesswork. Just you, the game, and a slot that’s already yours. Register now.</p>`,
-    form: `<a class="logo" href="${u('/')}" aria-label="Served. home"><span class="logo__w">Served</span><span class="logo__d"></span></a><h1 class="d2">Get Served<span class="pd">.</span></h1><p class="auth__sub">Create your account. Book your court. Start playing.</p>
+    form: `<a class="logo" href="${u('/')}" aria-label="Served. home">${logoMark()}</a><h1 class="d2">Get Served<span class="pd">.</span></h1><p class="auth__sub">Create your account. Book your court. Start playing.</p>
     <form data-demo-form>${roleSeg('register')}
       <div class="cform__row"><label class="field"><span class="field__l">First name</span><input name="first_name" required placeholder="First name" autocomplete="given-name"></label><label class="field"><span class="field__l">Last name</span><input name="last_name" required placeholder="Last name" autocomplete="family-name"></label></div>
       <label class="field"><span class="field__l">Username</span><input name="username" required placeholder="Username" autocomplete="username"></label>
@@ -570,14 +573,14 @@ function signUp() {
 function forgot() {
   return auth({ path: '/forgot-password/', title: 'Forgot Password', desc: 'Reset your Served password with your registered email.', photo: 'rallyx-paddle-ball', pos: '50% 50%',
     side: `<p class="kicker"><span class="kicker__ball"></span>Happens to the best of us</p><p class="auth__big">Let’s get you back on court.</p>`,
-    form: `<a class="logo" href="${u('/')}" aria-label="Served. home"><span class="logo__w">Served</span><span class="logo__d"></span></a><h1 class="d2">Forgot Password</h1><p class="auth__sub">Enter registered email</p>
+    form: `<a class="logo" href="${u('/')}" aria-label="Served. home">${logoMark()}</a><h1 class="d2">Forgot Password</h1><p class="auth__sub">Enter registered email</p>
     <form data-demo-form><label class="field"><span class="field__l">Email address</span><input name="email" type="email" required placeholder="Email" autocomplete="email"></label><button class="btn btn--accent btn--lg btn--block" type="submit"><span>Submit</span>${icon('arrow')}</button>${demoNote()}</form>
     <p class="auth__alt">Remember Password? <a href="${u('/sign-in/')}">Sign In!</a></p>` });
 }
 function staff() {
   return auth({ path: '/staff/sign-in/', title: 'Staff sign in', desc: 'Front desk staff sign in on their venue’s own page. Open the link your venue gave you, or type its desk code.', photo: 'rallyx-paddle-wall-tall', pos: '50% 40%',
     side: `<p class="kicker"><span class="kicker__ball"></span>Front desk</p><p class="auth__big">Each venue has its own sign-in page for its staff.</p>`,
-    form: `<a class="logo" href="${u('/')}" aria-label="Served. home"><span class="logo__w">Served</span><span class="logo__d"></span></a><h1 class="d2">Staff sign in</h1><p class="auth__sub">Staff sign in on their venue’s own page. Open the link your venue gave you, or type its desk code.</p>
+    form: `<a class="logo" href="${u('/')}" aria-label="Served. home">${logoMark()}</a><h1 class="d2">Staff sign in</h1><p class="auth__sub">Staff sign in on their venue’s own page. Open the link your venue gave you, or type its desk code.</p>
     <form data-demo-form><label class="field"><span class="field__l">Desk code</span><input name="code" required placeholder="Desk code, like up-diliman-4f2a" autocomplete="off"></label><button class="btn btn--accent btn--lg btn--block" type="submit"><span>Go to my venue’s sign-in</span>${icon('arrow')}</button>${demoNote()}</form>
     <p class="auth__alt">Not staff? <a href="${u('/sign-in/')}">Sign in as a player or court owner</a>.</p>` });
 }

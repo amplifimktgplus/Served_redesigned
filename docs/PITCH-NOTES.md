@@ -5,13 +5,15 @@ Captured from the Served. staging site on 26 Nov 2026. Preview: https://amplifim
 ## Art direction: "Baseline City"
 
 The court is the city grid. Black grounds lit by one key light per section, court lines that draw
-themselves, and an orange ball as the full stop in "Served.". Palette (since 27 Nov 2026): the current site's
+themselves, and the official Served. logo (supplied 27 Nov 2026) in white, its full stop the one part that
+moves: it hops on hover, is served in by the splash and drops into the footer sign-off. Palette (since 27 Nov 2026): the current site's
 own black, navy panels, white and orange #ff6b18 as the single accent. No lime or neon green anywhere.
 Sport tones: pickleball orange, tennis white, badminton sky blue, basketball orange (coming soon).
 Lines never sit on photos (client rule, 27 Nov 2026). Court icons and the booking court picker are drawn
 from the real courts: pickleball kitchen lines, tennis service boxes, badminton service lines.
 Type: Archivo variable (width and weight axes, used for kinetic headlines), Plus Jakarta Sans (the current
-UI face), Pacifico (the current wordmark face) for the logo and one script accent per heading.
+UI face), Pacifico for one script accent per heading. Sizes run compact (27 Nov): section spacing and display
+type about a fifth smaller than the first pass, no oversized lead cards.
 
 ## Kept exactly
 
@@ -47,9 +49,10 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
   sport buttons; a pill search with a date; an orange light that follows the pointer; a board of the next open
   slots per venue scrolling along the bottom, each linking to that venue's booking page.
 - The option pages (`/lab/`) were removed once B was picked.
-- Since 27 Nov: it runs on the current site's own hero photo, shade and orange glow, with the Served. wordmark
-  turned to read upward along the right edge, its baseline on the edge (it steps out below 900px wide). The
-  sport buttons are compact and the search is exactly their combined width; Install App sits under them.
+- Since 27 Nov: it runs on the current site's own hero photo, graded to a cinematic golden hour (warm sun from
+  the right, film grain, deep blacks held behind the type) with no pointer effects. The official logo is turned
+  to read upward along the right edge, the bottom of its S on the edge (it steps out below 900px wide). The
+  sport buttons are compact; under them the search and Install App share one row of exactly the same width.
 - Fixed with the change: the splash wordmark no longer clips the top of the "d", and the final "GAME ON." band
   no longer pushes its copy and buttons off screen (it was cut off on desktop and on phones).
 
@@ -80,6 +83,7 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
 3. Real photos for each venue (or permission to use the venues' own).
 4. Which Play mode feature comes first: open play or find players?
 5. Timeline for basketball and padel.
-6. Keep the script wordmark? The concept keeps it and turns the full stop into an orange ball.
+6. Logo: the concept uses the official artwork supplied on 27 Nov exactly as drawn, traced to vector from a
+   PNG. Is there a master vector file to swap in? The favicon and app icon use its S.
 7. Confirm the 5% service fee and the 24-hour cancellation rule are current.
 8. Is a native app planned? The concept's Install App button installs the website itself as an app.

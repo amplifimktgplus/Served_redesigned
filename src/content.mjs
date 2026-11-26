@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const vj = JSON.parse(readFileSync(join(HERE, 'data/venues.json'), 'utf8'));
 export const IMAGES = JSON.parse(readFileSync(join(HERE, 'data/images.json'), 'utf8'));
+// the official logo, traced from the supplied art by tools/logo.py: the S, the joined letters, the full stop
+export const LOGO = JSON.parse(readFileSync(join(HERE, 'data/logo.json'), 'utf8'));
 export const CREDITS = JSON.parse(readFileSync(join(HERE, '../refs/commons/credits.json'), 'utf8'));
 export const CAPTURED_ON = vj.capturedOn;
 

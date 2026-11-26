@@ -1,22 +1,25 @@
 /* =====================================================================================================
-   HOME HERO, "Live board" (option B, picked 27 Nov 2026) on the current site's own hero photo, shade and
-   orange glow (the glow drifts toward the pointer). The Served. wordmark runs up the right edge with its
-   baseline on the edge. A rotating sport word, compact sport buttons with a search of the same width, an
-   Install App button, and a scrolling board of the next open slots.
+   HOME HERO, "Live board" (option B, picked 27 Nov 2026) on the current site's own hero photo, graded to a
+   cinematic golden hour with deep blacks behind the type. The Served. wordmark runs up the right edge with
+   its baseline on the edge. A rotating sport word, compact sport buttons, then the search and Install App
+   sharing one row of the same width, and a scrolling board of the next open slots.
    ===================================================================================================== */
 .hb { --px: 0; --py: 0; position: relative; isolation: isolate; overflow: clip; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto; min-height: clamp(620px, 86svh, 780px); padding-top: var(--hdr-h); background: var(--ink); color: #fff; }
-.hb__media { position: absolute; inset: 0; z-index: -1; perspective: 1400px; }
-.hb__bg { position: absolute; inset: -5%; transform: rotateY(calc(var(--px) * -2.4deg)) rotateX(calc(var(--py) * 1.6deg)) scale(1.04); transition: transform 1s var(--ease); }
-.hb__bg img { width: 100%; height: 100%; object-fit: cover; }
-.hb__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0, 0, 0, .82) 0%, rgba(0, 0, 0, .55) 45%, rgba(0, 0, 0, .3) 100%), linear-gradient(0deg, rgba(10, 10, 10, .6) 0%, rgba(10, 10, 10, 0) 26%); }
-.hb__glow { position: absolute; inset: 0; background: radial-gradient(46% 66% at var(--lx, 60%) var(--ly, 42%), rgba(255, 107, 24, .26), rgba(255, 107, 24, 0) 70%); transition: opacity .4s; }
+.hb__media { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+/* golden hour grade: the photo warmed and lifted toward amber, a low sun from the right, film grain, and
+   deep blacks held on the left where the type sits. No pointer effects; only a slow camera push-in. */
+.hb__bg { position: absolute; inset: 0; animation: hbPush 26s ease-in-out infinite alternate; }
+.hb__bg img { width: 100%; height: 100%; object-fit: cover; filter: sepia(.5) saturate(1.7) hue-rotate(-8deg) contrast(1.12) brightness(1.08); }
+.hb__sun { position: absolute; inset: 0; background: radial-gradient(58% 78% at 84% 26%, rgba(255, 196, 112, .55), rgba(255, 146, 58, .32) 34%, rgba(214, 92, 30, .12) 58%, rgba(214, 92, 30, 0) 76%), linear-gradient(200deg, rgba(255, 170, 80, .22), rgba(255, 170, 80, 0) 46%); mix-blend-mode: screen; }
+.hb__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(6, 4, 3, .97) 0%, rgba(6, 4, 3, .9) 26%, rgba(6, 4, 3, .62) 46%, rgba(6, 4, 3, .16) 70%, rgba(6, 4, 3, 0) 100%), linear-gradient(0deg, rgba(6, 4, 3, .72) 0%, rgba(6, 4, 3, 0) 30%), linear-gradient(180deg, rgba(6, 4, 3, .5) 0%, rgba(6, 4, 3, 0) 20%), radial-gradient(130% 100% at 72% 40%, transparent 58%, rgba(0, 0, 0, .45) 100%); }
+.hb__grain { position: absolute; inset: 0; opacity: .14; mix-blend-mode: overlay; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+@keyframes hbPush { from { transform: scale(1.02); } to { transform: scale(1.08) translateX(-1%); } }
 
-/* wordmark: set as one horizontal line so the ball keeps to the baseline, then turned a quarter turn
-   anticlockwise about its bottom right corner. "Served" plus the ball measures 3.23em; the baseline sits
-   .08em above the line box bottom, so the box hangs .08em past the edge and the baseline lands on it.
-   Sized to fill about 78% of the space between the header and the board. */
-.hb__mark { --mk: min(11vw, 10rem, calc((clamp(620px, 86svh, 780px) - 137px) * .24)); position: absolute; z-index: 1; right: calc(var(--mk) * -.08); top: calc((100% + var(--hdr-h) - 61px) / 2 - var(--mk) * 2.615); font: 400 var(--mk) / 1 var(--f-script); color: #fff; white-space: nowrap; opacity: .95; transform-origin: 100% 100%; transform: rotate(-90deg); pointer-events: none; user-select: none; }
-.hb__mark i { display: inline-block; width: .26em; height: .26em; margin-left: .06em; border-radius: 50%; background: var(--accent); box-shadow: 0 0 .25em rgba(255, 107, 24, .55); }
+/* the official logo turned a quarter turn anticlockwise about its bottom right corner, so it reads upward
+   and the bottom of the logo (the S, its lowest point) sits on the right edge. The box is the logo's own
+   outline (1637.2 x 498.5), long side about 78% of the space between the header and the board. */
+.hb__mark { --mkl: min(36vw, 34rem, calc((clamp(620px, 86svh, 780px) - 137px) * .78)); --mkh: calc(var(--mkl) * .3045); position: absolute; z-index: 1; right: 0; top: calc((100% + var(--hdr-h) - 61px) / 2 - var(--mkh) - var(--mkl) / 2); width: var(--mkl); height: var(--mkh); color: #fff; opacity: .95; transform-origin: 100% 100%; transform: rotate(-90deg); pointer-events: none; }
+.hb__logo { display: block; width: 100%; height: 100%; fill: currentColor; overflow: visible; }
 
 .hb__in { align-self: center; position: relative; z-index: 2; padding: 34px 0 40px; }
 .hb__live { display: inline-flex; align-items: center; gap: 10px; padding: 9px 15px; border-radius: var(--pill); background: rgba(10, 10, 10, .6); border: 1px solid rgba(255, 255, 255, .16); backdrop-filter: blur(8px); font: 700 13px/1 var(--f-ui); color: rgba(255, 255, 255, .85); }
@@ -39,6 +42,9 @@
 .hb__arrow { width: 16px; height: 16px; margin-left: auto; color: var(--tone); flex: none; transition: transform .4s var(--ease); }
 .hb__sport:hover { border-color: var(--tone); background: rgba(10, 10, 10, .78); transform: translateY(-3px); }
 .hb__sport:hover .hb__arrow { transform: translateX(4px); }
+/* search and Install App share the second row; together they match the sport buttons' width */
+.hb__find { display: flex; align-items: stretch; gap: 10px; min-width: 0; }
+.hb__find .hb__search { flex: 1; min-width: 0; }
 .hb__search { display: flex; align-items: center; gap: 8px; min-height: 54px; padding: 5px 5px 5px 16px; border-radius: var(--pill); background: #fff; color: #101a2e; box-shadow: 0 30px 60px -28px rgba(0, 0, 0, .9); }
 .hb__search > .ico { width: 19px; height: 19px; color: #6b7280; flex: none; }
 .hb__search input { flex: 1; min-width: 0; min-height: 44px; border: 0; outline: 0; background: transparent; color: #101a2e; font: 600 15px/1 var(--f-ui); }
@@ -50,12 +56,12 @@
 .hb__search button .ico { width: 19px; height: 19px; }
 
 /* Install App: the browser's own install prompt where it offers one, the steps where it does not (site.js) */
-.hb__act { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 14px; }
-.hb__install { --bh: 54px; padding-inline: 1.3em 1.6em; font-size: 15.5px; }
-.hb__install .ico { width: 20px; height: 20px; }
+.hb__install { --bh: 54px; flex: none; padding-inline: 1.2em 1.5em; font-size: 15px; white-space: nowrap; }
+.hb__install .ico { width: 19px; height: 19px; }
 .hb__install:hover .ico { transform: translateY(2px); }
 .hb__install[hidden] { display: none; }
-.hb__hint { margin: 0; max-width: 44ch; font-size: 14px; line-height: 1.45; color: rgba(255, 255, 255, .86); }
+.hb__hint { margin: 0; max-width: 52ch; font-size: 14px; line-height: 1.45; color: rgba(255, 255, 255, .86); }
+.hb__hint:not(:empty) { margin-top: 12px; }
 
 .hb__board { position: relative; z-index: 2; display: flex; align-items: stretch; background: rgba(10, 10, 10, .82); border-top: 1px solid rgba(255, 255, 255, .12); backdrop-filter: blur(14px); }
 .hb__label { flex: none; display: flex; align-items: center; gap: 9px; padding: 0 22px; border-right: 1px solid rgba(255, 255, 255, .12); font: 800 12px/1 var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
@@ -89,9 +95,8 @@ html.is-ready .hb__mark, html.reveal-all .hb__mark { opacity: .95; translate: 0 
 }
 @media (max-width: 640px) {
   .hb { min-height: 0; padding-top: calc(var(--hdr-h) + 130px); }
-  .hb__bg { transform: none; }
-  .hb__shade { background: linear-gradient(0deg, rgba(10, 10, 10, .96) 0%, rgba(10, 10, 10, .8) 52%, rgba(10, 10, 10, .15) 82%, rgba(10, 10, 10, .45) 100%); }
-  .hb__glow { display: none; }
+  .hb__shade { background: linear-gradient(0deg, rgba(6, 4, 3, .97) 0%, rgba(6, 4, 3, .82) 52%, rgba(6, 4, 3, .14) 82%, rgba(6, 4, 3, .5) 100%); }
+  .hb__sun { background: radial-gradient(90% 60% at 70% 12%, rgba(255, 196, 112, .5), rgba(255, 146, 58, .25) 40%, rgba(214, 92, 30, 0) 75%); }
   .hb__in { text-align: center; padding: 20px 0 28px; }
   .hb__h { justify-items: center; font-size: clamp(2.3rem, 11.4vw, 3.4rem); margin: 16px 0 20px; }
   .hb__word { font-stretch: 108%; }
@@ -100,16 +105,16 @@ html.is-ready .hb__mark, html.reveal-all .hb__mark { opacity: .95; translate: 0 
   .hb__sports { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .hb__search { padding-left: 14px; }
   .hb__search select { max-width: 38%; padding: 0 10px; font-size: 13px; }
-  .hb__act { display: grid; gap: 0; }
+  .hb__find { flex-direction: column; gap: 8px; }
   .hb__install { width: 100%; }
   .hb__hint { max-width: none; }
-  .hb__hint:not(:empty) { margin-top: 10px; }
   .hb__label { padding: 0 14px; font-size: 0; gap: 0; }
   .hb__label i { width: 10px; height: 10px; }
   .bitem { padding: 16px 20px; gap: 11px; }
   .bitem > span:nth-of-type(1) { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .hb__bg { animation: none; }
   html.js .hb__in > *, html.js .hb__mark { opacity: 1 !important; translate: none !important; }
   html.js .hb__mark { opacity: .95 !important; }
 }
