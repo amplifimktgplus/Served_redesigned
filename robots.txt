@@ -1,0 +1,3 @@
+# Design concept preview: every page is noindex.
+User-agent: *
+Disallow: /
