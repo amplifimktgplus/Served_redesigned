@@ -748,6 +748,94 @@ function notFound() {
   return layout({ path: '/', title: 'Out of bounds', desc: 'Page not found.', body, noFinal: true }).replace('<html lang="en-PH" class="no-js" data-root="./">', '<html lang="en-PH" class="no-js" data-root="./" data-404>');
 }
 
+// ============================================================ LAB: section divider options (27 Nov 2026, for the client to pick one)
+// Rule from the client: a divider only sits where the next section's background colour changes.
+function labDividers() {
+  const ballSvg = '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="url(#dvg)"/><path d="M14 17c7 7 7 23 0 30M50 17c-7 7-7 23 0 30" fill="none" stroke="#0a0a0a" stroke-width="2.6" stroke-linecap="round" opacity=".55"/><defs><radialGradient id="dvg" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#ff9a5a"/><stop offset=".5" stop-color="#ff6b18"/><stop offset="1" stop-color="#c2410c"/></radialGradient></defs></svg>';
+  const sec = (bg, k, h, p) => `<section class="dvx dvx--${bg}"><div class="wrap"><p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>${k}</p><h2 class="d2">${h}</h2><p class="lede">${p}</p></div></section>`;
+  const opt = (id, name, how) => `<div class="dvx__tag wrap"><b>${id}</b><span><strong>${name}</strong>${how}</span></div>`;
+  const body = `
+<section class="band band--night dvx-top"><div class="wrap">
+  <p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>Options to pick from</p>
+  <h1 class="d1">Section dividers</h1>
+  <p class="lede">Five ways to mark the change from one section to the next. Each one is shown at a real change of background colour, because a divider only appears where the colour changes. Pick one and it goes on every colour change across the site.</p>
+  <nav class="dvx-jump" aria-label="Options"><a href="#dv-a">A Baseline</a><a href="#dv-b">B Ball on the line</a><a href="#dv-c">C Serve arc</a><a href="#dv-d">D Sheet</a><a href="#dv-e">E Split word</a></nav>
+  <p class="dvx-note">The motion follows your scroll in Chrome, Edge and Safari; other browsers and reduced motion show the finished state.</p>
+</div></section>
+
+<div id="dv-a">${opt('A', 'Baseline', 'An orange court baseline painted along the seam, its centre mark pointing into the next section. It draws out from the centre as the seam comes up the screen.')}</div>
+${sec('night', 'Pick your sport', 'Three sports live.', 'Black section above the seam.')}
+<div class="dv dv--base" aria-hidden="true"><span class="dv__line"></span><span class="dv__mark"></span></div>
+${sec('cream', 'Featured venues', 'Courts now serving.', 'Light section below the seam.')}
+
+<div id="dv-b">${opt('B', 'Ball on the line', 'A ball rides the seam, half in each colour, and rolls across as you scroll. On the line counts as in.')}</div>
+${sec('cream', 'How it works', 'Sign up, find, play.', 'Light section above the seam.')}
+<div class="dv dv--ball" aria-hidden="true"><span class="dv__ball">${ballSvg}</span></div>
+${sec('night', 'Rally X', 'Now open in Taguig.', 'Black section below the seam.')}
+
+<div id="dv-c">${opt('C', 'Serve arc', 'The next colour rises in a shallow arc and a serve traces it, landing as the ball at the far end.')}</div>
+${sec('night', 'Cities', 'Courts near you.', 'Black section above the seam.')}
+<div class="dv dv--arc dv--to-iron" aria-hidden="true"><svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path class="dv__fill" d="M0 120Q720-24 1440 120Z"/><path class="dv__trail" d="M120 108Q720 4 1320 108" pathLength="1"/></svg><span class="dv__land"></span></div>
+${sec('iron', 'Play mode', 'Who is playing?', 'Navy section below the seam.')}
+
+<div id="dv-d">${opt('D', 'Sheet', 'The next section rises over the last like a card being dealt, settling flat and full width as it reaches the top of the screen.')}</div>
+${sec('iron', 'Pricing', 'Simple and transparent.', 'Navy section above the seam.')}
+<section class="dvx dvx--accent dv-sheet"><div class="wrap"><p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>Ready</p><h2 class="d2">Game on.</h2><p class="lede">Orange section rising over the navy one.</p></div></section>
+
+<div id="dv-e">${opt('E', 'Split word', 'A word in giant type sits across the seam, each half in the colour that reads on its own background. It drifts sideways as you scroll.')}</div>
+${sec('accent', 'List your court', 'Your venue, booked.', 'Orange section above the seam.')}
+<div class="dv dv--word" aria-hidden="true"><span class="dv__w dv__w--top">GAME ON</span><span class="dv__w dv__w--bot">GAME ON</span></div>
+${sec('night', 'Help centre', 'Questions, answered.', 'Black section below the seam.')}
+<style>
+.dvx-top { padding-bottom: 40px; } .dvx-top .lede { margin-top: 14px; }
+.dvx-jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; } .dvx-jump a { padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--text); text-decoration: none; font: 700 14px/1 var(--f-ui); } .dvx-jump a:hover { border-color: var(--accent); color: var(--accent); }
+.dvx-note { margin-top: 14px; font-size: 13.5px; color: var(--text-3); }
+.dvx__tag { display: flex; gap: 16px; align-items: flex-start; padding-block: 56px 22px; } .dvx__tag b { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--accent); color: var(--ink); font: 900 20px/1 var(--f-display); } .dvx__tag span { max-width: 70ch; color: var(--text-2); } .dvx__tag strong { display: block; color: var(--text); font: 850 20px/1.2 var(--f-display); text-transform: uppercase; margin-bottom: 4px; }
+.dvx { position: relative; padding-block: clamp(56px, 7vw, 96px); } .dvx .lede { margin-top: 10px; }
+.dvx--night { background: var(--ink); } .dvx--iron { background: var(--iron); } .dvx--cream { background: var(--cream); color: var(--ink); } .dvx--accent { background: var(--accent); color: var(--ink); }
+.dvx--cream .lede, .dvx--accent .lede { color: rgba(10, 10, 10, .72); } .dvx--accent .kicker { color: var(--ink); } .dvx--accent .kicker__ball { background: var(--ink); }
+.dv { position: relative; height: 0; z-index: 3; }
+/* A: baseline */
+.dv--base .dv__line { position: absolute; left: 0; right: 0; top: -3px; height: 6px; background: var(--accent); }
+.dv--base .dv__mark { position: absolute; left: 50%; top: -3px; width: 6px; height: 28px; translate: -50% 0; background: var(--accent); border-radius: 0 0 3px 3px; }
+/* B: ball on the line */
+.dv--ball .dv__ball { position: absolute; top: 0; left: 50%; width: clamp(44px, 5vw, 68px); aspect-ratio: 1; translate: -50% -50%; filter: drop-shadow(0 16px 18px rgba(0, 0, 0, .45)); }
+.dv--ball .dv__ball svg { display: block; width: 100%; height: 100%; }
+/* C: serve arc */
+.dv--arc svg { position: absolute; left: 0; bottom: 0; width: 100%; height: clamp(48px, 7vw, 110px); overflow: visible; }
+.dv--arc .dv__fill { fill: var(--iron); }
+.dv--arc .dv__trail { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.dv--arc .dv__land { position: absolute; right: calc(120 / 1440 * 100%); bottom: calc(clamp(48px, 7vw, 110px) * 12 / 120); width: 16px; height: 16px; translate: 50% 50%; border-radius: 50%; background: var(--accent); box-shadow: 0 0 18px rgba(255, 107, 24, .7); }
+/* D: sheet */
+.dv-sheet { border-radius: 44px 44px 0 0; margin-top: -44px; box-shadow: 0 -30px 60px -24px rgba(0, 0, 0, .6); transform-origin: 50% 0; }
+.dv-sheet::before { content: ""; position: absolute; top: 14px; left: 50%; width: 46px; height: 5px; translate: -50% 0; border-radius: 3px; background: rgba(10, 10, 10, .28); }
+/* E: split word */
+.dv--word { height: 0; overflow: visible; }
+.dv--word .dv__w { position: absolute; left: 50%; top: 0; translate: -50% -50%; white-space: nowrap; font: 900 clamp(56px, 11vw, 170px)/.8 var(--f-display); font-stretch: 125%; letter-spacing: -.02em; pointer-events: none; }
+.dv--word .dv__w--top { color: var(--ink); clip-path: inset(-20% -20% 50% -20%); }
+.dv--word .dv__w--bot { color: var(--accent); clip-path: inset(50% -20% -20% -20%); }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .dv--base .dv__line { animation: dvGrow linear both; animation-timeline: view(); animation-range: entry 0% cover 45%; }
+    .dv--base .dv__mark { animation: dvDrop linear both; animation-timeline: view(); animation-range: cover 30% cover 50%; }
+    .dv--ball .dv__ball { animation: dvRoll linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+    .dv--arc .dv__trail { stroke-dasharray: 1; animation: dvDraw linear both; animation-timeline: view(); animation-range: entry 10% cover 50%; }
+    .dv--arc .dv__land { animation: dvLand linear both; animation-timeline: view(); animation-range: cover 40% cover 55%; }
+    .dv-sheet { animation: dvSheet linear both; animation-timeline: view(); animation-range: entry 0% entry 90%; }
+    .dv--word .dv__w { animation: dvDrift linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+  }
+}
+@keyframes dvGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes dvDrop { from { height: 0; } to { height: 28px; } }
+@keyframes dvRoll { from { left: 6%; rotate: -200deg; } to { left: 94%; rotate: 360deg; } }
+@keyframes dvDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes dvLand { from { scale: 0; } 70% { scale: 1.3; } to { scale: 1; } }
+@keyframes dvSheet { from { scale: .9; border-radius: 80px 80px 0 0; } to { scale: 1; border-radius: 44px 44px 0 0; } }
+@keyframes dvDrift { from { translate: -40% -50%; } to { translate: -60% -50%; } }
+</style>`;
+  return layout({ path: '/lab/dividers/', title: 'Section divider options', desc: 'Five section divider options for the Served. concept.', body, bodyCls: 'pg-lab', sticky: null, noFinal: true });
+}
+
 // ============================================================ registry
 export function pages() {
   const out = [];
@@ -775,6 +863,7 @@ export function pages() {
   add('/play/', play);
   add('/gallery/', gallery);
   add('/help/', help);
+  add('/lab/dividers/', labDividers);
   add('/about/', about);
   add('/404', notFound);
   return out;
