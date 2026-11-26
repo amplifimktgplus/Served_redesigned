@@ -22,6 +22,43 @@
   const toastEl = $('[data-toast]'); let toastT;
   function toast(msg) { if (!toastEl) return; toastEl.textContent = msg; toastEl.classList.add('is-on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('is-on'), 3200); }
 
+  // ---------------------------------------------------------------- installable app
+  // The service worker (sw.js) plus the web app manifest make the site installable. The install prompt itself
+  // comes from the browser: Chromium browsers fire beforeinstallprompt, which is held here and shown when
+  // Install App is pressed. Safari and Firefox have no prompt to show, so the button explains their steps.
+  if ('serviceWorker' in navigator && W.isSecureContext) {
+    W.addEventListener('load', () => {
+      const base = new URL(root.dataset.root || './', d.baseURI);
+      navigator.serviceWorker.register(new URL('sw.js', base), { scope: base.pathname }).catch(() => { /* site still works without it */ });
+    });
+  }
+  const installBtns = $$('[data-install]');
+  if (installBtns.length) {
+    const hint = $('[data-install-hint]');
+    let held = null;
+    const standalone = () => W.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    const hideAll = () => { installBtns.forEach((b) => { b.hidden = true; }); if (hint) hint.textContent = ''; };
+    if (standalone()) hideAll();
+    W.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); held = e; if (hint) hint.textContent = ''; });
+    W.addEventListener('appinstalled', () => { held = null; hideAll(); toast('Served. is installed. Open it from your home screen or apps.'); });
+    const steps = () => {
+      const ua = navigator.userAgent;
+      if (/iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'On iPhone or iPad, tap Share, then Add to Home Screen.';
+      if (/Firefox\//.test(ua)) return /Android/.test(ua) ? 'Open the Firefox menu and tap Install.' : 'Firefox on a computer does not install web apps. Open this page in Chrome, Edge or Safari to install Served.';
+      if (/Safari\//.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|SamsungBrowser/.test(ua)) return 'In Safari, open the File menu and choose Add to Dock.';
+      if (/Android/.test(ua)) return 'Open your browser menu and tap Install app or Add to Home screen.';
+      return 'Use the install icon at the right of the address bar, or open the browser menu and choose Install Served.';
+    };
+    installBtns.forEach((b) => b.addEventListener('click', async () => {
+      if (held) {
+        const e = held; held = null;
+        try { await e.prompt(); const choice = await e.userChoice; if (choice && choice.outcome === 'accepted') hideAll(); } catch (err) { if (hint) hint.textContent = steps(); }
+        return;
+      }
+      if (hint) hint.textContent = standalone() ? 'Served. is already installed on this device.' : steps();
+    }));
+  }
+
   // ---------------------------------------------------------------- splash (once per session, skippable)
   const ready = () => { root.classList.add('is-ready'); };
   const splash = $('[data-splash]');
@@ -191,6 +228,7 @@
   $$('[data-marquee]').forEach((mq) => {
     const track = $('.mq__track', mq); const run = $('.mq__run', mq);
     if (RM || !track || !run) return;
+    const k = parseFloat(mq.dataset.marquee) || 1; // speed multiple: data-marquee="0.3" runs at 0.3x, scroll boost included
     let x = 0, v = 0, lastS = W.scrollY, visible = false, last = performance.now(), dir = 1, hover = false;
     mq.addEventListener('pointerenter', () => { hover = true; }); mq.addEventListener('pointerleave', () => { hover = false; });
     mq.addEventListener('focusin', () => { hover = true; }); mq.addEventListener('focusout', () => { hover = false; });
@@ -202,7 +240,7 @@
       v += (Math.abs(ds) * 14 - v) * 0.08;
       if (visible && !d.hidden && !hover) {
         const w = run.offsetWidth || 1;
-        x -= (60 + v) * dt * dir;
+        x -= (60 + v) * k * dt * dir;
         if (x <= -w) x += w; if (x > 0) x -= w;
         track.style.transform = `translate3d(${x.toFixed(1)}px,0,0)`;
       }
@@ -463,8 +501,9 @@
     calBtn.addEventListener('click', () => setCal(cal.hidden));
     // courts + slots
     const rateOf = (h) => (B.rates && B.rates[h]) ? B.rates[h] : { rate: B.rate, label: 'Standard' };
+    const courtTpl = ($('[data-court-tpl]') || {}).innerHTML || ''; // the venue's court lines, drawn server side
     function drawCourts() {
-      courtsBox.innerHTML = B.courts.map((c) => { const n = (st.picks[c.id] || new Set()).size; return `<button class="cpk" type="button" role="radio" aria-checked="${c.id === st.court}" data-court="${c.id}" aria-label="${esc(c.name)}${n ? `, ${n} hour${n > 1 ? 's' : ''} picked` : ''}"><b>${esc(c.name.replace(/^Court\s*/i, ''))}</b>${n ? `<span class="cpk__n">${n}</span>` : ''}</button>`; }).join('');
+      courtsBox.innerHTML = B.courts.map((c) => { const n = (st.picks[c.id] || new Set()).size; return `<button class="cpk" type="button" role="radio" aria-checked="${c.id === st.court}" data-court="${c.id}" aria-label="${esc(c.name)}${n ? `, ${n} hour${n > 1 ? 's' : ''} picked` : ''}">${courtTpl}<b>${esc(c.name.replace(/^Court\s*/i, ''))}</b>${n ? `<span class="cpk__n">${n}</span>` : ''}</button>`; }).join('');
     }
     courtsBox.addEventListener('click', (e) => { const b = e.target.closest('.cpk'); if (!b) return; st.court = b.dataset.court; drawCourts(); drawSlots(); });
     function drawSlots() {
