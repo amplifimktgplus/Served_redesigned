@@ -31,6 +31,17 @@ UI face), Pacifico (the current wordmark face) for the logo and one script accen
 - Motion: one-time splash serve, line draws, masked photo reveals, parallax, tilt and glint cards, magnetic
   buttons, click sparks, scroll-velocity marquee, pressure type, rotating sport word. All off under reduced motion.
 
+## Hero options (26 Nov 2026)
+
+Two compact, full-width heroes built on the supplied orange duotone photo, in the staging site's palette
+(black grounds, white, orange #ff6b18 primary, lime #b7d60f secondary, navy #101a2e text on white). The option
+pages apply that palette to the whole page as a theme; the main preview keeps its own until a hero is picked.
+
+- A, Motion search (`/lab/hero-a/`): speed streaks, a light sweep and a slow settle on the photo; a white
+  staging-style search bar (sport, where, when, orange Search), popular sports and live counts.
+- B, Live board (`/lab/hero-b/`): the sport word rotates through pickleball, tennis and badminton; one-tap
+  sport buttons; an orange light follows the pointer; a board of next open slots scrolls along the bottom.
+
 ## Marked as concept, not live
 
 - Play mode: open play, find players, clubs and ranking, tournaments, events (stamped "Concept", examples

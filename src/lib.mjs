@@ -285,11 +285,11 @@ export function footer() {
 
 const splash = () => `<div class="splash" aria-hidden="true" data-splash><div class="splash__court">${linesSvg()}</div><div class="splash__mark"><span class="splash__w">Served</span><span class="splash__ball"></span></div></div>`;
 
-export function layout({ path, title, desc, body, active = '', bodyCls = '', sticky = 'site', venue = null, schema = null, ogImg = 'og-served.jpg', noFinal = false }) {
+export function layout({ path, title, desc, body, active = '', bodyCls = '', sticky = 'site', venue = null, schema = null, ogImg = 'og-served.jpg', noFinal = false, theme = '' }) {
   setPage(path);
   const full = title.includes('Served') ? title : `${title} | Served.`;
   const html = `<!doctype html>
-<html lang="en-PH" class="no-js" data-root="${root()}">
+<html lang="en-PH" class="no-js${theme ? ' ' + theme : ''}" data-root="${root()}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

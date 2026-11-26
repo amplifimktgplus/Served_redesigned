@@ -29,14 +29,14 @@ for (const p of list) {
 // assets
 cpSync(join(ROOT, 'src/assets/img'), join(OUT, 'assets/img'), { recursive: true });
 cpSync(join(ROOT, 'src/assets/fonts'), join(OUT, 'assets/fonts'), { recursive: true });
-const css = ['base', 'chrome', 'components', 'pages', 'motion'].map((f) => readFileSync(join(ROOT, `src/styles/${f}.css`), 'utf8')).join('\n');
+const css = ['base', 'chrome', 'components', 'pages', 'motion', 'lab'].map((f) => readFileSync(join(ROOT, `src/styles/${f}.css`), 'utf8')).join('\n');
 const min = css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\n\s*\n/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n /g, '\n').trim();
 writeFileSync(join(OUT, 'assets/site.css'), min);
 writeFileSync(join(OUT, 'assets/site.js'), readFileSync(join(ROOT, 'src/scripts/site.js'), 'utf8'));
 writeFileSync(join(OUT, 'assets/favicon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#101515"/><circle cx="32" cy="32" r="17" fill="#c6ea2b"/><path d="M19.5 21.5c6 5 6 16 0 21M44.5 21.5c-6 5-6 16 0 21" fill="none" stroke="#101515" stroke-width="2.6" stroke-linecap="round"/></svg>`);
 
 // sitemap, robots (preview: nothing indexed), .nojekyll
-const urls = list.filter((p) => p.path !== '/404').map((p) => `  <url><loc>${SITE.url}${p.path.replace(/^\//, '')}</loc></url>`).join('\n');
+const urls = list.filter((p) => p.path !== '/404' && !p.path.startsWith('/lab/')).map((p) => `  <url><loc>${SITE.url}${p.path.replace(/^\//, '')}</loc></url>`).join('\n');
 writeFileSync(join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
 writeFileSync(join(OUT, 'robots.txt'), `# Design concept preview: every page is noindex.\nUser-agent: *\nDisallow: /\n`);
 writeFileSync(join(OUT, '.nojekyll'), '');

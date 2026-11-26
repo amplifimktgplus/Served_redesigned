@@ -20,6 +20,11 @@ for i, n in RALLY.items():
     jobs.append((os.path.join(ROOT, f"refs/rallyx/rx-{i}.png"), n))
 for s, n in LIVE.items():
     jobs.append((os.path.join(ROOT, f"assets/live/{s}.jpg"), n))
+# client-supplied hero art (orange duotone, vertical wordmark), 26 Nov 2026
+jobs.append((os.path.join(ROOT, "refs/client/hero-run.png"), "hero-run"))
+# sport card photos supplied by the user, 26 Nov 2026
+jobs.append((os.path.join(ROOT, "refs/client/card-tennis.png"), "card-tennis"))
+jobs.append((os.path.join(ROOT, "refs/client/card-badminton.png"), "card-badminton"))
 for c in json.load(open(os.path.join(ROOT, "refs/commons/credits.json"))):
     jobs.append((os.path.join(ROOT, f"refs/commons/full/{c['file']}.jpg"), c["file"]))
 

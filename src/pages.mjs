@@ -17,34 +17,8 @@ function phero({ k, h1, lede, crumb, img: im, tone = '', cls = '', extra = '', p
 }
 
 // ============================================================ HOME
-function home() {
-  const sportCards = SPORTS.filter((s) => s.live).map((s) => {
-    const list = VENUES.filter((v) => v.sport === s.name);
-    const courts = list.reduce((n, v) => n + v.courts, 0);
-    return `<a class="scard" href="${u(`/courts/?sport=${s.name}`)}" data-tone="${s.tone}" data-tilt data-reveal>
-      <span class="scard__img">${img(s.img, { alt: '', sizes: '(min-width: 900px) 33vw, 85vw', pos: s.slug === 'tennis' ? '50% 30%' : '' })}</span>
-      <span class="scard__shade" aria-hidden="true"></span>
-      <span class="scard__top">${icon(s.icon)}<em>${list.length} venues <span class="sep">/</span> ${courts} courts</em></span>
-      <span class="scard__body"><span class="scard__line">${s.line}</span><span class="scard__name">${s.name}</span><span class="scard__meta">From ${peso(minRate(list))} / hr</span></span>
-      <span class="scard__go">Book ${s.name.toLowerCase()} ${icon('arrow')}</span><span class="glint" aria-hidden="true"></span></a>`;
-  }).join('');
-  const soon = SPORTS.filter((s) => !s.live).map((s) => `<a class="scard scard--soon" href="${u(`/sports/#${s.slug}`)}" data-tone="${s.tone}" data-reveal>${icon(s.icon)}<span class="scard__name">${s.name}</span><span class="soon">Coming soon</span></a>`).join('');
-  const featured = [...VENUES].sort((x, y) => (y.featured - x.featured) || (y.rating - x.rating));
-  const collTabs = COLLECTIONS.map((c, i) => `<button class="tab${i ? '' : ' is-on'}" role="tab" type="button" id="ct-${c.id}" aria-controls="cp-${c.id}" aria-selected="${i ? 'false' : 'true'}" tabindex="${i ? '-1' : '0'}">${c.name}</button>`).join('');
-  const collPanels = COLLECTIONS.map((c, i) => {
-    const list = VENUES.filter(c.test);
-    return `<div class="coll__panel" role="tabpanel" id="cp-${c.id}" aria-labelledby="ct-${c.id}"${i ? ' hidden' : ''}>
-      <p class="coll__rule">${icon('info')}How we picked: ${c.rule}. <b>${list.length} venue${list.length === 1 ? '' : 's'}</b></p>
-      <div class="rail" data-rail-scroll>${list.map((v) => `<a class="mcard" href="${u(`/courts/${v.slug}/availability/`)}" data-tone="${v.tone}">
-        <span class="mcard__img">${img(v.img, { alt: '', sizes: '320px' })}</span>
-        <span class="mcard__body">${chipSport(v.sport, 'chip--xs')}<b>${esc(v.name)}</b><small>${esc(v.address)}</small><span class="mcard__foot"><em>${peso(v.rate)} / hr</em><span class="mcard__go">Book ${icon('arrow')}</span></span></span></a>`).join('')}</div></div>`;
-  }).join('');
-  const cityCards = CITIES.map((c) => {
-    const list = VENUES.filter((v) => v.city === c.name);
-    return `<a class="ccard" href="${u(`/cities/${c.slug}/`)}" data-reveal>${img(c.img, { alt: '', sizes: '(min-width: 900px) 30vw, 80vw' })}<span class="ccard__body"><small>${esc(c.area)}</small><b>${c.name}</b><em>${list.length} venue${list.length > 1 ? 's' : ''} <span class="sep">/</span> ${[...new Set(list.map((v) => v.sport))].join(', ')}</em></span><span class="ccard__go">${icon('arrow')}</span></a>`;
-  }).join('');
-  const body = `
-<section class="hero band band--night" data-spot>
+function heroDefault() {
+  return `<section class="hero band band--night" data-spot>
   <div class="band__clip" aria-hidden="true">
     <span class="band__grid"></span><span class="hero__light"></span>
     <svg class="hero__court" viewBox="0 0 600 1300" preserveAspectRatio="none"><path data-draw d="M40 20h520v1260H40zM40 650h520M110 20v1260M490 20v1260M110 340h380M110 960h380M300 340v620" pathLength="1"/></svg>
@@ -80,7 +54,37 @@ function home() {
       <li><b>5%</b><span>service fee, shown before you pay</span></li>
     </ul>
   </div>
-</section>
+</section>`;
+}
+
+function home({ path = '/', hero = heroDefault(), bodyCls = 'pg-home', theme = '', extra = '' } = {}) {
+  const sportCards = SPORTS.filter((s) => s.live).map((s) => {
+    const list = VENUES.filter((v) => v.sport === s.name);
+    const courts = list.reduce((n, v) => n + v.courts, 0);
+    return `<a class="scard" href="${u(`/courts/?sport=${s.name}`)}" data-tone="${s.tone}" data-tilt data-reveal>
+      <span class="scard__img">${img(s.card || s.img, { alt: '', sizes: '(min-width: 900px) 33vw, 85vw' })}</span>
+      <span class="scard__shade" aria-hidden="true"></span>
+      <span class="scard__top">${icon(s.icon)}<em>${list.length} venues <span class="sep">/</span> ${courts} courts</em></span>
+      <span class="scard__body"><span class="scard__line">${s.line}</span><span class="scard__name">${s.name}</span><span class="scard__meta">From ${peso(minRate(list))} / hr</span></span>
+      <span class="scard__go">Book ${s.name.toLowerCase()} ${icon('arrow')}</span><span class="glint" aria-hidden="true"></span></a>`;
+  }).join('');
+  const soon = SPORTS.filter((s) => !s.live).map((s) => `<a class="scard scard--soon" href="${u(`/sports/#${s.slug}`)}" data-tone="${s.tone}" data-reveal>${icon(s.icon)}<span class="scard__name">${s.name}</span><span class="soon">Coming soon</span></a>`).join('');
+  const featured = [...VENUES].sort((x, y) => (y.featured - x.featured) || (y.rating - x.rating));
+  const collTabs = COLLECTIONS.map((c, i) => `<button class="tab${i ? '' : ' is-on'}" role="tab" type="button" id="ct-${c.id}" aria-controls="cp-${c.id}" aria-selected="${i ? 'false' : 'true'}" tabindex="${i ? '-1' : '0'}">${c.name}</button>`).join('');
+  const collPanels = COLLECTIONS.map((c, i) => {
+    const list = VENUES.filter(c.test);
+    return `<div class="coll__panel" role="tabpanel" id="cp-${c.id}" aria-labelledby="ct-${c.id}"${i ? ' hidden' : ''}>
+      <p class="coll__rule">${icon('info')}How we picked: ${c.rule}. <b>${list.length} venue${list.length === 1 ? '' : 's'}</b></p>
+      <div class="rail" data-rail-scroll>${list.map((v) => `<a class="mcard" href="${u(`/courts/${v.slug}/availability/`)}" data-tone="${v.tone}">
+        <span class="mcard__img">${img(v.img, { alt: '', sizes: '320px' })}</span>
+        <span class="mcard__body">${chipSport(v.sport, 'chip--xs')}<b>${esc(v.name)}</b><small>${esc(v.address)}</small><span class="mcard__foot"><em>${peso(v.rate)} / hr</em><span class="mcard__go">Book ${icon('arrow')}</span></span></span></a>`).join('')}</div></div>`;
+  }).join('');
+  const cityCards = CITIES.map((c) => {
+    const list = VENUES.filter((v) => v.city === c.name);
+    return `<a class="ccard" href="${u(`/cities/${c.slug}/`)}" data-reveal>${img(c.img, { alt: '', sizes: '(min-width: 900px) 30vw, 80vw' })}<span class="ccard__body"><small>${esc(c.area)}</small><b>${c.name}</b><em>${list.length} venue${list.length > 1 ? 's' : ''} <span class="sep">/</span> ${[...new Set(list.map((v) => v.sport))].join(', ')}</em></span><span class="ccard__go">${icon('arrow')}</span></a>`;
+  }).join('');
+  const body = `
+${hero}
 ${marquee(['Pickleball', 'Tennis', 'Badminton', 'No calls', 'No waiting', 'No guesswork', 'Book instantly', 'Game on'])}
 <section class="band band--night sports" aria-labelledby="sp-h">
   <div class="wrap">
@@ -179,8 +183,57 @@ ${divider()}
     <div>${faqList([FAQ[0], FAQ[4], FAQ[7], FAQ[1], FAQ[5], FAQ[9]])}${ctas(btn('Visit the help centre', '/help/', 'btn--ghost'))}</div>
   </div>
 </section>`;
-  return layout({ path: '/', title: 'Served | Book your court', desc: 'Every court, one tap away. Search courts, check live availability, and book your slot in minutes.', body, bodyCls: 'pg-home',
+  return layout({ path, theme, title: 'Served | Book your court', desc: 'Every court, one tap away. Search courts, check live availability, and book your slot in minutes.', body: body + extra, bodyCls,
     schema: { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Served.', url: SITE.url, potentialAction: { '@type': 'SearchAction', target: SITE.url + 'courts/?q={q}', 'query-input': 'required name=q' } } });
+}
+
+// ============================================================ LAB: two compact, full-width hero options (staging palette)
+const liveSports = () => SPORTS.filter((x) => x.live).map((x) => { const list = VENUES.filter((v) => v.sport === x.name); return { ...x, n: list.length, from: minRate(list) }; });
+function labBar(active) {
+  const l = (k, t, href) => `<a href="${u(href)}"${active === k ? ' aria-current="page"' : ''}>${t}</a>`;
+  return `<nav class="labbar" aria-label="Hero options"><span>Hero option</span>${l('a', 'A', '/lab/hero-a/')}${l('b', 'B', '/lab/hero-b/')}${l('now', 'Current', '/')}</nav>`;
+}
+// Option A, "Motion search": the photo in motion, speed streaks, and a white search bar in the staging style
+function heroA() {
+  return `<section class="hx" data-hx aria-labelledby="hx-h">
+  <div class="hx__media" aria-hidden="true">
+    <figure class="hx__bg">${img('hero-run', { alt: '', sizes: '100vw', eager: true, pos: '72% 42%' })}</figure>
+    <span class="hx__speed"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+    <span class="hx__sweep"></span><span class="hx__shade"></span>
+  </div>
+  <div class="wrap hx__in">
+    <p class="hx__eyebrow"><span class="kicker__ball"></span>Every court. One tap away.</p>
+    <h1 class="hx__h" id="hx-h"><span>Choose Your Court<span class="pd">.</span></span><span>Get Ready To <em>Play</em><span class="pd">.</span></span></h1>
+    <p class="hx__lede">No calls, no waiting, no guesswork. Book instantly and get on the court in minutes.</p>
+    <form class="hx__search" action="${u('/courts/')}" method="get" role="search" aria-label="Search courts">
+      <label class="hx__f"><span>Sport</span><select name="sport"><option value="">Any sport</option>${liveSports().map((x) => `<option>${x.name}</option>`).join('')}</select>${icon('chev')}</label>
+      <label class="hx__f"><span>Where</span><select name="city"><option value="">Anywhere</option>${CITIES.map((c) => `<option>${c.name}</option>`).join('')}</select>${icon('pin')}</label>
+      <label class="hx__f"><span>When</span><select name="date" data-date-select><option value="">Any day</option></select>${icon('cal')}</label>
+      <button class="hx__go" type="submit"><span>Search courts</span>${icon('search')}</button>
+    </form>
+    <div class="hx__foot">
+      <p class="hx__quick"><span>Popular</span>${liveSports().map((x) => `<a href="${u(`/courts/?sport=${x.name}`)}" data-tone="${x.tone}">${icon(x.icon)}${x.name}</a>`).join('')}<a href="${u('/courts/?view=map')}">${icon('map')}Map</a></p>
+      <ul class="hx__stats" aria-label="Served. in numbers"><li><b data-count="${VENUES.length}">${VENUES.length}</b>venues</li><li><b data-count="${TOTAL_COURTS}">${TOTAL_COURTS}</b>courts</li><li><b data-count="${CITIES.length}">${CITIES.length}</b>cities</li></ul>
+    </div>
+  </div>
+</section>`;
+}
+// Option B, "Live board": kinetic sport word, one-tap sport buttons, a light that follows the pointer and a board of next open slots
+function heroB() {
+  const board = [...VENUES].sort((x, y) => x.open[0].localeCompare(y.open[0]) || y.rating - x.rating).map((v) => `<a class="bitem" href="${u(`/courts/${v.slug}/availability/`)}" data-tone="${v.tone}"><i class="bitem__dot"></i><b>${esc(v.name)}</b><span>${esc(v.city)}</span><span class="bitem__next" data-next="${v.open.join(',')}">Next <b>${fmtDate(v.open[0])}</b></span><em>${peso(v.rate)}/hr</em><span class="bitem__go">Book ${icon('arrow')}</span></a>`).join('');
+  return `<section class="hb" data-hx data-spot aria-labelledby="hb-h">
+  <div class="hb__media" aria-hidden="true">
+    <figure class="hb__bg">${img('hero-run', { alt: '', sizes: '100vw', eager: true, pos: '72% 45%' })}</figure>
+    <span class="hb__glow"></span><span class="hb__shade"></span>
+  </div>
+  <div class="wrap hb__in">
+    <p class="hb__live"><i></i>Live availability <span class="sep">/</span> ${VENUES.length} venues, ${TOTAL_COURTS} courts</p>
+    <h1 class="hb__h" id="hb-h"><span class="sr">Choose Your Court. Get Ready To Play.</span><span aria-hidden="true" class="hb__l hb__l--sm">Find your</span><span aria-hidden="true" class="hb__word"><span class="rot" data-rotate="Pickleball|Tennis|Badminton" data-tones="heat|lime|paper">Pickleball</span></span><span aria-hidden="true" class="hb__l">court<span class="pd">.</span></span></h1>
+    <div class="hb__sports">${liveSports().map((x) => `<a class="hb__sport" href="${u(`/courts/?sport=${x.name}`)}" data-tone="${x.tone}">${icon(x.icon)}<span><b>${x.name}</b><small>${x.n} venues <span class="sep">/</span> from ${peso(x.from)}/hr</small></span>${icon('arrow', 'hb__arrow')}</a>`).join('')}</div>
+    <form class="hb__search" action="${u('/courts/')}" method="get" role="search" aria-label="Search courts">${icon('search')}<label class="sr" for="hbq">Court name or city</label><input id="hbq" name="q" type="search" placeholder="Court name or city" autocomplete="off"><label class="sr" for="hbd">When</label><select id="hbd" name="date" data-date-select><option value="">Any day</option></select><button type="submit" aria-label="Search courts">${icon('arrow')}</button></form>
+  </div>
+  <div class="hb__board"><p class="hb__label"><i></i>Next open</p><div class="mq mq--board" data-marquee><div class="mq__track"><div class="mq__run">${board}</div><div class="mq__run" aria-hidden="true">${board.replace(/<a /g, '<a tabindex="-1" ')}</div></div></div></div>
+</section>`;
 }
 
 // ============================================================ COURTS (discovery)
@@ -602,7 +655,7 @@ ${phero({ k: 'Sports', h1: 'Pick your sport<span class="pd">.</span>', lede: 'Th
   <div class="wrap shub__list">${SPORTS.map((s) => {
     const list = VENUES.filter((v) => v.sport === s.name);
     return `<article class="srow${s.live ? '' : ' srow--soon'}" id="${s.slug}" data-tone="${s.tone}" data-reveal>
-      <div class="srow__media">${s.img ? img(s.img, { alt: '', sizes: '(min-width: 900px) 40vw, 100vw' }) : `<span class="srow__ph">${icon(s.icon)}</span>`}</div>
+      <div class="srow__media">${s.img ? img(s.card || s.img, { alt: '', sizes: '(min-width: 900px) 40vw, 100vw' }) : `<span class="srow__ph">${icon(s.icon)}</span>`}</div>
       <div class="srow__copy"><p class="srow__k">${icon(s.icon)}${s.kicker}</p><h2 class="d1">${s.name}</h2><p class="srow__line">${s.line}</p><p class="lede">${s.intro}</p>
       ${s.live ? `<p class="srow__stats"><span><b>${list.length}</b> venues</span><span><b>${list.reduce((n, v) => n + v.courts, 0)}</b> courts</span><span>from <b>${peso(minRate(list))}</b> / hr</span></p>${ctas(btn(`Book ${s.name.toLowerCase()}`, `/courts/?sport=${s.name}`), btn(`About ${s.name.toLowerCase()} on Served`, `/sports/${s.slug}/`, 'btn--ghost'))}` : `<p class="soon soon--lg">Coming soon</p>${ctas(btn('List your court', '/list-your-court/', 'btn--ghost'))}`}</div></article>`;
   }).join('')}</div>
@@ -629,7 +682,7 @@ ${phero({ k: `${s.kicker}`, h1: `${s.name} courts`, lede: s.intro, crumb: [['Hom
     <ul class="bring__list">${s.bring.map((b, i) => `<li data-reveal style="--i:${i}"><span>${String(i + 1).padStart(2, '0')}</span>${esc(b)}</li>`).join('')}</ul>
   </div>
 </section>
-<section class="band band--night sother"><div class="wrap">${sh({ k: 'Switch sides', h: 'Other sports on Served.', cls: 'sh--split' })}<div class="sother__row">${others.map((o) => `<a class="scard scard--row" href="${u(`/sports/${o.slug}/`)}" data-tone="${o.tone}" data-tilt><span class="scard__img">${img(o.img, { alt: '', sizes: '50vw' })}</span><span class="scard__shade"></span><span class="scard__body"><span class="scard__line">${o.line}</span><span class="scard__name">${o.name}</span></span><span class="scard__go">${icon('arrow')}</span></a>`).join('')}</div></div></section>`;
+<section class="band band--night sother"><div class="wrap">${sh({ k: 'Switch sides', h: 'Other sports on Served.', cls: 'sh--split' })}<div class="sother__row">${others.map((o) => `<a class="scard scard--row" href="${u(`/sports/${o.slug}/`)}" data-tone="${o.tone}" data-tilt><span class="scard__img">${img(o.card || o.img, { alt: '', sizes: '50vw' })}</span><span class="scard__shade"></span><span class="scard__body"><span class="scard__line">${o.line}</span><span class="scard__name">${o.name}</span></span><span class="scard__go">${icon('arrow')}</span></a>`).join('')}</div></div></section>`;
   return layout({ path: `/sports/${s.slug}/`, title: `${s.name} courts in Metro Manila`, desc: `Book ${s.name.toLowerCase()} courts on Served: ${list.length} venues, ${list.reduce((n, v) => n + v.courts, 0)} courts, from ${peso(minRate(list))} an hour. ${s.intro}`, body, active: 'courts', bodyCls: 'pg-sport' });
 }
 
@@ -763,6 +816,8 @@ export function pages() {
   // the page path is set BEFORE its body renders, so every relative URL in the body is computed for that page
   const add = (path, render) => { setPage(path === '/404' ? '/' : path); out.push({ path, html: render() }); };
   add('/', home);
+  add('/lab/hero-a/', () => home({ path: '/lab/hero-a/', hero: heroA(), bodyCls: 'pg-home pg-lab', theme: 'theme-live', extra: labBar('a') }));
+  add('/lab/hero-b/', () => home({ path: '/lab/hero-b/', hero: heroB(), bodyCls: 'pg-home pg-lab', theme: 'theme-live', extra: labBar('b') }));
   add('/courts/', courts);
   for (const v of VENUES) {
     add(`/courts/${v.slug}/`, () => venuePage(v));

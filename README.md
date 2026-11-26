@@ -33,7 +33,10 @@ No npm packages. `dist/` is what GitHub Pages serves (branch `gh-pages`).
 
 - Words, venue facts, rates, slot boards, amenities and reviews: the current Served. site, captured 26 Nov 2026.
 - Rally X photos: supplied by the venue.
+- Hero photo (orange duotone with the vertical wordmark) and the tennis and badminton card photos: supplied for this concept on 26 Nov 2026; licence to be confirmed before launch.
 - Venue photos marked "Representative photo": the current Served. site's own sport images.
 - City and sport photos: Wikimedia Commons, credited on the Court Gallery page.
+
+Hero options on review (staging palette, client hero photo): `/lab/hero-a/` (motion search) and `/lab/hero-b/` (live board).
 
 See `docs/PITCH-NOTES.md` for what was kept, what is new, and the questions for the Served. team.
