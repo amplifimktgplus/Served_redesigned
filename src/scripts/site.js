@@ -161,7 +161,7 @@
     });
   }
   if (!RM) d.addEventListener('click', (e) => {
-    const b = e.target.closest('.btn--lime, .slot, .dpill, .cpk');
+    const b = e.target.closest('.btn--accent, .slot, .dpill, .cpk');
     if (!b || !e.clientX) return;
     for (let i = 0; i < 8; i++) {
       const s = d.createElement('i'); s.className = 'spark';
@@ -182,7 +182,7 @@
   // ---------------------------------------------------------------- rotating sport word
   $$('[data-rotate]').forEach((el) => {
     const words = el.dataset.rotate.split('|'), tones = (el.dataset.tones || '').split('|'); let i = 0;
-    const set = () => { el.style.setProperty('--tone', `var(--${tones[i] || 'lime'})`); };
+    const set = () => { el.style.setProperty('--tone', `var(--${tones[i] || 'accent'})`); };
     set(); if (RM) return;
     setInterval(() => { if (d.hidden) return; i = (i + 1) % words.length; el.textContent = words[i]; set(); el.classList.remove('is-swap'); void el.offsetWidth; el.classList.add('is-swap'); }, 2400);
   });
@@ -416,7 +416,7 @@
     function showPin(slug) {
       const pn = pins.find((x) => x.slug === slug); if (!pn) return;
       $$('.pin', svg).forEach((g) => g.classList.toggle('is-on', g.dataset.pin === slug));
-      card.innerHTML = `<b>${esc(pn.name)}</b><p>${esc(pn.city)} <span class="sep">/</span> ${pesoI(pn.rate)} / hr</p><div class="ctas"><a class="btn btn--lime btn--sm" href="${esc(pn.href)}"><span>Book Now</span></a><a class="btn btn--ghost btn--sm" href="${esc(pn.page)}"><span>View Court</span></a></div>`;
+      card.innerHTML = `<b>${esc(pn.name)}</b><p>${esc(pn.city)} <span class="sep">/</span> ${pesoI(pn.rate)} / hr</p><div class="ctas"><a class="btn btn--accent btn--sm" href="${esc(pn.href)}"><span>Book Now</span></a><a class="btn btn--ghost btn--sm" href="${esc(pn.page)}"><span>View Court</span></a></div>`;
       card.hidden = false;
     }
     svg.addEventListener('click', (e) => { const g = e.target.closest('.pin'); if (g) showPin(g.dataset.pin); });
@@ -440,7 +440,7 @@
     // date rail: the next 21 days
     const days = Array.from({ length: 21 }, (_, i) => addDays(today, i));
     rail.innerHTML = days.map((iso, i) => { const s = status(iso); const ok = s === 'open'; return `<button class="dpill${i === 0 ? ' is-today' : ''}${ok ? '' : ' is-full'}" type="button" role="radio" aria-checked="false" data-date="${iso}"${ok ? '' : ' aria-disabled="true"'} aria-label="${fmt(iso, { weekday: 'long', day: 'numeric', month: 'long' })}, ${ok ? 'slots available' : 'no slots'}"><small>${fmt(iso, { weekday: 'short' })}</small><b>${fmt(iso, { day: 'numeric' })}</b><small>${fmt(iso, { month: 'short' })}</small><i></i></button>`; }).join('');
-    rail.addEventListener('click', (e) => { const b = e.target.closest('.dpill'); if (!b) return; if (b.getAttribute('aria-disabled') === 'true') { toast('No slots that day. Green days are open.'); return; } pickDate(b.dataset.date, true); });
+    rail.addEventListener('click', (e) => { const b = e.target.closest('.dpill'); if (!b) return; if (b.getAttribute('aria-disabled') === 'true') { toast('No slots that day. Orange days are open.'); return; } pickDate(b.dataset.date, true); });
     rail.addEventListener('keydown', (e) => { if (!['ArrowRight', 'ArrowLeft'].includes(e.key)) return; e.preventDefault(); const bs = $$('.dpill:not([aria-disabled])', rail); const i = bs.indexOf(d.activeElement); const n = bs[(i + (e.key === 'ArrowRight' ? 1 : -1) + bs.length) % bs.length]; if (n) { n.focus(); pickDate(n.dataset.date, true); } });
     // month calendar
     const calBtn = $('[data-cal-toggle]', el);

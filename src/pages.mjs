@@ -17,47 +17,7 @@ function phero({ k, h1, lede, crumb, img: im, tone = '', cls = '', extra = '', p
 }
 
 // ============================================================ HOME
-function heroDefault() {
-  return `<section class="hero band band--night" data-spot>
-  <div class="band__clip" aria-hidden="true">
-    <span class="band__grid"></span><span class="hero__light"></span>
-    <svg class="hero__court" viewBox="0 0 600 1300" preserveAspectRatio="none"><path data-draw d="M40 20h520v1260H40zM40 650h520M110 20v1260M490 20v1260M110 340h380M110 960h380M300 340v620" pathLength="1"/></svg>
-  </div>
-  <div class="wrap hero__in">
-    <div class="hero__copy">
-      ${kicker('Served. <span class="sep">/</span> Every court. One tap away.')}
-      <h1 class="hero__h"><span class="hero__l1">Choose Your Court<span class="pd">.</span></span><span class="hero__l2">Get Ready To Play<span class="pd">.</span></span></h1>
-      <p class="hero__lede">No calls, no waiting, no guesswork. Book instantly and get on the court in minutes.</p>
-    </div>
-    <div class="hero__media">
-      <figure class="hero__photo" data-depth="0.06">${img('rallyx-forehand', { alt: 'A player lines up a low forehand on a Rally X court at golden hour', sizes: '(min-width: 1000px) 40vw, 100vw', eager: true, pos: '50% 35%' })}</figure>
-      <figure class="hero__inset" data-depth="0.16">${img('rallyx-paddle-ball', { alt: '', sizes: '220px' })}</figure>
-      <div class="rotbadge" aria-hidden="true"><svg viewBox="0 0 120 120"><defs><path id="rb" d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0"/></defs><text><textPath href="#rb">EVERY COURT • ONE TAP AWAY • EVERY COURT • ONE TAP AWAY • </textPath></text></svg><span class="rotbadge__ball"></span></div>
-    </div>
-    <form class="search board" action="${u('/courts/')}" method="get" role="search" data-search>
-      <p class="search__h">Find a <span class="rot" data-rotate="pickleball|tennis|badminton" data-tones="heat|lime|aqua">pickleball</span> court</p>
-      <fieldset class="search__sport seg" aria-label="Sport">
-        <label><input type="radio" name="sport" value="" checked><span>All</span></label>
-        ${SPORTS.filter((s) => s.live).map((s) => `<label data-tone="${s.tone}"><input type="radio" name="sport" value="${s.name}"><span>${icon(s.icon)}${s.name}</span></label>`).join('')}
-      </fieldset>
-      <div class="search__row">
-        <label class="field"><span class="field__l">Where</span><select name="city"><option value="">Anywhere</option>${CITIES.map((c) => `<option>${c.name}</option>`).join('')}</select>${icon('pin', 'field__i')}</label>
-        <label class="field"><span class="field__l">Enter Court Name</span><input name="q" type="search" placeholder="Court name" autocomplete="off">${icon('search', 'field__i')}</label>
-      </div>
-      <div class="search__when"><span class="field__l">When</span><div class="dchips" data-dchips><label><input type="radio" name="date" value="" checked><span><b>Any</b><small>day</small></span></label></div></div>
-      <button class="btn btn--lime btn--lg search__go" type="submit"><span>Search courts</span>${icon('search')}</button>
-    </form>
-    <ul class="hero__stats" aria-label="Served. in numbers">
-      <li><b data-count="${VENUES.length}">${VENUES.length}</b><span>venues</span></li>
-      <li><b data-count="${TOTAL_COURTS}">${TOTAL_COURTS}</b><span>courts</span></li>
-      <li><b data-count="${CITIES.length}">${CITIES.length}</b><span>cities</span></li>
-      <li><b>5%</b><span>service fee, shown before you pay</span></li>
-    </ul>
-  </div>
-</section>`;
-}
-
-function home({ path = '/', hero = heroDefault(), bodyCls = 'pg-home', theme = '', extra = '' } = {}) {
+function home({ path = '/', hero = heroB(), bodyCls = 'pg-home' } = {}) {
   const sportCards = SPORTS.filter((s) => s.live).map((s) => {
     const list = VENUES.filter((v) => v.sport === s.name);
     const courts = list.reduce((n, v) => n + v.courts, 0);
@@ -183,41 +143,12 @@ ${divider()}
     <div>${faqList([FAQ[0], FAQ[4], FAQ[7], FAQ[1], FAQ[5], FAQ[9]])}${ctas(btn('Visit the help centre', '/help/', 'btn--ghost'))}</div>
   </div>
 </section>`;
-  return layout({ path, theme, title: 'Served | Book your court', desc: 'Every court, one tap away. Search courts, check live availability, and book your slot in minutes.', body: body + extra, bodyCls,
+  return layout({ path, title: 'Served | Book your court', desc: 'Every court, one tap away. Search courts, check live availability, and book your slot in minutes.', body, bodyCls,
     schema: { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Served.', url: SITE.url, potentialAction: { '@type': 'SearchAction', target: SITE.url + 'courts/?q={q}', 'query-input': 'required name=q' } } });
 }
 
-// ============================================================ LAB: two compact, full-width hero options (staging palette)
+// ============================================================ HOME HERO: live board (option B, picked 27 Nov 2026)
 const liveSports = () => SPORTS.filter((x) => x.live).map((x) => { const list = VENUES.filter((v) => v.sport === x.name); return { ...x, n: list.length, from: minRate(list) }; });
-function labBar(active) {
-  const l = (k, t, href) => `<a href="${u(href)}"${active === k ? ' aria-current="page"' : ''}>${t}</a>`;
-  return `<nav class="labbar" aria-label="Hero options"><span>Hero option</span>${l('a', 'A', '/lab/hero-a/')}${l('b', 'B', '/lab/hero-b/')}${l('now', 'Current', '/')}</nav>`;
-}
-// Option A, "Motion search": the photo in motion, speed streaks, and a white search bar in the staging style
-function heroA() {
-  return `<section class="hx" data-hx aria-labelledby="hx-h">
-  <div class="hx__media" aria-hidden="true">
-    <figure class="hx__bg">${img('hero-run', { alt: '', sizes: '100vw', eager: true, pos: '72% 42%' })}</figure>
-    <span class="hx__speed"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-    <span class="hx__sweep"></span><span class="hx__shade"></span>
-  </div>
-  <div class="wrap hx__in">
-    <p class="hx__eyebrow"><span class="kicker__ball"></span>Every court. One tap away.</p>
-    <h1 class="hx__h" id="hx-h"><span>Choose Your Court<span class="pd">.</span></span><span>Get Ready To <em>Play</em><span class="pd">.</span></span></h1>
-    <p class="hx__lede">No calls, no waiting, no guesswork. Book instantly and get on the court in minutes.</p>
-    <form class="hx__search" action="${u('/courts/')}" method="get" role="search" aria-label="Search courts">
-      <label class="hx__f"><span>Sport</span><select name="sport"><option value="">Any sport</option>${liveSports().map((x) => `<option>${x.name}</option>`).join('')}</select>${icon('chev')}</label>
-      <label class="hx__f"><span>Where</span><select name="city"><option value="">Anywhere</option>${CITIES.map((c) => `<option>${c.name}</option>`).join('')}</select>${icon('pin')}</label>
-      <label class="hx__f"><span>When</span><select name="date" data-date-select><option value="">Any day</option></select>${icon('cal')}</label>
-      <button class="hx__go" type="submit"><span>Search courts</span>${icon('search')}</button>
-    </form>
-    <div class="hx__foot">
-      <p class="hx__quick"><span>Popular</span>${liveSports().map((x) => `<a href="${u(`/courts/?sport=${x.name}`)}" data-tone="${x.tone}">${icon(x.icon)}${x.name}</a>`).join('')}<a href="${u('/courts/?view=map')}">${icon('map')}Map</a></p>
-      <ul class="hx__stats" aria-label="Served. in numbers"><li><b data-count="${VENUES.length}">${VENUES.length}</b>venues</li><li><b data-count="${TOTAL_COURTS}">${TOTAL_COURTS}</b>courts</li><li><b data-count="${CITIES.length}">${CITIES.length}</b>cities</li></ul>
-    </div>
-  </div>
-</section>`;
-}
 // Option B, "Live board": kinetic sport word, one-tap sport buttons, a light that follows the pointer and a board of next open slots
 function heroB() {
   const board = [...VENUES].sort((x, y) => x.open[0].localeCompare(y.open[0]) || y.rating - x.rating).map((v) => `<a class="bitem" href="${u(`/courts/${v.slug}/availability/`)}" data-tone="${v.tone}"><i class="bitem__dot"></i><b>${esc(v.name)}</b><span>${esc(v.city)}</span><span class="bitem__next" data-next="${v.open.join(',')}">Next <b>${fmtDate(v.open[0])}</b></span><em>${peso(v.rate)}/hr</em><span class="bitem__go">Book ${icon('arrow')}</span></a>`).join('');
@@ -228,7 +159,7 @@ function heroB() {
   </div>
   <div class="wrap hb__in">
     <p class="hb__live"><i></i>Live availability <span class="sep">/</span> ${VENUES.length} venues, ${TOTAL_COURTS} courts</p>
-    <h1 class="hb__h" id="hb-h"><span class="sr">Choose Your Court. Get Ready To Play.</span><span aria-hidden="true" class="hb__l hb__l--sm">Find your</span><span aria-hidden="true" class="hb__word"><span class="rot" data-rotate="Pickleball|Tennis|Badminton" data-tones="heat|lime|paper">Pickleball</span></span><span aria-hidden="true" class="hb__l">court<span class="pd">.</span></span></h1>
+    <h1 class="hb__h" id="hb-h"><span class="sr">Choose Your Court. Get Ready To Play.</span><span aria-hidden="true" class="hb__l hb__l--sm">Find your</span><span aria-hidden="true" class="hb__word"><span class="rot" data-rotate="Pickleball|Tennis|Badminton">Pickleball</span></span><span aria-hidden="true" class="hb__l">court<span class="pd">.</span></span></h1>
     <div class="hb__sports">${liveSports().map((x) => `<a class="hb__sport" href="${u(`/courts/?sport=${x.name}`)}" data-tone="${x.tone}">${icon(x.icon)}<span><b>${x.name}</b><small>${x.n} venues <span class="sep">/</span> from ${peso(x.from)}/hr</small></span>${icon('arrow', 'hb__arrow')}</a>`).join('')}</div>
     <form class="hb__search" action="${u('/courts/')}" method="get" role="search" aria-label="Search courts">${icon('search')}<label class="sr" for="hbq">Court name or city</label><input id="hbq" name="q" type="search" placeholder="Court name or city" autocomplete="off"><label class="sr" for="hbd">When</label><select id="hbd" name="date" data-date-select><option value="">Any day</option></select><button type="submit" aria-label="Search courts">${icon('arrow')}</button></form>
   </div>
@@ -267,7 +198,7 @@ ${phero({ k: 'Courts', h1: 'Find Your Court', lede: 'Every court on Served is re
       <label class="field"><span class="field__l">Date</span><select name="date" data-date-select><option value="">Any day</option></select>${icon('cal', 'field__i')}</label>
       <label class="field"><span class="field__l">Sort by</span><select name="sort"><option value="rating">Top rated</option><option value="price">Lowest price</option><option value="near">Nearest to me</option></select>${icon('star', 'field__i')}</label>
       <button class="btn btn--ghost btn--sm filters__near" type="button" data-near>${icon('locate')}<span>Play near me</span></button>
-      <div class="ctas filters__ctas"><a class="btn btn--ghost" href="${u('/courts/')}" data-reset><span>Reset</span></a><button class="btn btn--lime" type="submit" data-apply><span>Apply</span></button></div>
+      <div class="ctas filters__ctas"><a class="btn btn--ghost" href="${u('/courts/')}" data-reset><span>Reset</span></a><button class="btn btn--accent" type="submit" data-apply><span>Apply</span></button></div>
     </form>
     <div class="disc__results">
       <div class="disc__meta"><p class="disc__count" aria-live="polite" data-count-out><b>${VENUES.length}</b> courts available</p><p class="disc__chips" data-active-chips></p></div>
@@ -278,7 +209,7 @@ ${phero({ k: 'Courts', h1: 'Find Your Court', lede: 'Every court on Served is re
         <div class="map__card" data-map-card hidden></div>
         <p class="map__note">${icon('info')}Pins mark each venue’s city, not its exact address. Nasugbu sits off the map, to the south west.</p></div>
       </div>
-      <div class="empty" data-empty hidden><svg class="empty__net" viewBox="0 0 240 120" aria-hidden="true"><path d="M10 100h220M30 100V30h180v70M30 30h180" /><path d="M30 45h180M30 60h180M30 75h180M30 90h180M60 30v70M90 30v70M120 30v70M150 30v70M180 30v70" opacity=".35"/></svg><p class="d3">Out. No courts match that.</p><p>Try another date, widen the price or clear a filter.</p><a class="btn btn--lime" href="${u('/courts/')}" data-reset><span>Reset filters</span></a></div>
+      <div class="empty" data-empty hidden><svg class="empty__net" viewBox="0 0 240 120" aria-hidden="true"><path d="M10 100h220M30 100V30h180v70M30 30h180" /><path d="M30 45h180M30 60h180M30 75h180M30 90h180M60 30v70M90 30v70M120 30v70M150 30v70M180 30v70" opacity=".35"/></svg><p class="d3">Out. No courts match that.</p><p>Try another date, widen the price or clear a filter.</p><a class="btn btn--accent" href="${u('/courts/')}" data-reset><span>Reset filters</span></a></div>
     </div>
   </div>
 </section>`;
@@ -296,7 +227,7 @@ function booking(v, mode) {
   return `<section class="book" id="book" data-book="${json(bookData(v))}" data-mode="${mode}" aria-labelledby="book-h">
   <div class="wrap">
     <ol class="steps" data-steps aria-label="Booking steps"><li class="is-on"><b>1</b><span>Choose a date</span></li><li><b>2</b><span>Pick time &amp; court</span></li><li><b>3</b><span>Payment</span></li><li><b>4</b><span>Confirmation</span></li></ol>
-    ${mode === 'venue' ? `<div class="book__head"><h2 class="d2" id="book-h">Book a slot<span class="pd">.</span></h2><p>Green days have open slots at ${esc(v.name)}. Pick one to choose your time.</p></div>` : '<span id="book-h" class="sr">Booking</span>'}
+    ${mode === 'venue' ? `<div class="book__head"><h2 class="d2" id="book-h">Book a slot<span class="pd">.</span></h2><p>Orange days have open slots at ${esc(v.name)}. Pick one to choose your time.</p></div>` : '<span id="book-h" class="sr">Booking</span>'}
     <div class="book__grid">
       <div class="book__main">
         <div class="book__blk" data-blk="date">
@@ -322,7 +253,7 @@ function booking(v, mode) {
           <dl class="sum__dl"><div><dt>Venue</dt><dd>${esc(v.name)}</dd></div><div><dt>Date</dt><dd data-sum-date>Select a date</dd></div><div class="sum__picks"><dt>Booking</dt><dd data-sum-picks>Select a time</dd></div><div><dt>Hours</dt><dd data-sum-hrs>0 hours</dd></div><div><dt>Rate</dt><dd>${peso(v.rate)} / hr (exclusive of service fees)</dd></div><div><dt>Subtotal</dt><dd data-sum-sub>${peso(0)}.00</dd></div><div><dt>Service fee (5%)</dt><dd data-sum-fee>${peso(0)}.00</dd></div></dl>
           <div class="sum__total"><span>Total</span><b data-sum-total>${peso(0)}.00</b></div>
         </div>
-        <button class="btn btn--lime btn--lg sum__go" type="button" data-continue disabled><span>Continue to payment</span>${icon('arrow')}</button>
+        <button class="btn btn--accent btn--lg sum__go" type="button" data-continue disabled><span>Continue to payment</span>${icon('arrow')}</button>
         <p class="sum__refund">${icon('shield')}Court price refunded if you cancel 24 hours before your slot.</p>
       </aside>
     </div>
@@ -335,7 +266,7 @@ function booking(v, mode) {
       ${[['gcash', 'GCash', 'wallet'], ['maya', 'Maya', 'wallet'], ['qrph', 'QR Ph', 'qr'], ['card', 'Card', 'card'], ['bank', 'Bank', 'bank']].map(([k, n, ic], i) => `<label class="paym__o"><input type="radio" name="paym" value="${k}"${i ? '' : ' checked'}><span>${icon(ic)}${n}</span></label>`).join('')}
     </fieldset>
     <p class="pay__hold">${icon('clock')}The court is held while you pay, so nothing is double-booked.</p>
-    <button class="btn btn--lime btn--lg pay__go" type="button" data-pay-go><span data-pay-label>Pay</span>${icon('arrow')}</button>
+    <button class="btn btn--accent btn--lg pay__go" type="button" data-pay-go><span data-pay-label>Pay</span>${icon('arrow')}</button>
     ${demoNote('Preview build: no payment is taken and no court is booked.')}
   </div></div>
   <div class="sheet sheet--done" data-done hidden role="dialog" aria-modal="true" aria-labelledby="done-h"><div class="sheet__in board done">
@@ -344,7 +275,7 @@ function booking(v, mode) {
     <h2 class="d2" id="done-h">Court secured<span class="pd">.</span></h2>
     <p class="done__sub">Booked and served. You’re on.</p>
     <div class="ticket" data-ticket></div>
-    <div class="ctas"><button class="btn btn--lime" type="button" data-ics><span>Add to calendar</span>${icon('download')}</button><a class="btn btn--ghost" href="${u('/courts/')}"><span>Book another court</span></a></div>
+    <div class="ctas"><button class="btn btn--accent" type="button" data-ics><span>Add to calendar</span>${icon('download')}</button><a class="btn btn--ghost" href="${u('/courts/')}"><span>Book another court</span></a></div>
     ${demoNote('Preview build: this is a demonstration of the confirmation step.')}
   </div></div>
   <noscript><div class="wrap"><p class="nojs">Turn on JavaScript to pick a slot. Next open day: ${fmtDate(v.open[0], { weekday: 'long', day: 'numeric', month: 'long' })}.</p></div></noscript>
@@ -371,7 +302,7 @@ function venuePage(v) {
       </div>
       <div class="vhero__board board" data-reveal>
         ${priceTag(v, true)}${nextTag(v)}
-        ${ctas(`<a class="btn btn--lime btn--lg" href="#book"><span>Check availability</span>${icon('arrow')}</a>`, btn('Back to all courts', '/courts/', 'btn--ghost'))}
+        ${ctas(`<a class="btn btn--accent btn--lg" href="#book"><span>Check availability</span>${icon('arrow')}</a>`, btn('Back to all courts', '/courts/', 'btn--ghost'))}
       </div>
     </div>
   </div>
@@ -409,7 +340,7 @@ ${booking(v, 'venue')}
     </div>
     <div class="vloc__map board" data-mapembed data-src="https://www.google.com/maps?q=${q}&output=embed">
       ${img(v.place, { alt: v.place === 'place-up-diliman' ? 'The Academic Oval, University of the Philippines Diliman' : `${city.name} skyline`, sizes: '(min-width: 900px) 45vw, 100vw' })}
-      <button class="btn btn--lime btn--sm vloc__load" type="button" data-load-map>${icon('map')}<span>Show map</span></button>
+      <button class="btn btn--accent btn--sm vloc__load" type="button" data-load-map>${icon('map')}<span>Show map</span></button>
       <p class="photo-note">${esc(v.place === 'place-up-diliman' ? 'UP Diliman' : city.name)}, Wikimedia Commons</p>
     </div>
   </div>
@@ -438,7 +369,7 @@ function bookPage(v, mode) {
     ${crumbs(isSlots ? [['Home', '/'], ['Courts', '/courts/'], ['Availability', `/courts/${v.slug}/availability/`], ['Time & court', `/courts/${v.slug}/slots/`]] : [['Home', '/'], ['Courts', '/courts/'], [v.name, `/courts/${v.slug}/`], ['Availability', `/courts/${v.slug}/availability/`]])}
     <div class="bhero__row">
       <div><h1 class="d1">${isSlots ? 'Pick Your Slot' : 'Check Availability'}</h1>
-      <p class="lede" data-sel-line>${isSlots ? `Selected: <b data-sel-date>${fmtDate(v.open[0], { day: 'numeric', month: 'long', year: 'numeric' })}</b> at ${esc(v.name)}` : `Green days have open slots at ${esc(v.name)} . Pick one to choose your time.`}</p></div>
+      <p class="lede" data-sel-line>${isSlots ? `Selected: <b data-sel-date>${fmtDate(v.open[0], { day: 'numeric', month: 'long', year: 'numeric' })}</b> at ${esc(v.name)}` : `Orange days have open slots at ${esc(v.name)} . Pick one to choose your time.`}</p></div>
       <a class="bhero__venue" href="${venueHref(v)}"><span>${img(v.img, { alt: '', sizes: '64px' })}</span><b>${esc(v.name)}</b><small>${esc(v.address)} <span class="sep">/</span> ${peso(v.rate)} / hr</small></a>
     </div>
   </div>
@@ -453,7 +384,7 @@ function rallyx() {
   const alts = { 'rallyx-now-open': 'Rally X street front with a NOW OPEN banner for pickleball and tennis', 'rallyx-forehand': 'A player hits a forehand on a Rally X court', 'rallyx-court-logo': 'The Rally X logo painted on the court', 'rallyx-paddle-ball': 'A paddle and a lime pickleball in front of a Rally X banner', 'rallyx-tennis-player': 'A player swings a tennis racket at Rally X', 'rallyx-paddle-wall': 'Pickleball paddles on a display wall', 'rallyx-backhand-net': 'A player reaches for a backhand behind the net', 'rallyx-target-net': 'A lime target net on court', 'rallyx-ready-position': 'A player in ready position on court', 'rallyx-paddles-court': 'Two paddles and two balls on a blue court', 'rallyx-paddle-wall-tall': 'A tall wall of paddles and balls', 'rallyx-facade': 'Rally X street front between city towers' };
   const nearby = VENUES.filter((v) => ['Pickleball', 'Tennis'].includes(v.sport));
   const body = `
-<section class="vhero vhero--rx band band--night" data-tone="lime">
+<section class="vhero vhero--rx band band--night" data-tone="heat">
   <div class="band__clip" aria-hidden="true"><figure class="vhero__bg" data-depth="0.1">${img('rallyx-now-open', { alt: '', sizes: '100vw', eager: true, pos: '50% 40%' })}</figure><span class="vhero__scrim"></span><span class="band__grid"></span></div>
   <div class="wrap vhero__in">
     ${crumbs([['Home', '/'], ['Courts', '/courts/'], ['Rally X', '/courts/rally-x/']])}
@@ -466,13 +397,13 @@ function rallyx() {
       <div class="vhero__board board" id="notify">
         <p class="kicker"><span class="kicker__ball"></span>Booking on Served opens soon</p>
         <p class="vhero__soon">Be first on court when Rally X slots go live.</p>
-        <form class="notify" data-demo-form><label class="field"><span class="field__l">Email address</span><input type="email" name="email" required placeholder="you@email.com" autocomplete="email">${icon('mail', 'field__i')}</label><button class="btn btn--lime" type="submit"><span>Notify me</span>${icon('arrow')}</button></form>
+        <form class="notify" data-demo-form><label class="field"><span class="field__l">Email address</span><input type="email" name="email" required placeholder="you@email.com" autocomplete="email">${icon('mail', 'field__i')}</label><button class="btn btn--accent" type="submit"><span>Notify me</span>${icon('arrow')}</button></form>
         ${demoNote()}
       </div>
     </div>
   </div>
 </section>
-${marquee(['Rally X', 'Pickleball', 'Tennis', 'Now open', 'Rally X', 'Lime lines', 'Game on'], 'mq--lime')}
+${marquee(['Rally X', 'Pickleball', 'Tennis', 'Now open', 'Rally X', 'Paddles up', 'Game on'], 'mq--accent')}
 <section class="band band--night rxg" aria-labelledby="rxg-h">
   <div class="wrap">
     ${sh({ k: 'On court', h: '<span id="rxg-h">Inside Rally X<span class="pd">.</span></span>', lede: 'Photos supplied by the venue. Tap any photo to open it full size.', cls: 'sh--split' })}
@@ -585,7 +516,7 @@ ${phero({ k: 'Contact', h1: 'Contact Us', lede: 'Questions about a booking, or a
       <label class="field"><span class="field__l">Email address</span><input name="email" type="email" required placeholder="you@email.com" autocomplete="email"></label></div>
       <label class="field"><span class="field__l">Subject</span><select name="subject"><option>A booking I made</option><option>Listing my court</option><option>Billing or pricing</option><option>Something else</option></select>${icon('chev', 'field__i')}</label>
       <label class="field"><span class="field__l">Message</span><textarea name="message" rows="5" required placeholder="How can we help?"></textarea></label>
-      <button class="btn btn--lime btn--lg" type="submit"><span>Send message</span>${icon('arrow')}</button>
+      <button class="btn btn--accent btn--lg" type="submit"><span>Send message</span>${icon('arrow')}</button>
       ${demoNote()}
     </form>
     <div class="cnt__side">
@@ -616,7 +547,7 @@ function signIn() {
     <form data-demo-form>${roleSeg('role')}
       <label class="field"><span class="field__l">Email or username</span><input name="email" type="text" required placeholder="Email/Username" autocomplete="username"></label>${pw('password', 'Password', 'current-password')}
       <div class="auth__row"><label class="check"><input type="checkbox" name="remember"><span>Remember Password</span></label><a class="link" href="${u('/forgot-password/')}">Forgot Password</a></div>
-      <button class="btn btn--lime btn--lg btn--block" type="submit"><span>Sign In</span>${icon('arrow')}</button>${demoNote()}</form>
+      <button class="btn btn--accent btn--lg btn--block" type="submit"><span>Sign In</span>${icon('arrow')}</button>${demoNote()}</form>
     <p class="auth__alt">Don’t have an account? <a href="${u('/sign-up/')}">Sign up!</a></p>` });
 }
 function signUp() {
@@ -629,21 +560,21 @@ function signUp() {
       <div class="cform__row"><label class="field"><span class="field__l">Email address</span><input name="email" type="email" required placeholder="Email" autocomplete="email"></label><label class="field"><span class="field__l">Phone number</span><input name="phone" type="tel" placeholder="Phone number (optional)" autocomplete="tel"></label></div>
       <div class="cform__row">${pw('password', 'Password', 'new-password')}${pw('password_confirm', 'Confirm Password', 'new-password')}</div>
       <label class="check"><input type="checkbox" name="terms" required><span>By continuing you indicate that you read and agreed to the Terms of Use</span></label>
-      <button class="btn btn--lime btn--lg btn--block" type="submit"><span>Create Account</span>${icon('arrow')}</button>${demoNote()}</form>
+      <button class="btn btn--accent btn--lg btn--block" type="submit"><span>Create Account</span>${icon('arrow')}</button>${demoNote()}</form>
     <p class="auth__alt">Have an account? <a href="${u('/sign-in/')}">Sign In!</a></p>` });
 }
 function forgot() {
   return auth({ path: '/forgot-password/', title: 'Forgot Password', desc: 'Reset your Served password with your registered email.', photo: 'rallyx-paddle-ball', pos: '50% 50%',
     side: `<p class="kicker"><span class="kicker__ball"></span>Happens to the best of us</p><p class="auth__big">Let’s get you back on court.</p>`,
     form: `<a class="logo" href="${u('/')}" aria-label="Served. home"><span class="logo__w">Served</span><span class="logo__d"></span></a><h1 class="d2">Forgot Password</h1><p class="auth__sub">Enter registered email</p>
-    <form data-demo-form><label class="field"><span class="field__l">Email address</span><input name="email" type="email" required placeholder="Email" autocomplete="email"></label><button class="btn btn--lime btn--lg btn--block" type="submit"><span>Submit</span>${icon('arrow')}</button>${demoNote()}</form>
+    <form data-demo-form><label class="field"><span class="field__l">Email address</span><input name="email" type="email" required placeholder="Email" autocomplete="email"></label><button class="btn btn--accent btn--lg btn--block" type="submit"><span>Submit</span>${icon('arrow')}</button>${demoNote()}</form>
     <p class="auth__alt">Remember Password? <a href="${u('/sign-in/')}">Sign In!</a></p>` });
 }
 function staff() {
   return auth({ path: '/staff/sign-in/', title: 'Staff sign in', desc: 'Front desk staff sign in on their venue’s own page. Open the link your venue gave you, or type its desk code.', photo: 'rallyx-paddle-wall-tall', pos: '50% 40%',
     side: `<p class="kicker"><span class="kicker__ball"></span>Front desk</p><p class="auth__big">Each venue has its own sign-in page for its staff.</p>`,
     form: `<a class="logo" href="${u('/')}" aria-label="Served. home"><span class="logo__w">Served</span><span class="logo__d"></span></a><h1 class="d2">Staff sign in</h1><p class="auth__sub">Staff sign in on their venue’s own page. Open the link your venue gave you, or type its desk code.</p>
-    <form data-demo-form><label class="field"><span class="field__l">Desk code</span><input name="code" required placeholder="Desk code, like up-diliman-4f2a" autocomplete="off"></label><button class="btn btn--lime btn--lg btn--block" type="submit"><span>Go to my venue’s sign-in</span>${icon('arrow')}</button>${demoNote()}</form>
+    <form data-demo-form><label class="field"><span class="field__l">Desk code</span><input name="code" required placeholder="Desk code, like up-diliman-4f2a" autocomplete="off"></label><button class="btn btn--accent btn--lg btn--block" type="submit"><span>Go to my venue’s sign-in</span>${icon('arrow')}</button>${demoNote()}</form>
     <p class="auth__alt">Not staff? <a href="${u('/sign-in/')}">Sign in as a player or court owner</a>.</p>` });
 }
 
@@ -712,8 +643,8 @@ ${cr ? `<p class="credit-line wrap">Photo: ${esc(cr.title)}, ${esc(cr.author)}, 
 // ============================================================ PLAY (concept)
 function play() {
   const example = {
-    'open-play': `<div class="ex board"><p class="ex__h">${icon('users')}Open play <em>Example</em></p><p class="ex__t">Pickleball doubles, intermediate</p><p class="ex__m">Saturday evening <span class="sep">/</span> 4 of 8 spots left</p><div class="ex__slots">${Array.from({ length: 8 }, (_, i) => `<i class="${i < 4 ? 'on' : ''}"></i>`).join('')}</div><span class="btn btn--lime btn--sm">Claim a spot</span></div>`,
-    'find-players': `<div class="ex board"><p class="ex__h">${icon('search')}Find players <em>Example</em></p><div class="ex__chips"><span class="chip">Tennis</span><span class="chip">Beginner</span><span class="chip">Weeknights</span></div><p class="ex__t">Looking for a hitting partner</p><p class="ex__m">Two players match your level and time</p><span class="btn btn--lime btn--sm">Say hi</span></div>`,
+    'open-play': `<div class="ex board"><p class="ex__h">${icon('users')}Open play <em>Example</em></p><p class="ex__t">Pickleball doubles, intermediate</p><p class="ex__m">Saturday evening <span class="sep">/</span> 4 of 8 spots left</p><div class="ex__slots">${Array.from({ length: 8 }, (_, i) => `<i class="${i < 4 ? 'on' : ''}"></i>`).join('')}</div><span class="btn btn--accent btn--sm">Claim a spot</span></div>`,
+    'find-players': `<div class="ex board"><p class="ex__h">${icon('search')}Find players <em>Example</em></p><div class="ex__chips"><span class="chip">Tennis</span><span class="chip">Beginner</span><span class="chip">Weeknights</span></div><p class="ex__t">Looking for a hitting partner</p><p class="ex__m">Two players match your level and time</p><span class="btn btn--accent btn--sm">Say hi</span></div>`,
     clubs: `<div class="ex board"><p class="ex__h">${icon('flag')}Club ranking <em>Example</em></p><ol class="ex__rank"><li><b>1</b>Club one<span>1,240</span></li><li><b>2</b>Club two<span>1,180</span></li><li><b>3</b>Club three<span>1,095</span></li></ol></div>`,
     tournaments: `<div class="ex board"><p class="ex__h">${icon('trophy')}Bracket <em>Example</em></p><div class="ex__bracket"><span>Team A</span><span>Team B</span><span class="w">Team A</span><span>Team C</span><span>Team D</span><span class="w">Team D</span><span class="f">Final</span></div></div>`,
     events: `<div class="ex board"><p class="ex__h">${icon('ticket')}Events <em>Example</em></p><p class="ex__t">Beginner clinic</p><p class="ex__m">Hosted by a venue near you</p><span class="btn btn--ghost btn--sm">Save my spot</span></div>`,
@@ -732,7 +663,7 @@ ${phero({ k: 'Play mode <em class="soon">Coming soon</em>', h1: 'Who’s playing
   </div>
 </section>
 <section class="band band--night early"><div class="wrap early__in"><div data-reveal>${kicker('Early access')}<h2 class="d2">Want in first<span class="pd">?</span></h2><p class="lede">Leave your email and the sport you play. We will let you know when Play mode opens.</p></div>
-  <form class="early__form board" data-demo-form><label class="field"><span class="field__l">Email address</span><input type="email" name="email" required placeholder="you@email.com" autocomplete="email"></label><label class="field"><span class="field__l">Sport</span><select name="sport">${SPORTS.map((s) => `<option>${s.name}</option>`).join('')}</select>${icon('chev', 'field__i')}</label><button class="btn btn--lime btn--lg" type="submit"><span>Get early access</span>${icon('arrow')}</button>${demoNote()}</form></div></section>`;
+  <form class="early__form board" data-demo-form><label class="field"><span class="field__l">Email address</span><input type="email" name="email" required placeholder="you@email.com" autocomplete="email"></label><label class="field"><span class="field__l">Sport</span><select name="sport">${SPORTS.map((s) => `<option>${s.name}</option>`).join('')}</select>${icon('chev', 'field__i')}</label><button class="btn btn--accent btn--lg" type="submit"><span>Get early access</span>${icon('arrow')}</button>${demoNote()}</form></div></section>`;
   return layout({ path: '/play/', title: 'Play mode: open play, players, clubs and tournaments', desc: 'Play mode is where Served goes next: open play, find players, clubs and club ranking, tournaments and events. Concept preview.', body, active: 'play', bodyCls: 'pg-play' });
 }
 
@@ -816,8 +747,6 @@ export function pages() {
   // the page path is set BEFORE its body renders, so every relative URL in the body is computed for that page
   const add = (path, render) => { setPage(path === '/404' ? '/' : path); out.push({ path, html: render() }); };
   add('/', home);
-  add('/lab/hero-a/', () => home({ path: '/lab/hero-a/', hero: heroA(), bodyCls: 'pg-home pg-lab', theme: 'theme-live', extra: labBar('a') }));
-  add('/lab/hero-b/', () => home({ path: '/lab/hero-b/', hero: heroB(), bodyCls: 'pg-home pg-lab', theme: 'theme-live', extra: labBar('b') }));
   add('/courts/', courts);
   for (const v of VENUES) {
     add(`/courts/${v.slug}/`, () => venuePage(v));

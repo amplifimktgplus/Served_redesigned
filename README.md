@@ -37,6 +37,6 @@ No npm packages. `dist/` is what GitHub Pages serves (branch `gh-pages`).
 - Venue photos marked "Representative photo": the current Served. site's own sport images.
 - City and sport photos: Wikimedia Commons, credited on the Court Gallery page.
 
-Hero options on review (staging palette, client hero photo): `/lab/hero-a/` (motion search) and `/lab/hero-b/` (live board).
+Home hero: option B, "Live board", picked 27 Nov 2026, with the current site's palette (black, navy, white, orange) across every page and no lime.
 
 See `docs/PITCH-NOTES.md` for what was kept, what is new, and the questions for the Served. team.

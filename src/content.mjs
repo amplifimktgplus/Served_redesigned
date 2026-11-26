@@ -29,7 +29,7 @@ export const SPORTS = [
     line: 'Paddles up.', kicker: 'The game everyone is picking up',
     intro: 'A paddle, a plastic ball and a kitchen you cannot volley in. Easy to learn in one session, hard to put down after. Doubles is where the noise is.',
     bring: ['Paddle (or rent one where the venue offers equipment rental)', 'Court shoes with lateral grip', 'Water, and a fourth player'] },
-  { slug: 'tennis', name: 'Tennis', live: true, tone: 'lime', icon: 'tennis', img: 'rallyx-tennis-player', card: 'card-tennis',
+  { slug: 'tennis', name: 'Tennis', live: true, tone: 'cream', icon: 'tennis', img: 'rallyx-tennis-player', card: 'card-tennis',
     line: 'First serve.', kicker: 'Hard courts and clay',
     intro: 'The classic. Club courts in Alabang, clay on campus in Diliman. Book an hour to rally, or block out a full match.',
     bring: ['Racket and a fresh can of balls', 'Clay-friendly shoes for clay courts', 'A towel for the changeover'] },
@@ -82,7 +82,7 @@ export const TEST_VENUES = vj.venues.filter((v) => v.test).map((v) => v.slug);
 // ("NOW OPEN! PICKLEBALL and TENNIS", "BOOK NOW FOR SCHEDULE AND BOOKING"). Address, rates and court
 // count are not on the capture, so the page says so and offers a notify form instead of a booking.
 export const RALLYX = {
-  slug: 'rally-x', name: 'Rally X', sports: ['Pickleball', 'Tennis'], tone: 'lime', bookable: false,
+  slug: 'rally-x', name: 'Rally X', sports: ['Pickleball', 'Tennis'], tone: 'heat', bookable: false,
   status: 'Now open', note: 'Booking on Served opens soon',
   photos: ['rallyx-now-open', 'rallyx-forehand', 'rallyx-court-logo', 'rallyx-paddle-ball', 'rallyx-tennis-player', 'rallyx-paddle-wall',
     'rallyx-backhand-net', 'rallyx-target-net', 'rallyx-ready-position', 'rallyx-paddles-court', 'rallyx-paddle-wall-tall', 'rallyx-facade'],
@@ -113,7 +113,7 @@ export const COLLECTIONS = [
 
 // ---------- FAQ: every answer is built from captured copy ----------
 export const FAQ = [
-  { cat: 'Booking', q: 'How do I book a court?', a: 'Find your court, pick a green day, choose your time and court, then pay online. Nothing is reserved until payment, and the court is held while you pay, so nothing is double-booked.' },
+  { cat: 'Booking', q: 'How do I book a court?', a: 'Find your court, pick an orange day, choose your time and court, then pay online. Nothing is reserved until payment, and the court is held while you pay, so nothing is double-booked.' },
   { cat: 'Booking', q: 'How many hours can I book at once?', a: 'Pick up to 4 hours on a court. They do not have to be next to each other. To book another court as well, choose it and pick its hours; what you picked on the first is kept.' },
   { cat: 'Booking', q: 'What does a struck-through slot mean?', a: 'Struck-through slots are already taken on the selected court. Switch courts to see what is open there.' },
   { cat: 'Booking', q: 'Is every court on Served real?', a: 'Every court on Served is real and ready to book.' },

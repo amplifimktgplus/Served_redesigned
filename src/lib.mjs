@@ -16,7 +16,7 @@ export const a = (p) => '../'.repeat(depth()) + p;
 export const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 export const peso = (n) => '₱' + Number(n).toLocaleString('en-PH', { maximumFractionDigits: 2 });
 export const json = (o) => esc(JSON.stringify(o));
-// the period as a brand device: the full stop stays in the text, a lime ball is drawn behind it
+// the period as a brand device: the full stop stays in the text, an orange ball is drawn behind it
 export const dot = (s) => String(s).replace(/\.(?=\s|$|<)/g, '<span class="pd">.</span>');
 export const fmtDate = (iso, opt = { day: 'numeric', month: 'short' }) => new Date(iso + 'T12:00:00+08:00').toLocaleDateString('en-PH', { ...opt, timeZone: 'Asia/Manila' });
 
@@ -94,7 +94,7 @@ export const kicker = (t, cls = '') => `<p class="kicker${cls ? ' ' + cls : ''}"
 export function sh({ k, h, lede, tag = 'h2', size = 'd2', cls = '', id = '' }) {
   return `<header class="sh ${cls}"${id ? ` id="${id}"` : ''} data-reveal>${k ? kicker(k) : ''}<${tag} class="${size}">${h}</${tag}>${lede ? `<p class="lede">${lede}</p>` : ''}</header>`;
 }
-export const btn = (label, href, cls = 'btn--lime', extra = '') => `<a class="btn ${cls}" href="${u(href)}"${extra}><span>${label}</span>${icon(/^https?:/.test(href) ? 'arrow-ne' : 'arrow')}</a>`;
+export const btn = (label, href, cls = 'btn--accent', extra = '') => `<a class="btn ${cls}" href="${u(href)}"${extra}><span>${label}</span>${icon(/^https?:/.test(href) ? 'arrow-ne' : 'arrow')}</a>`;
 export const ctas = (...b) => `<div class="ctas">${b.join('')}</div>`;
 export const chipSport = (s, cls = '') => { const sp = sportOf(s); return `<span class="chip chip--sport ${cls}" data-tone="${sp.tone}">${icon(sp.icon)}${sp.name}</span>`; };
 export const score = (v) => v.reviewCount ? `<span class="score" title="${v.rating} out of 5 from ${v.reviewCount} reviews">${icon('star', 'ico--fill')}<b>${v.rating.toFixed(1)}</b><small>${v.reviewCount} reviews</small></span>` : `<span class="score score--new">${icon('sparkle')}<b>New</b><small>no reviews yet</small></span>`;
@@ -112,14 +112,14 @@ export function vcard(v, { variant = '', lazy = true } = {}) {
     <p class="vcard__meta">${icon('pin')}<span>${esc(v.address)}</span><span class="sep">/</span><span>${esc(v.surface)}</span><span class="sep">/</span><span>${v.courts} courts</span></p>
     <p class="vcard__desc">${esc(v.desc)}</p>
     <div class="vcard__foot">${priceTag(v)}${nextTag(v)}</div>
-    <div class="ctas ctas--card"><a class="btn btn--lime btn--sm" href="${u(`/courts/${v.slug}/availability/`)}"><span>Book Now</span>${icon('arrow')}</a><a class="btn btn--ghost btn--sm" href="${u(`/courts/${v.slug}/`)}"><span>View Court</span></a></div>
+    <div class="ctas ctas--card"><a class="btn btn--accent btn--sm" href="${u(`/courts/${v.slug}/availability/`)}"><span>Book Now</span>${icon('arrow')}</a><a class="btn btn--ghost btn--sm" href="${u(`/courts/${v.slug}/`)}"><span>View Court</span></a></div>
   </div>
   <span class="glint" aria-hidden="true"></span>
 </article>`;
 }
 
 export function rallyCard(cls = '') {
-  return `<article class="vcard vcard--soon ${cls}" data-tone="lime" data-tilt data-reveal>
+  return `<article class="vcard vcard--soon ${cls}" data-tone="heat" data-tilt data-reveal>
   <a class="vcard__media" href="${u('/courts/rally-x/')}" tabindex="-1" aria-hidden="true">${img('rallyx-court-logo', { alt: '', sizes: '(min-width: 1100px) 33vw, 100vw', pos: '50% 60%' })}${linesSvg()}<span class="ribbon ribbon--rust">Now open</span></a>
   <div class="vcard__tags">${chipSport('Pickleball')}${chipSport('Tennis')}</div>
   <div class="vcard__body">
@@ -205,14 +205,14 @@ export function header(active = '') {
     </ul></nav>
     <div class="hdr__acts">
       <a class="hdr__in-link" href="${u('/sign-in/')}">${icon('user')}<span>Login / Register</span></a>
-      <a class="btn btn--lime btn--sm hdr__book" href="${u('/courts/')}"><span>Book a court</span></a>
+      <a class="btn btn--accent btn--sm hdr__book" href="${u('/courts/')}"><span>Book a court</span></a>
       <button class="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Open menu" data-burger><span></span><span></span><span></span></button>
     </div>
   </div>
 </header>
 <div class="drawer" id="drawer" hidden data-drawer>
   <div class="drawer__in">
-    <form class="drawer__search" action="${u('/courts/')}" method="get" role="search"><label class="sr" for="dq">Search courts</label>${icon('search')}<input id="dq" name="q" type="search" placeholder="Court name or city" autocomplete="off"><button class="btn btn--lime btn--sm" type="submit"><span>Search</span></button></form>
+    <form class="drawer__search" action="${u('/courts/')}" method="get" role="search"><label class="sr" for="dq">Search courts</label>${icon('search')}<input id="dq" name="q" type="search" placeholder="Court name or city" autocomplete="off"><button class="btn btn--accent btn--sm" type="submit"><span>Search</span></button></form>
     <nav class="drawer__nav" aria-label="Mobile">
       <a href="${u('/')}">Home</a><a href="${u('/courts/')}">Courts</a><a href="${u('/play/')}">Play <em class="soon">Soon</em></a><a href="${u('/pricing/')}">Pricing</a><a href="${u('/list-your-court/')}">List Your Court</a><a href="${u('/help/')}">Help</a><a href="${u('/contact/')}">Contact Us</a>
     </nav>
@@ -220,7 +220,7 @@ export function header(active = '') {
     <div class="drawer__chips">${SPORTS.filter((s) => s.live).map((s) => `<a class="chip chip--sport" data-tone="${s.tone}" href="${u(`/courts/?sport=${s.name}`)}">${icon(s.icon)}${s.name}</a>`).join('')}</div>
     <p class="drawer__h">Cities</p>
     <div class="drawer__chips">${CITIES.map((c) => `<a class="chip" href="${u(`/cities/${c.slug}/`)}">${c.name}</a>`).join('')}</div>
-    <div class="ctas drawer__ctas"><a class="btn btn--ghost" href="${u('/sign-in/')}"><span>Login / Register</span></a><a class="btn btn--lime" href="${u('/courts/')}"><span>Book a court</span>${icon('arrow')}</a></div>
+    <div class="ctas drawer__ctas"><a class="btn btn--ghost" href="${u('/sign-in/')}"><span>Login / Register</span></a><a class="btn btn--accent" href="${u('/courts/')}"><span>Book a court</span>${icon('arrow')}</a></div>
   </div>
 </div>`;
 }
@@ -232,7 +232,7 @@ export function stickyBar(kind = 'site', v = null) {
     return `<aside class="stick" data-stick aria-label="Book ${esc(v.name)}" hidden><div class="stick__in">
       <span class="stick__thumb">${img(v.img, { alt: '', sizes: '56px' })}</span>
       <p class="stick__txt"><b>${esc(v.name)}</b><small>${peso(v.rate)} / hr <span class="sep">/</span> <span data-next-short="${esc(v.open.join(','))}">Next: ${fmtDate(v.open[0])}</span></small></p>
-      <div class="stick__acts"><a class="btn btn--lime btn--sm" href="${CUR === `/courts/${v.slug}/` ? '#book' : u(`/courts/${v.slug}/availability/`)}"><span>Book a slot</span>${icon('arrow')}</a></div>
+      <div class="stick__acts"><a class="btn btn--accent btn--sm" href="${CUR === `/courts/${v.slug}/` ? '#book' : u(`/courts/${v.slug}/availability/`)}"><span>Book a slot</span>${icon('arrow')}</a></div>
       <button class="stick__x" type="button" data-stick-x aria-label="Hide this bar">${icon('close')}</button></div></aside>`;
   }
   return `<aside class="stick" data-stick aria-label="Quick booking" hidden><div class="stick__in">
@@ -240,13 +240,13 @@ export function stickyBar(kind = 'site', v = null) {
     <p class="stick__txt"><b>Your next game is calling.</b><small>${VENUES.length} venues <span class="sep">/</span> ${totalCourts} courts <span class="sep">/</span> 3 sports</small></p>
     <div class="stick__acts">
       <a class="stick__ic" href="${u('/courts/?view=map')}" aria-label="Map view">${icon('map')}<span>Map</span></a>
-      <a class="btn btn--lime btn--sm" href="${u('/courts/')}"><span>Find a court</span>${icon('arrow')}</a>
+      <a class="btn btn--accent btn--sm" href="${u('/courts/')}"><span>Find a court</span>${icon('arrow')}</a>
     </div>
     <button class="stick__x" type="button" data-stick-x aria-label="Hide this bar">${icon('close')}</button></div></aside>`;
 }
 
 export function finalCta() {
-  return `<section class="band band--lime fin" aria-labelledby="fin-h">
+  return `<section class="band band--accent fin" aria-labelledby="fin-h">
   <div class="band__clip" aria-hidden="true"><span class="fin__lines">${linesSvg()}</span></div>
   <div class="wrap fin__in">
     <p class="fin__mega" data-pressure aria-label="Game on.">GAME ON.</p>
@@ -285,11 +285,11 @@ export function footer() {
 
 const splash = () => `<div class="splash" aria-hidden="true" data-splash><div class="splash__court">${linesSvg()}</div><div class="splash__mark"><span class="splash__w">Served</span><span class="splash__ball"></span></div></div>`;
 
-export function layout({ path, title, desc, body, active = '', bodyCls = '', sticky = 'site', venue = null, schema = null, ogImg = 'og-served.jpg', noFinal = false, theme = '' }) {
+export function layout({ path, title, desc, body, active = '', bodyCls = '', sticky = 'site', venue = null, schema = null, ogImg = 'og-served.jpg', noFinal = false }) {
   setPage(path);
   const full = title.includes('Served') ? title : `${title} | Served.`;
   const html = `<!doctype html>
-<html lang="en-PH" class="no-js${theme ? ' ' + theme : ''}" data-root="${root()}">
+<html lang="en-PH" class="no-js" data-root="${root()}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -297,7 +297,7 @@ export function layout({ path, title, desc, body, active = '', bodyCls = '', sti
 <meta name="description" content="${esc(desc)}">
 <meta name="robots" content="noindex, nofollow">
 <link rel="canonical" href="${SITE.url}${path.replace(/^\//, '')}">
-<meta name="theme-color" content="#101515">
+<meta name="theme-color" content="#0a0a0a">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Served."><meta property="og:title" content="${esc(full)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:image" content="${SITE.url}assets/img/${ogImg}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="${a('assets/favicon.svg')}" type="image/svg+xml">

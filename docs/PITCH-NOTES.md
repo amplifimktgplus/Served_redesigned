@@ -4,10 +4,10 @@ Captured from the Served. staging site on 26 Nov 2026. Preview: https://amplifim
 
 ## Art direction: "Baseline City"
 
-The court is the city grid. Ink grounds lit by one golden-hour key light per section, court lines that draw
-themselves, and the lime ball as the full stop in "Served.". Palette: Iron Core, Industrial Aqua, Rust Signal,
-Heat Marker and Architectural Cream, plus the current site's lime lifted for dark grounds. Each sport has its
-own tone: tennis lime, pickleball heat orange, badminton aqua, basketball rust (coming soon).
+The court is the city grid. Black grounds lit by one key light per section, court lines that draw
+themselves, and an orange ball as the full stop in "Served.". Palette (since 27 Nov 2026): the current site's
+own black, navy panels, white and orange #ff6b18 as the single accent. No lime or neon green anywhere.
+Sport tones: pickleball orange, tennis white, badminton sky blue, basketball orange (coming soon).
 Type: Archivo variable (width and weight axes, used for kinetic headlines), Plus Jakarta Sans (the current
 UI face), Pacifico (the current wordmark face) for the logo and one script accent per heading.
 
@@ -19,6 +19,8 @@ UI face), Pacifico (the current wordmark face) for the logo and one script accen
 - Real slot boards: opening hours per venue, per-court taken slots, the UP Diliman evening rate (₱1,100 from
   6 PM), the 5% service fee, the 4-hours-per-court rule, the 24-hour refund rule.
 - The URL structure, including `/courts?sport=`, `/pricing#players`, `/pricing#owners`, `/sign-up?role=owner`.
+- One captured line changed by a word: "Green days have open slots" reads "Orange days have open slots",
+  because open days are orange in this palette.
 
 ## New in the concept
 
@@ -31,16 +33,17 @@ UI face), Pacifico (the current wordmark face) for the logo and one script accen
 - Motion: one-time splash serve, line draws, masked photo reveals, parallax, tilt and glint cards, magnetic
   buttons, click sparks, scroll-velocity marquee, pressure type, rotating sport word. All off under reduced motion.
 
-## Hero options (26 Nov 2026)
+## Home hero (decided 27 Nov 2026)
 
-Two compact, full-width heroes built on the supplied orange duotone photo, in the staging site's palette
-(black grounds, white, orange #ff6b18 primary, lime #b7d60f secondary, navy #101a2e text on white). The option
-pages apply that palette to the whole page as a theme; the main preview keeps its own until a hero is picked.
+Two compact, full-width heroes were shown on 26 Nov on the supplied orange duotone photo: A, "Motion search",
+and B, "Live board". B was picked, with the staging palette across the whole site minus its neon green.
 
-- A, Motion search (`/lab/hero-a/`): speed streaks, a light sweep and a slow settle on the photo; a white
-  staging-style search bar (sport, where, when, orange Search), popular sports and live counts.
-- B, Live board (`/lab/hero-b/`): the sport word rotates through pickleball, tennis and badminton; one-tap
-  sport buttons; an orange light follows the pointer; a board of next open slots scrolls along the bottom.
+- Live board: "Find your [pickleball, tennis, badminton] court." with the sport word rotating in orange; one-tap
+  sport buttons; a pill search with a date; an orange light that follows the pointer; a board of the next open
+  slots per venue scrolling along the bottom, each linking to that venue's booking page.
+- The option pages (`/lab/`) were removed once B was picked.
+- Fixed with the change: the splash wordmark no longer clips the top of the "d", and the final "GAME ON." band
+  no longer pushes its copy and buttons off screen (it was cut off on desktop and on phones).
 
 ## Marked as concept, not live
 
@@ -69,5 +72,5 @@ pages apply that palette to the whole page as a theme; the main preview keeps it
 3. Real photos for each venue (or permission to use the venues' own).
 4. Which Play mode feature comes first: open play or find players?
 5. Timeline for basketball and padel.
-6. Keep the script wordmark? The concept keeps it and turns the full stop into the lime ball.
+6. Keep the script wordmark? The concept keeps it and turns the full stop into an orange ball.
 7. Confirm the 5% service fee and the 24-hour cancellation rule are current.
