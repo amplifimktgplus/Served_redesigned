@@ -99,8 +99,11 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
   section it is Rally X's neon with its words. Motion follows the scroll in Chrome, Edge and Safari; elsewhere, and
   with reduced motion, each seam shows its finished state.
 - Rally X on the home page (client's pick, 27 Nov, option D of five layouts shown): the venue's own black and neon
-  green, and a photo seen through the brush-stroke X of the Rally X logo, traced from the banner in the venue's photo
-  (`tools/rallyx-x.py`), sunk in with an inner shadow and graded black to neon green. The only neon green on the site.
+  green, and the venue's paddle rack photo, in its natural colours, seen through the brush-stroke X of the Rally X logo,
+  traced from the banner in the venue's photo (`tools/rallyx-x.py`) and sunk in with an inner shadow. The X takes the
+  larger half of the section so the photo reads through it. The only neon green on the site.
+- Corners eased site-wide (client, 27 Nov): cards and panels 16px (large panels 22px), smaller cards 12-14px; buttons
+  and chips stay pill-shaped.
 - The option pages (`/lab/rally-x/`, `/lab/dividers/`) were removed once the client picked.
 - Footer: the base row's line sits clear of the Served. logo (client, 27 Nov).
 

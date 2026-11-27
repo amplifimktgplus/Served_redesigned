@@ -53,7 +53,7 @@
   --fs-body: 17px;
   --lh-body: 1.65;
   /* shape + space */
-  --r-sm: 12px; --r: 18px; --r-lg: 24px; --r-xl: 36px; --pill: 999px;
+  --r-sm: 10px; --r: 12px; --r-lg: 16px; --r-xl: 22px; --pill: 999px; /* corners eased (client, 27 Nov 2026: "a bit too rounded") */
   --gutter: clamp(20px, 4.2vw, 64px);
   --wrap: 1360px;
   --sec-y: clamp(56px, 7.2vw, 100px);

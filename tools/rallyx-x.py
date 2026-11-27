@@ -17,6 +17,8 @@ PREVIEW = os.path.join(ROOT, "audit/rallyx-x-preview.png")
 CROP = (500, 150, 995, 470)  # x0, y0, x1, y1 around the X in rx-3.png
 K = 4                        # trace at 4x so edges land between pixels
 MIN_SPECK = 6                # specks smaller than this many source pixels are dropped as noise
+MIN_HOLE = 25                # dry-brush holes smaller than this (source px^2) are filled, so the photo reads through
+                             # the X (client, 27 Nov 2026: "large enough to see what's inside"); the long streaks stay
 
 rgb = np.array(Image.open(SRC).convert("RGB").crop(CROP))
 hsv = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)  # OpenCV hue runs 0-179
@@ -50,7 +52,8 @@ def path(c):
 
 d, outer, holes = "", 0, 0
 for i, c in enumerate(contours):
-    if cv2.contourArea(c) / K / K < 2:
+    a = cv2.contourArea(c) / K / K
+    if a < 2 or (hier[i][3] != -1 and a < MIN_HOLE):
         continue
     d += path(c)
     if hier[i][3] == -1:

@@ -29,10 +29,10 @@ function phero({ k, h1, lede, crumb, img: im, tone = '', cls = '', extra = '', p
 // ============================================================ RALLY X spotlight (home)
 // Option D from the layout options, picked by the client on 27 Nov 2026 and dressed in Rally X's own black and neon
 // green: a photo seen through the brush-stroke X of the Rally X logo (traced from the venue's banner photo by
-// tools/rallyx-x.py), sunk in with an inner shadow and graded black to neon green. This section is the only neon green
-// on the site; everything else keeps Served's own palette.
+// tools/rallyx-x.py), sunk in with an inner shadow. The photo keeps its natural colours (client, 27 Nov 2026). This
+// section is the only neon green on the site; everything else keeps Served's own palette.
 const RX_X = JSON.parse(readFileSync(new URL('./data/rallyx-x.json', import.meta.url), 'utf8'));
-const RX_PHOTO = 'rallyx-forehand';
+const RX_PHOTO = 'rallyx-paddle-wall'; // the paddle rack (client, 27 Nov 2026), in its natural colours
 const RX_LEDE = 'Pickleball and tennis under one roof: lime lines on the floor, a wall of paddles and the city right outside. Now open.';
 const rxChips = () => `<p class="chips">${chipSport('Pickleball')}${chipSport('Tennis')}<span class="chip chip--live">Now open</span></p>`;
 const rxCtas = () => ctas(btn('Book Rally X', '/courts/rally-x/availability/'), btn('See Rally X', '/courts/rally-x/', 'btn--ghost'));
@@ -40,25 +40,24 @@ const rxCtas = () => ctas(btn('Book Rally X', '/courts/rally-x/availability/'), 
 function rxWindow() {
   const { w, h, d } = RX_X, pad = 24;
   const src = a(`assets/img/${RX_PHOTO}-${IMAGES[RX_PHOTO].sizes.at(-1)}.webp`);
-  return `<svg class="rxw" viewBox="${-pad} ${-pad} ${w + 2 * pad} ${h + 2 * pad}" role="img" aria-label="A player swings a paddle at Rally X, seen through the brush-stroke X of the Rally X logo">
+  return `<svg class="rxw" viewBox="${-pad} ${-pad} ${w + 2 * pad} ${h + 2 * pad}" role="img" aria-label="The paddle rack at Rally X, seen through the brush-stroke X of the Rally X logo">
   <defs>
     <path id="rxw-x" d="${d}" fill-rule="evenodd" clip-rule="evenodd"/>
     <linearGradient id="rxw-g" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcf53a"/><stop offset="1" stop-color="#6fcf3a"/></linearGradient>
     <clipPath id="rxw-c"><use href="#rxw-x"/></clipPath>
     <filter id="rxw-glow" x="-15%" y="-25%" width="130%" height="150%"><feGaussianBlur stdDeviation="9"/></filter>
-    <filter id="rxw-duo" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="table" tableValues="0.02 0.27 0.78 0.94"/><feFuncG type="table" tableValues="0.02 0.52 0.95 1"/><feFuncB type="table" tableValues="0.02 0.05 0.16 0.68"/></feComponentTransfer></filter>
     <filter id="rxw-in" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
       <feComponentTransfer in="SourceAlpha" result="out"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer>
-      <feGaussianBlur in="out" stdDeviation="8" result="soft"/><feOffset in="soft" dx="6" dy="9" result="cast"/>
-      <feGaussianBlur in="out" stdDeviation="2.4" result="rim"/>
-      <feMerge result="both"><feMergeNode in="cast"/><feMergeNode in="cast"/><feMergeNode in="rim"/></feMerge>
-      <feFlood flood-color="#000" flood-opacity=".95"/><feComposite in2="both" operator="in" result="shade"/>
+      <feGaussianBlur in="out" stdDeviation="6" result="soft"/><feOffset in="soft" dx="4" dy="7" result="cast"/>
+      <feGaussianBlur in="out" stdDeviation="2" result="rim"/>
+      <feMerge result="both"><feMergeNode in="cast"/><feMergeNode in="rim"/></feMerge>
+      <feFlood flood-color="#000" flood-opacity=".85"/><feComposite in2="both" operator="in" result="shade"/>
       <feComposite in="shade" in2="SourceAlpha" operator="in" result="inner"/>
       <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="inner"/></feMerge>
     </filter>
   </defs>
   <use class="rxw__glow" href="#rxw-x" fill="url(#rxw-g)" filter="url(#rxw-glow)"/>
-  <g filter="url(#rxw-in)"><g clip-path="url(#rxw-c)"><rect width="${w}" height="${h}" fill="#050505"/><image class="rxw__img" href="${src}" x="${-pad}" y="${(-h * 0.35).toFixed(1)}" width="${w + 2 * pad}" height="${(h * 1.7).toFixed(1)}" preserveAspectRatio="xMidYMid slice" filter="url(#rxw-duo)"/></g></g>
+  <g filter="url(#rxw-in)"><g clip-path="url(#rxw-c)"><rect width="${w}" height="${h}" fill="#050505"/><image class="rxw__img" href="${src}" x="${-pad}" y="${(-h * 0.35).toFixed(1)}" width="${w + 2 * pad}" height="${(h * 1.7).toFixed(1)}" preserveAspectRatio="xMidYMid slice"/></g></g>
 </svg>`;
 }
 // speed streaks like the ones on Rally X's banner, faint, on the black band only (never over a photo)
