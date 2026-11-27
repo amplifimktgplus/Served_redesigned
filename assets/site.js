@@ -317,6 +317,9 @@
   $$('[data-eye]').forEach((b) => b.addEventListener('click', () => { const i = b.parentElement.querySelector('input'); const show = i.type === 'password'; i.type = show ? 'text' : 'password'; b.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); }));
   const qs = new URLSearchParams(location.search);
   if (qs.get('role') === 'owner') { const r = $('input[name="role"][value="owner"]'); if (r) r.checked = true; }
+  // contact?subject=Listing my court picks that subject, as the current site does
+  const subjQ = (qs.get('subject') || '').trim().toLowerCase(); const subjSel = $('select[name="subject"]');
+  if (subjQ && subjSel) { const o = [...subjSel.options].find((x) => x.text.trim().toLowerCase() === subjQ); if (o) subjSel.value = o.value; }
 
   // ---------------------------------------------------------------- payout calculator
   $$('[data-calc]').forEach((c) => {
@@ -339,43 +342,78 @@
     $$('[data-help-cat]').forEach((b) => b.addEventListener('click', () => { cat = b.dataset.helpCat; $$('[data-help-cat]').forEach((x) => x.classList.toggle('is-on', x === b)); run(); }));
   }
 
-  // ---------------------------------------------------------------- concave carousel for court photos
-  // A native scroller does the moving (touch, trackpad, keys, buttons, mouse drag); this only reads where each photo
-  // sits against the middle and hands it --cc-p (-1 left, 0 centre, 1 right) for the CSS to turn and lift it.
+  // ---------------------------------------------------------------- concave carousel: a gallery wall that curves around you
+  // Photos hang on the inside of a drum: the further one sits from the middle, the more it turns toward you and comes
+  // forward (x = R sin a, z = R (1 - cos a)). A native scroller still does the moving, so touch, trackpad, keys and the
+  // buttons all work. The set is repeated either side so a slow drift can turn the wall for ever; the drift stops
+  // whenever someone hovers, touches, drags, focuses or opens a photo, and the wall settles with a photo centred.
   function initCC(cc) {
     if (!cc) return;
     const tr = $('[data-cc-track]', cc); if (!tr || tr.dataset.ccOn) return; tr.dataset.ccOn = '1';
-    const slides = $$('[data-cc-slide]', tr); const n = slides.length; const count = $('[data-cc-count]', cc);
-    let raf = 0, cur = 0;
+    const orig = $$('[data-cc-slide]', tr); const n = orig.length; if (!n) return;
+    const count = $('[data-cc-count]', cc); const loop = n > 2;
+    if (loop) {
+      const copies = () => orig.map((s) => { const c = s.cloneNode(true); c.removeAttribute('data-cc-slide'); c.setAttribute('aria-hidden', 'true'); $$('button, a', c).forEach((b) => b.setAttribute('tabindex', '-1')); return c; });
+      copies().forEach((c) => tr.insertBefore(c, orig[0])); copies().forEach((c) => tr.appendChild(c));
+    }
+    const all = $$('.cc__s', tr); const home = loop ? n : 0;
+    const centreOf = (s) => s.offsetLeft - (tr.clientWidth - s.offsetWidth) / 2;
+    const period = () => (loop ? all[n].offsetLeft - all[0].offsetLeft : 0);
+    const step = () => (all[1] ? all[1].offsetLeft - all[0].offsetLeft : tr.clientWidth);
+    const pad = (k) => String(k).padStart(2, '0');
+    let raf = 0, cur = home;
     const paint = () => {
-      raf = 0; const r = tr.getBoundingClientRect(); const mid = r.left + r.width / 2; let best = 0, bestD = Infinity;
-      slides.forEach((s, i) => {
-        const b = s.getBoundingClientRect(); const c = b.left + b.width / 2;
-        const p = Math.max(-1.6, Math.min(1.6, (c - mid) / (r.width / 2)));
-        s.style.setProperty('--cc-p', p.toFixed(3)); s.style.setProperty('--cc-a', Math.abs(p).toFixed(3));
-        const dd = Math.abs(c - mid); if (dd < bestD) { bestD = dd; best = i; }
+      raf = 0; const W2 = tr.clientWidth; const mid = tr.scrollLeft + W2 / 2; const R = W2 * 0.95; let best = home, bestD = Infinity;
+      all.forEach((s, i) => {
+        const dx = s.offsetLeft + s.offsetWidth / 2 - mid; const ad = Math.abs(dx);
+        if (ad < bestD) { bestD = ad; best = i; }
+        if (ad > W2 * 1.4) return;
+        s.style.setProperty('--cc-a', Math.min(1, ad / (W2 * 0.5)).toFixed(3));
+        if (RM) return;
+        const a = Math.max(-1.2, Math.min(1.2, dx / R));
+        s.style.transform = `translate3d(${(R * Math.sin(a) - dx).toFixed(1)}px,0,${(R * (1 - Math.cos(a)) * 0.62).toFixed(1)}px) rotateY(${(-a * 51.6).toFixed(2)}deg)`;
       });
-      cur = best; slides.forEach((s, i) => s.classList.toggle('is-mid', i === best));
-      if (count) count.textContent = `${best + 1} / ${n}`;
+      cur = best; all.forEach((s, i) => s.classList.toggle('is-mid', i === best));
+      if (count) count.textContent = `${pad((best % n) + 1)} / ${pad(n)}`;
     };
     const req = () => { if (!raf) raf = requestAnimationFrame(paint); };
-    tr.addEventListener('scroll', req, { passive: true }); W.addEventListener('resize', req);
-    const go = (i) => { const s = slides[Math.max(0, Math.min(n - 1, i))]; tr.scrollTo({ left: s.offsetLeft - (tr.clientWidth - s.offsetWidth) / 2, behavior: RM ? 'auto' : 'smooth' }); };
+    // keep the middle copy centred: jumping by one whole set looks identical, so the wall never runs out
+    const wrap = () => { if (!loop) return; const P = period(), base = centreOf(all[home]), half = step() / 2; if (tr.scrollLeft < base - half) { tr.scrollLeft += P; acc += P; } else if (tr.scrollLeft > base + P - half) { tr.scrollLeft -= P; acc -= P; } };
+    let settleT = 0;
+    tr.addEventListener('scroll', () => { req(); clearTimeout(settleT); settleT = setTimeout(() => { if (!tr.classList.contains('is-drift')) wrap(); }, 140); }, { passive: true });
+    W.addEventListener('resize', req);
+    const go = (i, smooth = !RM) => tr.scrollTo({ left: centreOf(all[Math.max(0, Math.min(all.length - 1, i))]), behavior: smooth ? 'smooth' : 'auto' });
+    // drift: about a sixth of a photo a second, and only while nobody is interacting
+    let acc = 0, last = 0, hold = 0, hovering = false, dragging = false, visible = true;
+    const holdFor = (ms) => { hold = performance.now() + ms; };
+    const tick = (t) => {
+      const dt = last ? Math.min(64, t - last) / 1000 : 0; last = t;
+      const busy = hovering || dragging || t < hold || !visible || d.hidden || cc.contains(d.activeElement) || $('.lb');
+      if (loop && !RM && !busy) { if (!tr.classList.contains('is-drift')) { tr.classList.add('is-drift'); acc = tr.scrollLeft; } acc += step() * 0.16 * dt; tr.scrollLeft = acc; wrap(); }
+      else if (tr.classList.contains('is-drift')) { tr.classList.remove('is-drift'); go(cur); }
+      requestAnimationFrame(tick);
+    };
+    if ('IntersectionObserver' in W) new IntersectionObserver((en) => { visible = en[0].isIntersecting; }).observe(cc);
+    cc.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hovering = true; });
+    cc.addEventListener('pointerleave', () => { hovering = false; holdFor(800); });
+    ['touchstart', 'wheel', 'keydown'].forEach((ev) => tr.addEventListener(ev, () => holdFor(3500), { passive: true }));
     const prev = $('[data-cc-prev]', cc), next = $('[data-cc-next]', cc);
-    if (prev) prev.addEventListener('click', () => go(cur - 1));
-    if (next) next.addEventListener('click', () => go(cur + 1));
+    if (prev) prev.addEventListener('click', () => { holdFor(4000); go(cur - 1); });
+    if (next) next.addEventListener('click', () => { holdFor(4000); go(cur + 1); });
     tr.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') { e.preventDefault(); go(cur + 1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); go(cur - 1); } });
-    // mouse drag (touch and trackpads scroll natively); a drag never opens the photo it ends on
+    // mouse drag (touch and trackpads scroll natively); a drag never opens a photo, and a side photo turns the wall to it
     let drag = null, suppress = false;
-    tr.addEventListener('click', (ev) => { if (suppress) { suppress = false; ev.stopPropagation(); ev.preventDefault(); } }, true);
-    tr.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' || e.button !== 0) return; drag = { x: e.clientX, s: tr.scrollLeft, moved: false }; });
+    tr.addEventListener('click', (ev) => {
+      if (suppress) { suppress = false; ev.stopPropagation(); ev.preventDefault(); return; }
+      const s = ev.target.closest('.cc__s'); if (s && !s.classList.contains('is-mid')) { ev.stopPropagation(); ev.preventDefault(); holdFor(4000); go(all.indexOf(s)); }
+    }, true);
+    tr.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' || e.button !== 0) return; drag = { x: e.clientX, s: tr.scrollLeft, moved: false }; dragging = true; });
     W.addEventListener('pointermove', (e) => { if (!drag) return; const dx = e.clientX - drag.x; if (!drag.moved && Math.abs(dx) > 5) { drag.moved = true; tr.classList.add('is-drag'); } if (drag.moved) tr.scrollLeft = drag.s - dx; });
     W.addEventListener('pointerup', () => {
-      if (!drag) return; const moved = drag.moved; drag = null;
-      if (moved) { tr.classList.remove('is-drag'); go(cur); suppress = true; setTimeout(() => { suppress = false; }, 0); }
+      if (!drag) return; const moved = drag.moved; drag = null; dragging = false; holdFor(3000);
+      if (moved) { tr.classList.remove('is-drag'); paint(); go(cur); suppress = true; setTimeout(() => { suppress = false; }, 0); }
     });
-    // open on the second photo, so the curve shows on both sides from the start
-    requestAnimationFrame(() => { if (n > 2) { const s = slides[1]; tr.scrollLeft = s.offsetLeft - (tr.clientWidth - s.offsetWidth) / 2; } paint(); });
+    requestAnimationFrame(() => { tr.scrollLeft = centreOf(all[home]); acc = tr.scrollLeft; paint(); requestAnimationFrame(tick); });
   }
   $$('[data-cc]').forEach(initCC);
   W.__srv.cc = initCC;
@@ -637,8 +675,23 @@
       drawCourts(); drawSlots(); paintSum();
       if (!go.disabled) { toast('You are in. Your picks are ready to pay.'); go.click(); }
     }, 0);
+    // a court owner books as a player: from the owner view they are offered a one-tap switch
+    let swEl = null;
+    function switchGate() {
+      if (swEl) return swEl;
+      swEl = d.createElement('div'); swEl.className = 'sheet'; swEl.hidden = true;
+      swEl.setAttribute('role', 'dialog'); swEl.setAttribute('aria-modal', 'true'); swEl.setAttribute('aria-labelledby', 'sw-h');
+      swEl.innerHTML = `<div class="sheet__in board gate"><button class="iconbtn sheet__x" type="button" data-sw-close aria-label="Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button><p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>You are in your owner view</p><h2 class="d3" id="sw-h">Switch to player to book</h2><p class="gate__p">Court owners book as players. Switch to your player view to finish this booking. Your court page stays as it is, and you can switch back any time from your account.</p><div class="ctas"><button class="btn btn--accent" type="button" data-sw-go><span>Switch to player and continue</span><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></button><button class="btn btn--ghost" type="button" data-sw-close><span>Not now</span></button></div></div>`;
+      el.appendChild(swEl);
+      $$('[data-sw-close]', swEl).forEach((b) => b.addEventListener('click', () => { closeSheet(swEl); go.focus(); }));
+      swEl.addEventListener('click', (e) => { if (e.target === swEl) closeSheet(swEl); });
+      $('[data-sw-go]', swEl).addEventListener('click', () => { W.__srv.acct.setMode('player'); closeSheet(swEl); toast('Switched to player. Switch back any time from your account.'); go.click(); });
+      return swEl;
+    }
     go.addEventListener('click', () => {
-      if (!acct()) { holdPicks(); openSheet(gate()); return; }
+      const who = acct();
+      if (!who) { holdPicks(); openSheet(gate()); return; }
+      if (who.role === 'owner' && (who.mode || 'owner') === 'owner') { openSheet(switchGate()); return; }
       const L = lines();
       $('[data-pay-sum]', el).innerHTML = `<div class="row"><span>${esc(B.name)}</span><b>${fmt(st.date, { weekday: 'short', day: 'numeric', month: 'short' })}</b></div>${L.map((l) => `<div class="row"><span>${esc(l.court)}</span><span>${l.hours.map((h) => hh(h)).join(', ')}</span></div>`).join('')}<div class="row"><span>Subtotal</span><span>${peso(st.sub)}</span></div><div class="row"><span>Service fee (5%)</span><span>${peso(st.fee)}</span></div><div class="row t"><span>Total</span><b>${peso(st.total)}</b></div>`;
       $('[data-pay-label]', el).textContent = 'Pay ' + peso(st.total);
@@ -698,11 +751,16 @@
   const me = () => { const e = LS.get('srv.session', null); return e ? users().find((u) => u.email === e) || null : null; };
   const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
   const hashPw = async (pw, salt) => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${salt}:${pw}`)));
-  const landing = (u) => (u.role === 'owner' ? 'owner/studio/' : 'account/');
+  // a court owner has two views: the owner view (their court page studio) and the player view (book and see bookings)
+  const ownerView = (u) => u.role === 'owner' && (u.mode || 'owner') === 'owner';
+  const landing = (u) => (ownerView(u) ? 'owner/studio/' : 'account/');
+  const listings = () => LS.get('srv.listings', []);
+  const courtHref = (slug) => (String(slug).startsWith('listing-') ? `${R}courts/listing/?id=${encodeURIComponent(slug.slice(8))}` : `${R}courts/${slug}/`);
   // only a path inside this site, never another origin
   const safeNext = () => { const n = qs.get('next') || ''; return /^[a-z0-9][a-z0-9/_\-.?=&]*$/i.test(n) && !n.includes('..') && !n.includes('//') ? n : ''; };
   const goOn = (u) => { location.href = R + (safeNext() || landing(u)); };
   const signOut = () => { LS.set('srv.session', null); toast('Signed out.'); };
+  const setMode = (mode) => { const u = me(); if (!u || u.role !== 'owner') return; LS.set('srv.users', users().map((x) => (x.email === u.email ? { ...x, mode } : x))); };
   function addBooking(b) {
     const u = me(); if (!u) return;
     const all = LS.get('srv.bookings', []);
@@ -710,12 +768,16 @@
     all.unshift({ ...b, id, email: u.email, status: 'confirmed', created: new Date().toISOString() });
     LS.set('srv.bookings', all);
   }
-  S.acct = { me, addBooking, signOut };
+  S.acct = { me, addBooking, signOut, setMode };
 
   // form messages: one alert line per form, read out when it changes
   function say(form, html) {
     let p = $('.form-err', form);
-    if (!p) { p = d.createElement('p'); p.className = 'form-err'; p.setAttribute('role', 'alert'); const btn = $('button[type="submit"]', form); form.insertBefore(p, btn); }
+    if (!p) {
+      p = d.createElement('p'); p.className = 'form-err'; p.setAttribute('role', 'alert');
+      const btn = $('button[type="submit"]', form); let at = btn; while (at && at.parentElement !== form) at = at.parentElement; // the button, or the row it sits in
+      form.insertBefore(p, at || null);
+    }
     p.innerHTML = html; p.hidden = !html;
   }
   const field = (f, n) => (f.elements[n] ? f.elements[n].value.trim() : '');
@@ -778,13 +840,27 @@
       const card = (b) => {
         const when = startOf(b); const past = when < new Date(); const late = when - new Date() < 864e5;
         const st = b.status === 'cancelled' ? '<span class="bk__st is-off">Cancelled</span>' : past ? '<span class="bk__st is-past">Played</span>' : '<span class="bk__st">Confirmed</span>';
-        return `<article class="bk board"><div class="bk__main"><p class="bk__ref">Ref ${esc(b.id)}</p><h3 class="bk__v">${esc(b.venue)}</h3><p class="bk__d">${fmt(b.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p><ul class="bk__l">${b.lines.map((l) => `<li><b>${esc(l.court)}</b>${l.hours.map((h) => hh(h)).join(', ')}</li>`).join('')}</ul></div><div class="bk__side"><b class="bk__t">${peso(b.total)}</b>${st}${b.status !== 'cancelled' && !past ? `<button class="btn btn--line btn--sm" type="button" data-cancel="${esc(b.id)}" data-late="${late ? 1 : 0}"><span>Cancel booking</span></button>` : ''}<a class="link" href="${R}courts/${esc(b.slug)}/">View court</a></div></article>`;
+        return `<article class="bk board"><div class="bk__main"><p class="bk__ref">Ref ${esc(b.id)}</p><h3 class="bk__v">${esc(b.venue)}</h3><p class="bk__d">${fmt(b.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p><ul class="bk__l">${b.lines.map((l) => `<li><b>${esc(l.court)}</b>${l.hours.map((h) => hh(h)).join(', ')}</li>`).join('')}</ul></div><div class="bk__side"><b class="bk__t">${peso(b.total)}</b>${st}${b.status !== 'cancelled' && !past ? `<button class="btn btn--line btn--sm" type="button" data-cancel="${esc(b.id)}" data-late="${late ? 1 : 0}"><span>Cancel booking</span></button>` : ''}<a class="link" href="${courtHref(b.slug)}">View court</a></div></article>`;
       };
-      view.innerHTML = `<div class="acct__grid"><aside class="acct__me board"><span class="acct__av" aria-hidden="true">${esc((u.first || u.email)[0].toUpperCase())}</span><h2 class="d3">${esc(u.first)} ${esc(u.last)}</h2><p>${esc(u.email)}</p><p class="acct__role">${u.role === 'owner' ? 'Court owner' : 'Player'}</p>${u.role === 'owner' ? `<a class="btn btn--accent btn--block" href="${R}owner/studio/"><span>Court page studio</span></a>` : ''}<a class="btn btn--accent btn--block" href="${R}courts/"><span>Book a court</span></a><button class="btn btn--ghost btn--block" type="button" data-signout><span>Sign out</span></button></aside><div class="acct__list"><h2 class="d3">Your bookings</h2>${mine.length ? mine.map(card).join('') : `<div class="acct__empty board"><p>No bookings yet. Pick a court, choose your times and they will show here.</p><a class="btn btn--accent" href="${R}courts/"><span>Find a court</span></a></div>`}</div></div>`;
+      const myListings = () => {
+        const mineL = listings().filter((l) => l.owner === u.email);
+        return `<h2 class="d3">Your listings</h2>${mineL.length ? mineL.map((l) => `<article class="bk board"><div class="bk__main"><p class="bk__ref">${esc(l.sport)} <span class="sep">/</span> ${esc(l.city)}</p><h3 class="bk__v">${esc(l.name)}</h3><p class="bk__d">${esc(l.address)}</p><ul class="bk__l"><li><b>${l.courts} court${l.courts > 1 ? 's' : ''}</b>${S.pesoI(l.rate)} an hour</li></ul></div><div class="bk__side"><a class="btn btn--accent btn--sm" href="${courtHref('listing-' + l.id)}"><span>View page</span></a><a class="btn btn--line btn--sm" href="${R}owner/list/?id=${encodeURIComponent(l.id)}"><span>Edit listing</span></a><button class="btn btn--line btn--sm" type="button" data-list-del="${esc(l.id)}"><span>Remove</span></button></div></article>`).join('') : `<div class="acct__empty board"><p>No listings yet. List your venue and it gets its own page that players can book.</p><a class="btn btn--accent" href="${R}owner/list/"><span>List a venue</span></a></div>`}`;
+      };
+      view.innerHTML = `<div class="acct__grid"><aside class="acct__me board"><span class="acct__av" aria-hidden="true">${esc((u.first || u.email)[0].toUpperCase())}</span><h2 class="d3">${esc(u.first)} ${esc(u.last)}</h2><p>${esc(u.email)}</p><p class="acct__role">${u.role === 'owner' ? (ownerView(u) ? 'Court owner, owner view' : 'Court owner, player view') : 'Player'}</p>${u.role === 'owner' ? `<button class="btn btn--accent btn--block" type="button" data-mode-to="${ownerView(u) ? 'player' : 'owner'}"><span>${ownerView(u) ? 'Switch to player view' : 'Switch to owner view'}</span></button><a class="btn btn--ghost btn--block" href="${R}owner/list/"><span>List a venue</span></a>` : ''}<a class="btn btn--accent btn--block" href="${R}courts/"><span>Book a court</span></a><button class="btn btn--ghost btn--block" type="button" data-signout><span>Sign out</span></button></aside><div class="acct__list">${u.role === 'owner' ? myListings() : ''}<h2 class="d3">Your bookings</h2>${mine.length ? mine.map(card).join('') : `<div class="acct__empty board"><p>No bookings yet. Pick a court, choose your times and they will show here.</p><a class="btn btn--accent" href="${R}courts/"><span>Find a court</span></a></div>`}</div></div>`;
     };
     draw();
     view.addEventListener('click', (e) => {
       if (e.target.closest('[data-signout]')) { signOut(); draw(); return; }
+      const mt = e.target.closest('[data-mode-to]');
+      if (mt) { setMode(mt.dataset.modeTo); if (mt.dataset.modeTo === 'owner') location.href = R + 'owner/studio/'; else { toast('Switched to player view. Book any court.'); draw(); } return; }
+      const del = e.target.closest('[data-list-del]');
+      if (del) {
+        if (!del.classList.contains('is-sure')) { del.classList.add('is-sure'); $('span', del).textContent = 'Tap again to remove'; setTimeout(() => { if (del.isConnected) { del.classList.remove('is-sure'); $('span', del).textContent = 'Remove'; } }, 3000); return; }
+        const id = del.dataset.listDel; LS.set('srv.listings', listings().filter((l) => l.id !== id));
+        const p = LS.get('srv.studio', {}); const cfg = p['listing-' + id];
+        if (cfg) { idb.del('hero:listing-' + id).catch(() => {}); (cfg.gallery || []).forEach((g) => idb.del(g).catch(() => {})); delete p['listing-' + id]; LS.set('srv.studio', p); }
+        toast('Listing removed.'); draw(); return;
+      }
       const c = e.target.closest('[data-cancel]'); if (!c) return;
       if (!c.classList.contains('is-sure')) { c.classList.add('is-sure'); $('span', c).textContent = 'Tap again to cancel'; setTimeout(() => { if (c.isConnected) { c.classList.remove('is-sure'); $('span', c).textContent = 'Cancel booking'; } }, 3000); return; }
       const all = LS.get('srv.bookings', []); const b = all.find((x) => x.id === c.dataset.cancel); if (!b) return;
@@ -846,19 +922,60 @@
     }
   }
 
+  // ---------------------------------------------------------------- list a venue (owners), and new listings in the directory
+  const lf = $('[data-list-form]');
+  if (lf) {
+    const u = me();
+    if (!u || u.role !== 'owner') { const g = $('[data-list-gate]'); if (g) g.hidden = false; }
+    else {
+      lf.hidden = false; setMode('owner');
+      const editId = qs.get('id'); const existing = editId ? listings().find((l) => l.id === editId && l.owner === u.email) : null;
+      if (existing) {
+        ['name', 'sport', 'city', 'address', 'courts', 'surface', 'rate', 'eveningRate', 'open', 'close', 'desc', 'phone'].forEach((k) => { if (lf.elements[k] && existing[k] != null) lf.elements[k].value = existing[k]; });
+        $$('input[name="amenities"]', lf).forEach((c) => { c.checked = (existing.amenities || []).includes(c.value); });
+        const lab = $('[data-list-label]'); if (lab) lab.textContent = 'Save changes';
+      }
+      lf.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!lf.checkValidity()) { lf.reportValidity(); return; }
+        const v = (k) => lf.elements[k].value.trim();
+        const open = +v('open'), close = +v('close');
+        if (close - open < 2) { say(lf, 'Leave at least two hours between opening and closing.'); return; }
+        const ev = v('eveningRate');
+        const L = { id: existing ? existing.id : Date.now().toString(36), owner: u.email, name: v('name'), sport: v('sport'), city: v('city'), address: v('address'), courts: Math.max(1, Math.min(20, Math.round(+v('courts')))), surface: v('surface'), rate: +v('rate'), eveningRate: ev ? +ev : null, open, close, amenities: $$('input[name="amenities"]:checked', lf).map((c) => c.value), desc: v('desc'), phone: v('phone'), created: existing ? existing.created : new Date().toISOString(), updated: new Date().toISOString() };
+        if (!LS.set('srv.listings', [L, ...listings().filter((l) => l.id !== L.id)])) return;
+        toast(existing ? 'Listing updated.' : 'Your venue is listed.');
+        location.href = courtHref('listing-' + L.id);
+      });
+    }
+  }
+  const ml = $('[data-my-listings]');
+  if (ml) {
+    const L = listings();
+    if (L.length) {
+      $('[data-my-listings-grid]', ml).innerHTML = L.map((l) => `<a class="mlc board" href="${courtHref('listing-' + l.id)}"><span class="chip">${esc(l.sport)}</span><b>${esc(l.name)}</b><span>${esc(l.city === 'Other' ? l.address : `${l.address}, ${l.city}`)}</span><em>${S.pesoI(l.rate)} / hr <span class="sep">/</span> ${l.courts} court${l.courts > 1 ? 's' : ''}</em><span class="mlc__go">View and book <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>`).join('');
+      ml.hidden = false;
+    }
+  }
+
   // ---------------------------------------------------------------- the studio
   const studio = $('[data-studio]');
   if (studio) {
     const u = me();
     if (!u || u.role !== 'owner') { $('[data-studio-gate]').hidden = false; return; }
     studio.hidden = false;
+    setMode('owner'); // the studio is the owner view
+    const swb = $('[data-mode-switch]'); if (swb) swb.addEventListener('click', () => { setMode('player'); location.href = R + 'account/'; });
     const f = $('[data-studio-form]'), frame = $('[data-studio-frame]'), urlEl = $('[data-studio-url]'), view = $('[data-studio-view]'), warn = $('[data-contrast]');
+    // the owner's own listings sit first in the venue list
+    const mineL = listings().filter((l) => l.owner === u.email);
+    if (mineL.length) { const g = d.createElement('optgroup'); g.label = 'Your listings'; mineL.forEach((l) => { const o = d.createElement('option'); o.value = 'listing-' + l.id; o.textContent = l.name; g.appendChild(o); }); f.elements.venue.prepend(g); }
     const all = pages();
-    let slug = Object.keys(all).find((k) => all[k].owner === u.email) || f.elements.venue.value;
+    let slug = Object.keys(all).find((k) => all[k].owner === u.email) || (mineL[0] ? 'listing-' + mineL[0].id : f.elements.venue.value);
     const cur = () => pages()[slug] || { owner: u.email, accent: '', base: '', hero: false, gallery: [] };
     const save = (patch) => { const p = pages(); p[slug] = { ...cur(), ...patch, owner: u.email }; LS.set('srv.studio', p); refresh(); };
     let tReload = null;
-    const reload = () => { clearTimeout(tReload); tReload = setTimeout(() => { frame.src = `${R}courts/${slug}/?studio=${Date.now()}`; }, 250); };
+    const reload = () => { clearTimeout(tReload); tReload = setTimeout(() => { const h = courtHref(slug); frame.src = `${h}${h.includes('?') ? '&' : '?'}studio=${Date.now()}`; }, 250); };
     const check = () => {
       const c = cur(); const a = c.accent || '#ff6b18', b = c.base || '#0a0a0a';
       const r = contrast(a, b);
@@ -877,7 +994,7 @@
       $$('input[name="accent"]', f).forEach((i) => { i.checked = i.value === (c.accent || ''); });
       if (c.accent) f.elements.accentPick.value = c.accent;
       $$('input[name="base"]', f).forEach((i) => { i.checked = i.value === (c.base || ''); });
-      urlEl.textContent = `served.ph/courts/${slug}`; view.href = `${R}courts/${slug}/`;
+      urlEl.textContent = `served.ph/courts/${slug.startsWith('listing-') ? 'listing' : slug}`; view.href = courtHref(slug);
       check(); reload();
     }
     f.elements.venue.addEventListener('change', () => { slug = f.elements.venue.value; const p = pages(); if (!p[slug]) { p[slug] = { owner: u.email, accent: '', base: '', hero: false, gallery: [] }; LS.set('srv.studio', p); } refresh(); paintHero(); paintGal(); });
