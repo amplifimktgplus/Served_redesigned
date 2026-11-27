@@ -258,6 +258,39 @@
     requestAnimationFrame(loop);
   });
 
+  // ---------------------------------------------------------------- section dividers (client pick, 27 Nov 2026: a mix of the
+  // sheet, the wipe and the court tape). One goes on each change of background colour between neighbouring sections, read
+  // from the page itself: into a light section, the light colour sweeps in (wipe); into or out of a light or orange
+  // section, the next one rises over the last (sheet, square-cornered); between two different darks, a strip of court tape
+  // crosses the seam (in Rally X's neon, with its words, on the way into its section). The motion is CSS, tied to the scroll.
+  {
+    const main = $('#main');
+    const rgbOf = (el) => {
+      for (let e = el; e; e = e.parentElement) { const m = getComputedStyle(e).backgroundColor.match(/[\d.]+/g); if (m && (m.length < 4 || +m[3] > 0.5)) return m.slice(0, 3).map(Number); }
+      return [10, 10, 10];
+    };
+    const light = ([r, g, b]) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.6;
+    const orange = ([r, g, b]) => r > 200 && r - g > 80 && b < 100;
+    const blocks = main ? [...main.children].filter((el) => !/^(SCRIPT|STYLE|TEMPLATE)$/.test(el.tagName) && !el.hidden && el.getBoundingClientRect().height >= 40) : [];
+    const words = ((main && main.dataset.tape) || '').split('|').filter(Boolean);
+    const tape = (next, rx) => {
+      const w = rx ? ['Rally X', 'Now open', 'Pickleball', 'Tennis'] : words;
+      if (!w.length) return;
+      const el = d.createElement('div');
+      el.className = `dvs-tape${rx ? ' dvs-tape--rx' : ''}`; el.setAttribute('aria-hidden', 'true');
+      el.innerHTML = `<div class="dvs-tape__in"><span>${w.map((x) => `${esc(x)}<i></i>`).join('').repeat(Math.ceil(18 / w.length))}</span></div>`;
+      next.before(el);
+    };
+    let last = '';
+    for (let i = 1; i < blocks.length; i++) {
+      const prev = blocks[i - 1], next = blocks[i], a = rgbOf(prev), b = rgbOf(next);
+      if (a.join() === b.join()) continue;
+      // never two tapes in a row: a short section between two darks would be framed by both at once
+      last = light(b) ? 'wipe' : (light(a) || orange(a) || orange(b) || last === 'tape') ? 'sheet' : 'tape';
+      if (last === 'tape') tape(next, next.matches('.rxs')); else next.classList.add(`dvs-${last}`);
+    }
+  }
+
   // ---------------------------------------------------------------- split-flap board: every tile clacks through random characters
   // and lands on its own letter, the tiles starting left to right. Each tile: a still upper and lower half, and two flaps
   // that turn over them (the old letter's top falls to the hinge, then the new letter's bottom falls into place).
@@ -532,7 +565,8 @@
       navigator.geolocation.getCurrentPosition((pos) => { user = { lat: pos.coords.latitude, lng: pos.coords.longitude }; st.sort = 'near'; syncForm(); apply(); b.disabled = false; toast('Sorted by distance. Distances are approximate, city to city.'); },
         () => { b.disabled = false; toast('No location shared. Pick a city instead.'); }, { timeout: 8000, maximumAge: 600000 });
     });
-    // stylised map: abstract grid, city labels, branded pins. Pins mark the city, not the address.
+    // stylised map: abstract grid, city labels, branded pins. Pins are approximate: a venue with known coordinates
+    // sits at them, the others at their city's centre; pins that would land on top of each other stack downwards.
     const svg = $('.map__svg', disc); let mapBuilt = false;
     const proj = (lat, lng) => { if (lng < 120.95) return [52, 676]; return [((lng - 120.97) / 0.17) * 1000, ((14.71 - lat) / 0.33) * 720]; };
     function buildMap() {
@@ -542,8 +576,10 @@
       for (let y = 0; y <= 720; y += 50) s += `<line x1="0" y1="${y}" x2="1000" y2="${y}"/>`;
       g.innerHTML = s;
       $('.map__roads', svg).innerHTML = '<path class="river" d="M80 300C220 290 300 330 380 300S520 250 600 280 760 330 1000 300"/><path d="M60 660 120 600" stroke-dasharray="6 10"/>';
-      const labels = [['Quezon City', 560, 70], ['Marikina', 770, 160], ['Pasig', 560, 235], ['Taguig', 360, 400], ['Muntinlupa', 300, 690], ['Nasugbu', 70, 712]];
-      $('.map__labels', svg).innerHTML = labels.map(([t, x, y]) => `<text x="${x}" y="${y}">${t}</text>`).join('') + '<text x="40" y="580" style="fill:var(--aqua);font-size:11px">Batangas, south west</text>';
+      const labels = [['Quezon City', 560, 70], ['Marikina', 770, 160], ['Pasig', 560, 235], ['Taguig', 360, 400], ['Muntinlupa', 300, 690], ['Nasugbu', 70, 712],
+        ['Manila', 40, 225], ['San Juan', 330, 205], ['Mandaluyong', 405, 278], ['Makati', 225, 330]];
+      // the four cities added with the sample listings are named only once a venue there has a pin
+      $('.map__labels', svg).innerHTML = labels.filter(([t]) => !['Manila', 'San Juan', 'Mandaluyong', 'Makati'].includes(t) || pins.some((p) => p.city === t)).map(([t, x, y]) => `<text x="${x}" y="${y}">${t}</text>`).join('') + '<text x="40" y="580" style="fill:var(--aqua);font-size:11px">Batangas, south west</text>';
     }
     const card = $('[data-map-card]', disc);
     function drawMap(shown) {
@@ -551,7 +587,7 @@
       const slugs = new Set(shown.map((x) => x.dataset.slug));
       const vis = pins.filter((pn) => slugs.has(pn.slug));
       const tone = (t) => `var(--${t})`;
-      $('.map__pins', svg).innerHTML = vis.map((pn, i) => { const [x, y] = proj(pn.lat, pn.lng); const off = vis.slice(0, i).filter((o) => o.city === pn.city).length * 34; const lbl = pesoI(pn.rate); return `<g class="pin" style="--tone:${tone(pn.tone)}" transform="translate(${x.toFixed(0)} ${(y + off).toFixed(0)})" tabindex="0" role="button" aria-label="${esc(pn.name)}, ${lbl} an hour" data-pin="${pn.slug}"><circle class="pin__ring" r="18"/><circle class="pin__dot" r="10"/><g class="pin__tag" transform="translate(16 -34)"><rect width="${lbl.length * 9 + 18}" height="28" rx="14"/><text x="10" y="19">${lbl}</text></g></g>`; }).join('');
+      $('.map__pins', svg).innerHTML = vis.map((pn, i) => { const [x, y] = proj(pn.lat, pn.lng); const off = vis.slice(0, i).filter((o) => { const [ox, oy] = proj(o.lat, o.lng); return Math.abs(ox - x) < 30 && Math.abs(oy - y) < 30; }).length * 34; const lbl = pesoI(pn.rate); return `<g class="pin" style="--tone:${tone(pn.tone)}" transform="translate(${x.toFixed(0)} ${(y + off).toFixed(0)})" tabindex="0" role="button" aria-label="${esc(pn.name)}, ${lbl} an hour" data-pin="${pn.slug}"><circle class="pin__ring" r="18"/><circle class="pin__dot" r="10"/><g class="pin__tag" transform="translate(16 -34)"><rect width="${lbl.length * 9 + 18}" height="28" rx="14"/><text x="10" y="19">${lbl}</text></g></g>`; }).join('');
       card.hidden = true;
     }
     function showPin(slug) {
