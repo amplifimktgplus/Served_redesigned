@@ -561,10 +561,11 @@ html.splash-on .splash.is-out { animation: splashOut .7s var(--ease-io) forwards
 .mz figcaption span { display: block; font: 700 10.5px/1.4 var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
 .mz:hover figcaption, .mz:focus-within figcaption { transform: none; opacity: 1; }
 .cc { --cc-w: clamp(240px, 30vw, 460px); position: relative; margin-top: clamp(18px, 2.4vw, 28px); }
-.cc__track { display: flex; gap: clamp(10px, 1.4vw, 18px); overflow-x: auto; overflow-y: hidden; padding: clamp(28px, 4vw, 56px) calc(50% - var(--cc-w) / 2); scroll-snap-type: x mandatory; scroll-padding-inline: calc(50% - var(--cc-w) / 2); perspective: 1100px; scrollbar-width: none; overscroll-behavior-x: contain; outline: none; }
+.cc__track { display: flex; gap: clamp(22px, 3.2vw, 52px); overflow-x: auto; overflow-y: hidden; padding: clamp(28px, 4vw, 56px) calc(50% - var(--cc-w) / 2); scroll-snap-type: x mandatory; scroll-padding-inline: calc(50% - var(--cc-w) / 2); perspective: 1100px; scrollbar-width: none; overscroll-behavior-x: contain; outline: none; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 11%, #000 89%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 11%, #000 89%, transparent 100%); }
 .cc__track::-webkit-scrollbar { display: none; }
 .cc__track:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); border-radius: var(--r-lg); }
-.cc__s { --cc-p: 0; --cc-a: 0; position: relative; flex: none; width: var(--cc-w); aspect-ratio: 4 / 5; margin: 0; border-radius: var(--r-lg); overflow: hidden; background: var(--iron); scroll-snap-align: center; transform: rotateY(calc(var(--cc-p) * -34deg)) translateZ(calc(var(--cc-a) * 110px)); filter: brightness(calc(1 - var(--cc-a) * .28)); box-shadow: 0 40px 70px -40px rgba(0, 0, 0, .9); will-change: transform; }
+.cc__s { --cc-p: 0; --cc-a: 0; position: relative; flex: none; width: var(--cc-w); aspect-ratio: 4 / 5; margin: 0; border-radius: var(--r-lg); overflow: hidden; background: var(--iron); scroll-snap-align: center; transform: rotateY(calc(var(--cc-p) * -30deg)) translateZ(calc(var(--cc-a) * 70px)); filter: brightness(max(.32, calc(1 - var(--cc-a) * .62))) saturate(max(.45, calc(1 - var(--cc-a) * .5))); box-shadow: 0 40px 70px -40px rgba(0, 0, 0, .9); will-change: transform, filter; }
+.cc__s.is-mid { filter: none; }
 .cc__btn { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
 .cc__btn img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; }
 .cc__s figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 44px 16px 14px; background: linear-gradient(180deg, transparent, rgba(10, 10, 10, .88)); font-size: 14px; line-height: 1.4; color: rgba(255, 255, 255, .9); opacity: 0; transition: opacity .4s var(--ease); pointer-events: none; }
@@ -574,7 +575,7 @@ html.splash-on .splash.is-out { animation: splashOut .7s var(--ease-io) forwards
 @media (hover: hover) and (pointer: fine) { .cc__track { cursor: grab; } }
 .cc__track.is-drag { scroll-snap-type: none; cursor: grabbing; }
 @media (max-width: 640px) { .cc { --cc-w: 74vw; } }
-@media (prefers-reduced-motion: reduce) { .cc__s { transform: none; filter: none; } }
+@media (prefers-reduced-motion: reduce) { .cc__s { transform: none; } }
 .tbl { overflow-x: auto; border: 1px solid var(--line-2); border-radius: 18px; }
 .tbl th, .tbl td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line); font-size: 14.5px; vertical-align: top; }
 .tbl th { font: 700 11.5px/1 var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); }
