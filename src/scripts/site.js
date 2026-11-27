@@ -61,20 +61,69 @@
     }));
   }
 
-  // ---------------------------------------------------------------- splash (once per session, skippable)
+  // ---------------------------------------------------------------- splash (once per session). The logo serves in, then a
+  // CTA that dodges the pointer (client, 27 Nov 2026, after React Bits' "Dodge Field"): "Are you ready to play?", then
+  // "Are you sure?", then it gives in and glides home as "Get Served.", which opens the site. With a mouse it slips away
+  // as the pointer comes close; on touch each tap is a try; from the keyboard each Enter or Space is. Skip intro, Escape
+  // or scrolling leave at any time. While it is up, the page behind is inert, so focus stays on the splash.
   const ready = () => { root.classList.add('is-ready'); };
   const splash = $('[data-splash]');
   if (root.classList.contains('splash-on') && splash) {
     let done = false;
+    const behind = [...d.body.children].filter((el) => el !== splash && !/^(SCRIPT|TEMPLATE)$/.test(el.tagName));
+    behind.forEach((el) => el.setAttribute('inert', ''));
+    const onKey = (e) => { if (e.key === 'Escape') end(); };
+    // a swipe leaves; a tap (which can wobble a few pixels) does not
+    let ty0 = null;
+    const onTouch0 = (e) => { ty0 = e.touches[0] ? e.touches[0].clientY : null; };
+    const onSwipe = (e) => { if (ty0 !== null && e.touches[0] && Math.abs(e.touches[0].clientY - ty0) > 40) end(); };
     const end = () => {
       if (done) return; done = true; ss.set('srv.splash', '1');
+      behind.forEach((el) => el.removeAttribute('inert'));
       splash.classList.add('is-out');
       setTimeout(() => { root.classList.remove('splash-on'); }, 700);
       setTimeout(ready, 250);
-      ['keydown', 'pointerdown', 'wheel', 'touchstart'].forEach((e) => W.removeEventListener(e, end));
+      W.removeEventListener('keydown', onKey); W.removeEventListener('wheel', end); W.removeEventListener('touchstart', onTouch0); W.removeEventListener('touchmove', onSwipe);
     };
-    ['keydown', 'pointerdown', 'wheel', 'touchstart'].forEach((e) => W.addEventListener(e, end, { passive: true }));
-    setTimeout(end, 1500);
+    W.addEventListener('keydown', onKey); W.addEventListener('wheel', end, { passive: true });
+    W.addEventListener('touchstart', onTouch0, { passive: true }); W.addEventListener('touchmove', onSwipe, { passive: true });
+    $('[data-splash-skip]', splash).addEventListener('click', end);
+    const btn = $('[data-dodge-btn]', splash), label = $('[data-dodge-label]', splash), live = $('[data-dodge-live]', splash);
+    const WORDS = ['Are you ready to play?', 'Are you sure?', 'Get Served.'];
+    let tries = 0, home = false, cool = false, ox = 0, oy = 0;
+    const say = (i) => { label.textContent = WORDS[i]; live.textContent = WORDS[i]; btn.classList.remove('is-pop'); void btn.offsetWidth; btn.classList.add('is-pop'); };
+    const shift = (x, y) => { ox = x; oy = y; btn.style.setProperty('--dx', `${x.toFixed(0)}px`); btn.style.setProperty('--dy', `${y.toFixed(0)}px`); };
+    // slip away from (px, py): along the line from the pointer through the button, a little to the side, kept on screen
+    const dodge = (px, py) => {
+      const r = btn.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      let vx = cx - px, vy = cy - py; const len = Math.hypot(vx, vy);
+      if (len < 1) { vx = 1; vy = 0; } else { vx /= len; vy /= len; }
+      const dist = Math.min(260, Math.max(150, W.innerWidth * 0.2)), side = tries % 2 ? 70 : -70;
+      const m = 14, hw = r.width / 2, hh = r.height / 2;
+      const tx = Math.min(W.innerWidth - m - hw, Math.max(m + hw, cx + vx * dist - vy * side));
+      const ty = Math.min(W.innerHeight - m - hh, Math.max(m + hh, cy + vy * dist + vx * side));
+      shift(ox + tx - cx, oy + ty - cy);
+    };
+    // one try: the first asks "Are you sure?" and slips away; the last gives in and glides home as "Get Served."
+    const attempt = (px, py, moveIt) => {
+      tries += 1;
+      if (tries >= 2) { home = true; btn.classList.add('is-home'); say(2); shift(0, 0); return; }
+      say(1); if (moveIt) dodge(px, py);
+    };
+    W.addEventListener('pointermove', (e) => {
+      if (done || home || cool || e.pointerType !== 'mouse' || !splash.classList.contains('is-asking')) return;
+      const r = btn.getBoundingClientRect(), pad = 36;
+      if (e.clientX > r.left - pad && e.clientX < r.right + pad && e.clientY > r.top - pad && e.clientY < r.bottom + pad) {
+        cool = true; attempt(e.clientX, e.clientY, true); setTimeout(() => { cool = false; }, 650);
+      }
+    });
+    btn.addEventListener('click', (e) => {
+      if (home) { end(); return; }
+      const keyboard = e.detail === 0; // Enter or Space: the words change, the button stays where focus is
+      attempt(e.clientX, e.clientY, !keyboard);
+    });
+    // the CTA appears once the logo has landed, with focus on it for keyboard users
+    setTimeout(() => { if (!done) { splash.classList.add('is-asking'); btn.focus({ preventScroll: true }); } }, 1500);
   } else { root.classList.remove('splash-on'); requestAnimationFrame(ready); }
 
   // the logo's full stop: pointing at or focusing the logo tosses it like a serve, and a toss always finishes

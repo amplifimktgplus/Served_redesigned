@@ -174,6 +174,16 @@ html.splash-on .splash.is-out { animation: splashOut .7s var(--ease-io) forwards
 .splash__w svg, .splash__ball svg { display: block; width: 100%; height: 100%; fill: currentColor; overflow: visible; }
 .splash__w { clip-path: inset(-4% 102% -4% -2%); animation: wipeIn .7s var(--ease) .55s forwards; }
 .splash__ball { transform-origin: 96.9% 73.5%; animation: serveBall 1.45s linear both; }
+/* the CTA under the logo (client, 27 Nov 2026, after React Bits' "Dodge Field"): it slips away from the pointer, asks
+   twice, then gives in and glides home as "Get Served." (site.js). It appears once the logo has landed. */
+.splash__cta { position: absolute; left: 50%; top: calc(50% + min(70vw, 560px) * .3 + clamp(20px, 3.5vh, 36px)); translate: -50% 0; opacity: 0; pointer-events: none; transition: opacity .5s var(--ease); }
+html.splash-on .splash.is-asking .splash__cta { opacity: 1; pointer-events: auto; }
+.splash__btn { white-space: nowrap; transform: translate(var(--dx, 0px), var(--dy, 0px)); transition: transform .55s cubic-bezier(.22, 1.4, .36, 1), translate var(--d-2) var(--ease), background var(--d-1), box-shadow var(--d-2) var(--ease); }
+.splash__btn.is-home { transition-duration: .9s, var(--d-2), var(--d-1), var(--d-2); transition-timing-function: cubic-bezier(.16, 1, .3, 1), var(--ease), ease, var(--ease); }
+.splash__btn.is-pop span { animation: dodgePop .38s var(--ease); }
+.splash__skip { position: absolute; right: clamp(12px, 3vw, 32px); bottom: clamp(12px, 3vh, 32px); padding: 12px 14px; border: 0; background: none; color: var(--text-3); font: 600 14px/1 var(--f-ui); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.splash__skip:hover { color: var(--text); }
+@keyframes dodgePop { from { opacity: 0; scale: .82; } to { opacity: 1; scale: 1; } }
 
 /* toast */
 .toast { position: fixed; left: 50%; bottom: calc(24px + var(--bottom-stack) + env(safe-area-inset-bottom)); z-index: 400; transform: translate(-50%, 30px); opacity: 0; pointer-events: none; max-width: min(92vw, 520px); padding: 14px 20px; border-radius: 16px; background: var(--cream); color: var(--ink); font-weight: 650; font-size: 15px; box-shadow: 0 20px 50px -15px rgba(0, 0, 0, .7); transition: opacity var(--d-2) var(--ease), transform var(--d-2) var(--ease); }

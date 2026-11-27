@@ -359,7 +359,10 @@ export function footer() {
 </footer>`;
 }
 
-const splash = () => `<div class="splash" aria-hidden="true" data-splash><div class="splash__court">${linesSvg()}</div><div class="splash__mark"><span class="splash__w">${logoPart('letters')}</span><span class="splash__ball">${logoPart('dot')}</span></div></div>`;
+// the splash (once per session): the logo serves in, then a CTA that dodges the pointer before it gives in (site.js)
+const splash = () => `<div class="splash" role="dialog" aria-modal="true" aria-label="Welcome to Served." data-splash><div class="splash__court" aria-hidden="true">${linesSvg()}</div><div class="splash__mark" aria-hidden="true"><span class="splash__w">${logoPart('letters')}</span><span class="splash__ball">${logoPart('dot')}</span></div>
+<div class="splash__cta"><button class="btn btn--accent btn--lg splash__btn" type="button" data-dodge-btn><span data-dodge-label>Are you ready to play?</span></button></div>
+<button class="splash__skip" type="button" data-splash-skip>Skip intro</button><p class="sr" aria-live="polite" data-dodge-live></p></div>`;
 
 // vslug marks a venue's own pages (page, booking, Rally X) so an owner's page settings can be applied to them
 // own: a venue's own page (its page, its booking pages, a listing, a venue opening soon). The venue's bar is the header

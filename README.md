@@ -22,7 +22,7 @@ Accounts work in the browser with no server: players register and can then book 
 waits while a guest signs up), and owners set their court page's colours, hero photo and gallery, which every page
 of that venue then wears. Everything is kept in the visitor's own browser.
 
-47 pages in all while Batangas is paused, the 404 page included. URLs kept from the current site (`/courts`, `/courts/<venue>`, `/courts/<venue>/availability`, `/courts/<venue>/slots`, `/pricing`, `/list-your-court`, `/contact`, `/sign-in`, `/sign-up`, `/forgot-password`, `/staff/sign-in`).
+48 pages in all while Batangas is paused, the 404 page and the options page `/lab/how/` (How it works layouts) included. URLs kept from the current site (`/courts`, `/courts/<venue>`, `/courts/<venue>/availability`, `/courts/<venue>/slots`, `/pricing`, `/list-your-court`, `/contact`, `/sign-in`, `/sign-up`, `/forgot-password`, `/staff/sign-in`).
 
 ## Build
 

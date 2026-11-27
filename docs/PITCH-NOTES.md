@@ -102,6 +102,12 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
   green, and the venue's paddle rack photo, in its natural colours, seen through the brush-stroke X of the Rally X logo,
   traced from the banner in the venue's photo (`tools/rallyx-x.py`) and sunk in with an inner shadow. The X takes the
   larger half of the section so the photo reads through it. The only neon green on the site.
+- Splash (client, 27 Nov, after the idea of React Bits' "Dodge Field", written for this site): once the logo has
+  served in, a CTA asks "Are you ready to play?", slips away from the pointer and asks "Are you sure?", then gives in
+  and glides home as "Get Served.", which opens the site. Touch: each tap is a try; keyboard: each Enter; Skip intro,
+  Escape or scrolling leave at any time; the page behind is inert while it shows; once per session, as before.
+- How it works: the current cards plus three layouts to pick from at `/lab/how/` (A rally line, B big numbers,
+  C step tabs), in the current site's words.
 - Corners eased site-wide (client, 27 Nov): cards and panels 16px (large panels 22px), smaller cards 12-14px; buttons
   and chips stay pill-shaped.
 - The option pages (`/lab/rally-x/`, `/lab/dividers/`) were removed once the client picked.
