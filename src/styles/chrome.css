@@ -152,7 +152,7 @@ html.book-active .stick { transform: translateY(140%); visibility: hidden; }
 /* footer sign-off: the logo as two masks over one moving foil, so the full stop wears the same colour as the
    letters. Both start the foil together and the stop's toss waits paused, so turning it on never restarts the
    foil. Nothing is clipped: the toss stays inside the frame and the frame does not hide overflow. */
-.ftr__word { --foil: linear-gradient(100deg, rgba(239, 235, 223, .12) 30%, color-mix(in srgb, var(--accent) 60%, transparent) 50%, rgba(239, 235, 223, .12) 70%) 0 0 / 250% 100%; position: relative; width: min(100%, 860px); aspect-ratio: 1637.2 / 498.5; margin: clamp(28px, 4vw, 52px) auto 0; pointer-events: none; }
+.ftr__word { --foil: linear-gradient(100deg, rgba(239, 235, 223, .12) 30%, color-mix(in srgb, var(--accent) 60%, transparent) 50%, rgba(239, 235, 223, .12) 70%) 0 0 / 250% 100%; position: relative; width: min(100%, 860px); aspect-ratio: 1637.2 / 498.5; margin: clamp(28px, 4vw, 52px) auto clamp(28px, 4vw, 48px); pointer-events: none; } /* the space below keeps the base row's line clear of the full stop (client, 27 Nov 2026) */
 .ftr__w { position: absolute; inset: 0; background: var(--foil); -webkit-mask: url(served-letters.svg) center / 100% 100% no-repeat; mask: url(served-letters.svg) center / 100% 100% no-repeat; animation: foil 12s linear infinite; }
 .ftr__d { position: absolute; inset: 0; background: var(--foil); -webkit-mask: url(served-dot.svg) center / 100% 100% no-repeat; mask: url(served-dot.svg) center / 100% 100% no-repeat; transform-origin: 96.9% 73.5%; animation: foil 12s linear infinite, dotToss 1.6s linear both paused; }
 .ftr__d.is-bouncing { animation-play-state: running; }
