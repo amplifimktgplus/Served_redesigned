@@ -43,7 +43,8 @@ type about a fifth smaller than the first pass, no oversized lead cards.
   browsers); Safari and Firefox show the steps instead. A service worker keeps pages you have opened readable
   offline, and every deploy replaces its cache.
 - Motion: one-time splash serve, line draws, masked photo reveals, parallax, tilt and glint cards, magnetic
-  buttons, click sparks, scroll-velocity marquee, pressure type, rotating sport word. All off under reduced motion.
+  buttons, click sparks, scroll-velocity marquee, a split-flap board on the closing band, rotating sport word. All off
+  under reduced motion.
 
 ## Home hero (decided 27 Nov 2026)
 
@@ -72,6 +73,12 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
 - Every venue page now reads as the venue's own site: its own bar with its name and sections, a Photos section
   once photos are added, and a sign-off band with "Bookings by Served.". The owner's colours carry onto the
   venue's booking pages too.
+- Since 27 Nov (client): a court page is the venue's own site, so an owner can share its link or a QR code and their
+  players never land among other venues. On a venue's page, its booking pages, Rally X, a listing and a venue opening
+  soon, the venue's bar is the header and its sign-off is the footer. There are no Served menus, no splash, no closing
+  band, no "More courts like this", no "More courts in" a city and no "Back to all courts"; after a booking the next
+  step is "Book another time" at the same venue. Served shows only as "Bookings by Served.". The links that remain
+  are utilities: My bookings, sign in to review, photo credits.
 - Preview limits: there is no server, so accounts, bookings and page settings live in the visitor's own browser.
   Passwords are salted and hashed, never stored as typed. Other visitors do not see an owner's changes.
 - Owners list their venues: name, sport, city, address, courts, surface, rates (with an optional evening rate),
@@ -92,7 +99,12 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
 - Play mode: open play, find players, clubs and ranking, tournaments, events (stamped "Concept", examples
   labelled "Example").
 - Basketball and padel: "Coming soon", no booking buttons.
-- Rally X booking: the page shows a notify form until Rally X rates and slots are on Served.
+- Rally X is live and bookable (client, 27 Nov 2026), on SAMPLE rates, hours and courts until it confirms its own:
+  ₱700 an hour, 8 AM to 8 PM, four courts (two pickleball, two tennis). These are the most common values among the
+  captured pickleball and tennis venues, and every place they show is marked "Sample". Its venue count is included;
+  court totals and "from" prices leave the samples out. Its address shows as "to be confirmed".
+- "Opening soon" sample: UP College of Human Kinetics Tennis Courts (client, 27 Nov 2026), in the courts directory
+  and on its own page with a notify form. Only its name, sport and campus are shown; its photos are representative.
 
 ## Found on the staging site
 
@@ -109,7 +121,7 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
 
 ## Questions for the Served. team
 
-1. Rally X: address, hours, number of courts and rates, so its page can take bookings.
+1. Rally X: address, hours, number of courts and rates, to replace the samples its booking runs on now.
 2. Real contact phone, office address and social handles.
 3. Real photos for each venue (or permission to use the venues' own).
 4. Which Play mode feature comes first: open play or find players?
@@ -123,3 +135,6 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
 10. Court page studio: should owner changes publish at once or go through a review first?
 11. Whole-day bookings: should there be a day rate, a minimum or a cap per player? The concept charges the
     hourly rates added up.
+12. UP College of Human Kinetics Tennis Courts: your current site already lists "UP Diliman Tennis Court" (UP
+    Diliman, Quezon City, four clay courts). If those are the same courts, the directory now shows them twice.
+13. Owner links: should each venue get a short link (for example served.com/rallyx) and a QR code to print?

@@ -87,12 +87,23 @@ export const VENUES = vj.venues.filter((v) => !v.test && !PAUSED.venues.includes
 });
 export const TEST_VENUES = vj.venues.filter((v) => v.test).map((v) => v.slug);
 
-// Rally X: the client supplied its photos. Facts below are only what its own signage shows
-// ("NOW OPEN! PICKLEBALL and TENNIS", "BOOK NOW FOR SCHEDULE AND BOOKING"). Address, rates and court
-// count are not on the capture, so the page says so and offers a notify form instead of a booking.
+// Rally X: the client supplied its photos, and on 27 Nov 2026 asked for it to show as live and bookable on Served.
+// From its own signage: "NOW OPEN! PICKLEBALL and TENNIS", "BOOK NOW FOR SCHEDULE AND BOOKING".
+// Its address, rates, hours and courts are not on the capture and were not supplied, so the booking runs on SAMPLE
+// values, marked "Sample" wherever they show. They are the most common values among the captured pickleball and
+// tennis venues (₱700 an hour, 4 courts, 8 AM to 8 PM), split two pickleball and two tennis. Swap in the real ones here.
+const RX_HOURS = Array.from({ length: 12 }, (_, i) => 8 + i);
 export const RALLYX = {
-  slug: 'rally-x', name: 'Rally X', sports: ['Pickleball', 'Tennis'], tone: 'heat', bookable: false,
-  status: 'Now open', note: 'Booking on Served opens soon',
+  slug: 'rally-x', name: 'Rally X', sport: 'Pickleball', sports: ['Pickleball', 'Tennis'], tone: 'heat', bookable: true, sample: true,
+  status: 'Now open', address: 'Metro Manila, address to be confirmed', city: '', area: '',
+  img: 'rallyx-court-logo', hero: 'rallyx-now-open', featured: false, rating: 0, reviewCount: 0,
+  desc: 'Pickleball and tennis under one roof, now open and taking bookings on Served.',
+  rate: 700, courts: 4, bySport: { Pickleball: 2, Tennis: 2 },
+  open: [...new Set(VENUES.flatMap((v) => v.open))].sort(), full: [],
+  booking: {
+    courts: [{ id: 'p1', name: 'Pickleball 1', sport: 'Pickleball' }, { id: 'p2', name: 'Pickleball 2', sport: 'Pickleball' }, { id: 't1', name: 'Tennis 1', sport: 'Tennis' }, { id: 't2', name: 'Tennis 2', sport: 'Tennis' }],
+    feeRate: SITE.feeRate, hours: RX_HOURS, rates: Object.fromEntries(RX_HOURS.map((h) => [h, { rate: 700, label: 'Standard' }])), taken: {},
+  },
   photos: ['rallyx-now-open', 'rallyx-forehand', 'rallyx-court-logo', 'rallyx-paddle-ball', 'rallyx-tennis-player', 'rallyx-paddle-wall',
     'rallyx-backhand-net', 'rallyx-target-net', 'rallyx-ready-position', 'rallyx-paddles-court', 'rallyx-paddle-wall-tall', 'rallyx-facade'],
   captions: {
@@ -110,6 +121,20 @@ export const RALLYX = {
     'rallyx-facade': 'Street side, between the towers.',
   },
 };
+
+// Rally X is live, so venue counts and sport lists include it. Its court count is a sample, so court totals leave it
+// out until it is confirmed (set sample: false above and they count it, per sport through bySport).
+export const VENUE_COUNT = VENUES.length + 1;
+export const COURT_COUNT = VENUES.reduce((n, v) => n + v.courts, 0) + (RALLYX.sample ? 0 : RALLYX.courts);
+export const playsSport = (name) => [...VENUES.filter((v) => v.sport === name), ...(RALLYX.sports.includes(name) ? [RALLYX] : [])];
+export const courtsFor = (v, name) => (v.sample ? 0 : v.bySport ? v.bySport[name] || 0 : v.courts);
+
+// The "opening soon" sample, named by the client on 27 Nov 2026 in place of Rally X. Only its name, its sport and its
+// campus are known, so its page says what is still to be confirmed and offers a notify form. Photos: representative.
+export const SOON = [
+  { slug: 'up-chk-tennis-courts', name: 'UP College of Human Kinetics Tennis Courts', short: 'UP CHK Tennis Courts', sport: 'Tennis', tone: 'cream',
+    city: 'Quezon City', address: 'UP Diliman, Quezon City', img: 'sport-tennis', hero: 'place-up-diliman' },
+];
 
 // ---------- curated collections (each rule is stated, and computed from venue facts) ----------
 export const COLLECTIONS = [

@@ -1,6 +1,6 @@
 // src/lib.mjs: helpers, layout chrome and shared components for the Served. rebuild.
 // Every URL is written RELATIVE to the page that carries it, so the build serves from any sub-path.
-import { SITE, IMAGES, SPORTS, CITIES, VENUES, RALLYX, CAPTURED_ON, LOGO } from './content.mjs';
+import { SITE, IMAGES, SPORTS, CITIES, VENUES, RALLYX, CAPTURED_ON, LOGO, VENUE_COUNT, COURT_COUNT, playsSport } from './content.mjs';
 
 // ---------------------------------------------------------------- page context + url helpers
 let CUR = '/';
@@ -118,7 +118,7 @@ export const btn = (label, href, cls = 'btn--accent', extra = '') => `<a class="
 export const ctas = (...b) => `<div class="ctas">${b.join('')}</div>`;
 export const chipSport = (s, cls = '') => { const sp = sportOf(s); return `<span class="chip chip--sport ${cls}" data-tone="${sp.tone}">${icon(sp.icon)}${sp.name}</span>`; };
 export const score = (v) => v.reviewCount ? `<span class="score" title="${v.rating} out of 5 from ${v.reviewCount} reviews">${icon('star', 'ico--fill')}<b>${v.rating.toFixed(1)}</b><small>${v.reviewCount} reviews</small></span>` : `<span class="score score--new">${icon('sparkle')}<b>New</b><small>no reviews yet</small></span>`;
-export const priceTag = (v, big = false) => `<p class="price${big ? ' price--big' : ''}"><b>${peso(v.rate)}</b><span>/ hr</span><small>exclusive of service fees</small></p>`;
+export const priceTag = (v, big = false) => `<p class="price${big ? ' price--big' : ''}"><b>${peso(v.rate)}</b><span>/ hr</span><small>${v.sample ? '<em class="sample">Sample rate</em> ' : ''}exclusive of service fees</small></p>`;
 export const nextTag = (v) => `<p class="next" data-next="${esc(v.open.join(','))}">${icon('cal')}<span>Next: <b>${fmtDate(v.open[0])}</b></span></p>`;
 export const linesSvg = () => `<svg class="cl" viewBox="0 0 400 240" preserveAspectRatio="none" aria-hidden="true"><path d="M8 8h384v224H8zM8 44h384M8 196h384M200 8v224M104 44v152M296 44v152M104 120h192" pathLength="1"/></svg>`;
 
@@ -152,16 +152,34 @@ export function vcard(v, { variant = '', lazy = true } = {}) {
 </article>`;
 }
 
+// Rally X, live: books like any venue, on the sample rates and courts set in content.mjs (marked as samples)
 export function rallyCard(cls = '') {
-  return `<article class="vcard vcard--soon ${cls}" data-tone="heat" data-tilt data-reveal>
-  <a class="vcard__media" href="${u('/courts/rally-x/')}" tabindex="-1" aria-hidden="true">${img('rallyx-court-logo', { alt: '', sizes: '(min-width: 1100px) 33vw, 100vw', pos: '50% 60%' })}<span class="ribbon ribbon--rust">Now open</span></a>
+  const R = RALLYX;
+  return `<article class="vcard ${cls}" data-tone="heat" data-tilt data-reveal>
+  <a class="vcard__media" href="${u('/courts/rally-x/')}" tabindex="-1" aria-hidden="true">${img(R.img, { alt: '', sizes: '(min-width: 1100px) 33vw, 100vw', pos: '50% 60%' })}<span class="ribbon">Now open</span></a>
   <div class="vcard__tags">${chipSport('Pickleball')}${chipSport('Tennis')}</div>
   <div class="vcard__body">
     <h3 class="vcard__name"><a href="${u('/courts/rally-x/')}">Rally X</a></h3>
-    <p class="vcard__meta">${icon('pin')}<span>Metro Manila, address to be confirmed</span></p>
-    <p class="vcard__desc">Pickleball and tennis under one roof, now open. Booking on Served opens soon.</p>
+    <p class="vcard__meta">${icon('pin')}<span>${esc(R.address)}</span></p>
+    <p class="vcard__desc">${esc(R.desc)}</p>
+    <div class="vcard__foot">${priceTag(R)}${nextTag(R)}</div>
+    <div class="ctas ctas--card"><a class="btn btn--accent btn--sm" href="${u('/courts/rally-x/availability/')}"><span>Book Now</span>${icon('arrow')}</a><a class="btn btn--ghost btn--sm" href="${u('/courts/rally-x/')}"><span>View Court</span></a></div>
+  </div>
+  <span class="glint" aria-hidden="true"></span>
+</article>`;
+}
+
+// a venue that is coming to Served: no price, no booking, a page with a notify form
+export function soonCard(s) {
+  return `<article class="vcard vcard--soon" data-tone="${s.tone}" data-tilt data-reveal>
+  <a class="vcard__media" href="${u(`/courts/${s.slug}/`)}" tabindex="-1" aria-hidden="true">${img(s.img, { alt: '', sizes: '(min-width: 1100px) 33vw, 100vw' })}<span class="ribbon ribbon--rust">Opening soon</span></a>
+  <div class="vcard__tags">${chipSport(s.sport)}</div>
+  <div class="vcard__body">
+    <h3 class="vcard__name"><a href="${u(`/courts/${s.slug}/`)}">${esc(s.name)}</a></h3>
+    <p class="vcard__meta">${icon('pin')}<span>${esc(s.address)}</span></p>
+    <p class="vcard__desc">${esc(s.sport)} courts coming to Served. Rates, hours and courts are announced when booking opens.</p>
     <div class="vcard__foot"><p class="price price--soon"><b>Soon</b><span>on Served.</span></p></div>
-    <div class="ctas ctas--card"><a class="btn btn--ghost btn--sm" href="${u('/courts/rally-x/')}"><span>See Rally X</span>${icon('arrow')}</a></div>
+    <div class="ctas ctas--card"><a class="btn btn--ghost btn--sm" href="${u(`/courts/${s.slug}/#notify`)}"><span>Get notified</span>${icon('arrow')}</a></div>
   </div>
   <span class="glint" aria-hidden="true"></span>
 </article>`;
@@ -183,7 +201,7 @@ export function faqList(items, cls = '') {
 // ---------------------------------------------------------------- chrome
 const navData = () => ({
   courts: {
-    sports: SPORTS.map((s) => ({ ...s, n: VENUES.filter((v) => v.sport === s.name).length })),
+    sports: SPORTS.map((s) => ({ ...s, n: playsSport(s.name).length })),
     cities: CITIES.map((c) => ({ ...c, n: VENUES.filter((v) => v.city === c.name).length })),
   },
 });
@@ -203,7 +221,7 @@ function mega() {
         <a class="mega__link" href="${u('/courts/?view=map')}">${icon('map')}<span>Map view<small>See what is near</small></span></a>
         <a class="mega__link" href="${u('/courts/?sort=rating')}">${icon('star')}<span>Top rated<small>Sorted by players</small></span></a>
         <a class="mega__link" href="${u('/sports/')}">${icon('sparkle')}<span>All sports<small>Live and coming soon</small></span></a></div>
-      <a class="mega__card" href="${u('/courts/rally-x/')}">${img('rallyx-now-open', { alt: '', sizes: '280px' })}<span><small>Now open</small><b>Rally X</b>Pickleball and tennis</span></a></div>`,
+      <a class="mega__card" href="${u('/courts/rally-x/')}">${img('rallyx-now-open', { alt: '', sizes: '280px' })}<span><small>Now on Served</small><b>Rally X</b>Pickleball and tennis, book now</span></a></div>`,
     play: `<div class="mega__cols mega__cols--play">
       <div class="mega__col mega__col--wide"><p class="mega__h">Play mode <em class="soon">Coming soon</em></p><div class="mega__grid mega__grid--2">
       ${['open-play:Open play:users:Join a game near you', 'find-players:Find players:search:Need a fourth?', 'clubs:Club ranking:flag:Your crew, organised', 'tournaments:Tournaments:trophy:Brackets and courts', 'events:Events:ticket:Clinics and socials'].map((x) => { const [id, n, ic, s] = x.split(':'); return `<a class="mega__link" href="${u(`/play/#${id}`)}">${icon(ic)}<span>${n}<small>${s}</small></span></a>`; }).join('')}</div></div>
@@ -262,17 +280,16 @@ export function header(active = '') {
 
 // the sticky bar: shows past the hero, hides at the footer, while typing and with the drawer open; x hides it for the session
 export function stickyBar(kind = 'site', v = null) {
-  const totalCourts = VENUES.reduce((n, x) => n + x.courts, 0);
   if (kind === 'venue' && v) {
     return `<aside class="stick" data-stick aria-label="Book ${esc(v.name)}" hidden><div class="stick__in">
       <span class="stick__thumb">${img(v.img, { alt: '', sizes: '56px' })}</span>
-      <p class="stick__txt"><b>${esc(v.name)}</b><small>${peso(v.rate)} / hr <span class="sep">/</span> <span data-next-short="${esc(v.open.join(','))}">Next: ${fmtDate(v.open[0])}</span></small></p>
+      <p class="stick__txt"><b>${esc(v.name)}</b><small>${peso(v.rate)} / hr${v.sample ? ' (sample)' : ''} <span class="sep">/</span> <span data-next-short="${esc(v.open.join(','))}">Next: ${fmtDate(v.open[0])}</span></small></p>
       <div class="stick__acts"><a class="btn btn--accent btn--sm" href="${CUR === `/courts/${v.slug}/` ? '#book' : u(`/courts/${v.slug}/availability/`)}"><span>Book a slot</span>${icon('arrow')}</a></div>
       <button class="stick__x" type="button" data-stick-x aria-label="Hide this bar">${icon('close')}</button></div></aside>`;
   }
   return `<aside class="stick" data-stick aria-label="Quick booking" hidden><div class="stick__in">
     <span class="stick__ball" aria-hidden="true"></span>
-    <p class="stick__txt"><b>Your next game is calling.</b><small>${VENUES.length} venues <span class="sep">/</span> ${totalCourts} courts <span class="sep">/</span> 3 sports</small></p>
+    <p class="stick__txt"><b>Your next game is calling.</b><small>${VENUE_COUNT} venues <span class="sep">/</span> ${COURT_COUNT} courts <span class="sep">/</span> 3 sports</small></p>
     <div class="stick__acts">
       <a class="stick__ic" href="${u('/courts/?view=map')}" aria-label="Map view">${icon('map')}<span>Map</span></a>
       <a class="btn btn--accent btn--sm" href="${u('/courts/')}"><span>Find a court</span>${icon('arrow')}</a>
@@ -280,18 +297,43 @@ export function stickyBar(kind = 'site', v = null) {
     <button class="stick__x" type="button" data-stick-x aria-label="Hide this bar">${icon('close')}</button></div></aside>`;
 }
 
+// the closing band, centred: a split-flap board that clacks through to GAME ON. Each tile has a still upper and lower
+// half and two flaps that turn over them (site.js); the markup already reads GAME ON. without script or motion.
+// The full stop is the Served. ball.
+const flapFace = (ch) => (ch === '.' ? '<b class="flap__ball"></b>' : esc(ch));
+const flapTile = (ch, i) => `<span class="flap__t" data-ch="${esc(ch)}" style="--i:${i}">${['u', 'l', 'fu', 'fl'].map((k) => `<span class="flap__h flap__${k}"><i>${flapFace(ch)}</i></span>`).join('')}</span>`;
 export function finalCta() {
+  let i = 0;
+  const board = [...'GAME ON.'].map((ch) => (ch === ' ' ? '<span class="flap__gap"></span>' : flapTile(ch, i++))).join('');
   return `<section class="band band--accent fin" aria-labelledby="fin-h">
   <div class="band__clip" aria-hidden="true"><span class="fin__lines">${linesSvg()}</span></div>
   <div class="wrap fin__in">
-    <p class="fin__mega" data-pressure aria-label="Game on.">GAME ON.</p>
-    <div class="fin__copy" data-reveal>
-      <h2 class="d2" id="fin-h">Your next game is calling<span class="pd">.</span></h2>
-      <p class="lede">Find your court, lock your slot, and show up ready to play.</p>
-      ${ctas(btn('Search courts', '/courts/', 'btn--ink btn--lg'), btn('List your court', '/list-your-court/', 'btn--line btn--lg'))}
-    </div>
+    ${kicker('Your next game is calling', 'fin__k')}
+    <h2 class="fin__h" id="fin-h"><span class="sr">Game on.</span><span class="flap" data-flap aria-hidden="true">${board}</span></h2>
+    <p class="lede fin__lede">Find your court, lock your slot, and show up ready to play.</p>
+    ${ctas(btn('Search courts', '/courts/', 'btn--ink btn--lg'), btn('List your court', '/list-your-court/', 'btn--line btn--lg'))}
   </div>
 </section>`;
+}
+
+// a venue's own header and footer (see layout's own). fill: the listing template, filled in the browser (data-l)
+export function ownHeader(o) {
+  const N = o.fill ? ' data-l="name"' : '', M = o.fill ? ' data-l="mono"' : '', P = o.fill ? ' data-l-page' : '';
+  return `<a class="skip" href="#main">Skip to content</a>
+<header class="vbar vbar--top" data-own-bar><div class="wrap vbar__in">
+  <a class="vbar__brand" href="${o.home}" aria-label="${esc(o.name)}${o.home === '#top' ? ', back to top' : ', venue page'}"><span class="vbar__mono" aria-hidden="true"${M}>${esc(o.name[0])}</span><b${N}>${esc(o.short || o.name)}</b></a>
+  ${o.links && o.links.length ? `<nav class="vbar__links" aria-label="${esc(o.name)}"${P}>${o.links.map(([t, h, x = '']) => `<a href="${h}"${x}>${t}</a>`).join('')}</nav>` : ''}
+  ${o.cta ? `<a class="btn btn--accent btn--sm vbar__go" href="${o.cta[1]}"${P}><span>${o.cta[0]}</span>${icon('arrow')}</a>` : ''}
+</div></header>`;
+}
+export function ownFooter(o) {
+  const N = o.fill ? ' data-l="name"' : '', M = o.fill ? ' data-l="mono"' : '', A = o.fill ? ' data-l="address"' : '';
+  return `<footer class="vend vend--foot" data-ftr><div class="wrap vend__in">
+  <span class="vend__mono" aria-hidden="true"${M}>${esc(o.name[0])}</span>
+  <div class="vend__id"><b${N}>${esc(o.name)}</b><span${A}>${esc(o.address || '')}</span></div>
+  ${o.cta ? `<a class="btn btn--accent" href="${o.cta[1]}"${o.fill ? ' data-l-page' : ''}><span>${o.cta[0] === 'Book now' ? 'Book a court' : o.cta[0]}</span>${icon('arrow')}</a>` : ''}
+  <p class="vend__by"><span>Bookings by</span><a class="vend__served" href="${u('/')}" aria-label="Served. home">${logoMark('vend__logo')}</a><span class="vend__fine">Design concept preview <span class="sep">/</span> <a href="${u('/gallery/#credits')}">Photo credits</a></span></p>
+</div></footer>`;
 }
 
 export function footer() {
@@ -321,11 +363,14 @@ export function footer() {
 const splash = () => `<div class="splash" aria-hidden="true" data-splash><div class="splash__court">${linesSvg()}</div><div class="splash__mark"><span class="splash__w">${logoPart('letters')}</span><span class="splash__ball">${logoPart('dot')}</span></div></div>`;
 
 // vslug marks a venue's own pages (page, booking, Rally X) so an owner's page settings can be applied to them
-export function layout({ path, title, desc, body, active = '', bodyCls = '', sticky = 'site', venue = null, schema = null, ogImg = 'og-served.jpg', noFinal = false, vslug = venue ? venue.slug : '' }) {
+// own: a venue's own page (its page, its booking pages, a listing, a venue opening soon). The venue's bar is the header
+// and its sign-off the footer; no Served menus, splash or closing band, and no other courts, so the link or QR code an
+// owner shares opens what reads as the venue's own site. Served shows only as "Bookings by Served.".
+export function layout({ path, title, desc, body, active = '', bodyCls = '', sticky = 'site', venue = null, schema = null, ogImg = 'og-served.jpg', noFinal = false, vslug = venue ? venue.slug : '', own = null }) {
   setPage(path);
   const full = title.includes('Served') ? title : `${title} | Served.`;
   const html = `<!doctype html>
-<html lang="en-PH" class="no-js" data-root="${root()}">
+<html lang="en-PH" class="no-js"${own ? ' data-own' : ''} data-root="${root()}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -342,19 +387,19 @@ export function layout({ path, title, desc, body, active = '', bodyCls = '', sti
 <link rel="preload" href="${a('assets/fonts/archivo-var.woff2')}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="${a('assets/fonts/jakarta-var.woff2')}" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${a('assets/site.css')}?v=${ASSET_V}">
-<script>(function(d){d.classList.remove('no-js');d.classList.add('js');try{if(!sessionStorage.getItem('srv.splash')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('splash-on')}catch(e){}setTimeout(function(){if(!window.__srv){d.classList.remove('splash-on');d.classList.add('reveal-all')}},3000)})(document.documentElement)</script>
+<script>(function(d){d.classList.remove('no-js');d.classList.add('js');try{if(!d.hasAttribute('data-own')&&!sessionStorage.getItem('srv.splash')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('splash-on')}catch(e){}setTimeout(function(){if(!window.__srv){d.classList.remove('splash-on');d.classList.add('reveal-all')}},3000)})(document.documentElement)</script>
 <script defer src="${a('assets/site.js')}?v=${ASSET_V}"></script>
 ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ''}
 </head>
-<body class="${bodyCls}"${vslug ? ` data-venue="${vslug}"` : ''}>
+<body class="${bodyCls}${own ? ' is-own' : ''}"${vslug ? ` data-venue="${vslug}"` : ''}>
 ${sprite()}
-${splash()}
-${header(active)}
+${own ? '' : splash()}
+${own ? ownHeader(own) : header(active)}
 <main id="main">
 ${body}
-${noFinal ? '' : finalCta()}
+${noFinal || own ? '' : finalCta()}
 </main>
-${footer()}
+${own ? ownFooter(own) : footer()}
 ${sticky ? stickyBar(sticky, venue) : ''}
 <div class="toast" role="status" aria-live="polite" data-toast></div>
 </body>

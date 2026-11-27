@@ -163,6 +163,9 @@ p { text-wrap: pretty; }
 .btn:disabled::after { display: none; }
 .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
 .ctas--card { margin-top: 18px; gap: 10px; }
+/* a card clips its corners, so its buttons keep their glow (and the pointer drift) inside the card's padding */
+.ctas--card .btn--accent { box-shadow: 0 6px 16px -10px color-mix(in srgb, var(--accent) 60%, transparent), inset 0 1px 0 rgba(255, 255, 255, .45); }
+.ctas--card .btn--accent:hover { box-shadow: 0 8px 20px -11px color-mix(in srgb, var(--accent) 75%, transparent), inset 0 1px 0 rgba(255, 255, 255, .5); }
 .iconbtn { width: 44px; height: 44px; display: inline-grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-2); color: var(--text); transition: border-color var(--d-1), color var(--d-1), background var(--d-1); }
 .iconbtn:hover { border-color: var(--accent); color: var(--accent); }
 .spark { position: absolute; pointer-events: none; width: 2px; height: 10px; background: var(--accent); border-radius: 2px; z-index: 300; }
@@ -226,6 +229,6 @@ a.chip:hover, button.chip:hover { border-color: var(--accent); }
 .seg label[data-tone="cream"] span { --tone: var(--cream); }
 .seg label[data-tone="aqua"] span { --tone: var(--aqua); }
 .seg label:hover span { color: var(--text); }
-.seg input:checked + span { background: var(--tone); color: var(--ink); box-shadow: 0 8px 22px -10px var(--tone); }
+.seg input:checked + span { background: var(--tone); color: var(--ink); box-shadow: 0 5px 14px -8px var(--tone); } /* stays inside the scroller's padding */
 .seg input:checked + span .ico { color: var(--ink); }
 .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }

@@ -1,13 +1,20 @@
 // src/pages.mjs: one function per page type. Captured words are carried verbatim; new pages are written for Served.
-import { SITE, SPORTS, CITIES, VENUES, RALLYX, COLLECTIONS, FAQ, PLAY, ROADMAP, CREDITS, CAPTURED_ON, IMAGES } from './content.mjs';
+import { SITE, SPORTS, CITIES, VENUES, RALLYX, SOON, VENUE_COUNT, COURT_COUNT, playsSport, courtsFor, COLLECTIONS, FAQ, PLAY, ROADMAP, CREDITS, CAPTURED_ON, IMAGES } from './content.mjs';
 import { layout, u, a, esc, peso, json, dot, fmtDate, img, icon, kicker, sh, btn, ctas, chipSport, score, priceTag, nextTag, courtSvg, courtD, logoMark, carousel,
-  vcard, rallyCard, marquee, divider, faqList, sportOf, amenityIcon, setPage } from './lib.mjs';
+  vcard, rallyCard, soonCard, marquee, divider, faqList, sportOf, amenityIcon, setPage } from './lib.mjs';
 
-const TOTAL_COURTS = VENUES.reduce((n, v) => n + v.courts, 0);
-const minRate = (list) => Math.min(...list.map((v) => v.rate));
+const TOTAL_COURTS = COURT_COUNT; // Rally X included
+const minRate = (list) => Math.min(...list.filter((v) => !v.sample).map((v) => v.rate)); // a sample rate never sets a 'from' price
 const crumbs = (items) => `<nav class="crumbs" aria-label="Breadcrumb"><ol>${items.map(([t, h], i) => i === items.length - 1 ? `<li aria-current="page">${esc(t)}</li>` : `<li><a href="${u(h)}">${esc(t)}</a></li>`).join('')}</ol></nav>`;
 const demoNote = (t = 'Preview build: this form does not send anything.') => `<p class="demo-note">${icon('info')}${t}</p>`;
 const venueHref = (v) => u(`/courts/${v.slug}/`);
+// a venue's own header and footer (layout own): its sections, on its page or linked back to from its booking pages
+const ownOf = (v, onPage) => {
+  const at = (id) => (onPage ? `#${id}` : `${venueHref(v)}#${id}`);
+  const links = v === RALLYX ? [['Book', '#book'], ['Photos', at('photos')], ['About', at('about')]]
+    : [['Book', '#book'], ['About', at('about')], ...(onPage ? [['Photos', '#photos', ' data-vgal-link hidden']] : []), ['Location', at('location')], ['Reviews', at('reviews')]];
+  return { name: v.name, address: v.address, home: onPage ? '#top' : venueHref(v), links, cta: ['Book now', '#book'] };
+};
 
 function phero({ k, h1, lede, crumb, img: im, tone = '', cls = '', extra = '', pos = '' }) {
   return `<section class="phero band band--night ${cls}"${tone ? ` data-tone="${tone}"` : ''}>
@@ -19,12 +26,12 @@ function phero({ k, h1, lede, crumb, img: im, tone = '', cls = '', extra = '', p
 // ============================================================ HOME
 function home({ path = '/', hero = heroB(), bodyCls = 'pg-home' } = {}) {
   const sportCards = SPORTS.filter((s) => s.live).map((s) => {
-    const list = VENUES.filter((v) => v.sport === s.name);
-    const courts = list.reduce((n, v) => n + v.courts, 0);
+    const list = playsSport(s.name);
+    const courts = list.reduce((n, v) => n + courtsFor(v, s.name), 0);
     return `<a class="scard" href="${u(`/courts/?sport=${s.name}`)}" data-tone="${s.tone}" data-tilt data-reveal>
       <span class="scard__img">${img(s.card || s.img, { alt: '', sizes: '(min-width: 900px) 33vw, 85vw' })}</span>
       <span class="scard__shade" aria-hidden="true"></span>
-      <span class="scard__top">${icon(s.icon)}<em>${list.length} venues <span class="sep">/</span> ${courts} courts</em></span>
+      <span class="scard__top">${icon(s.icon)}<em>${list.length} venue${list.length === 1 ? '' : 's'} <span class="sep">/</span> ${courts} courts</em></span>
       <span class="scard__body"><span class="scard__line">${s.line}</span><span class="scard__name">${s.name}</span><span class="scard__meta">From ${peso(minRate(list))} / hr</span></span>
       <span class="scard__go">Book ${s.name.toLowerCase()} ${icon('arrow')}</span><span class="glint" aria-hidden="true"></span></a>`;
   }).join('');
@@ -65,16 +72,15 @@ ${marquee(['Pickleball', 'Tennis', 'Badminton', 'No calls', 'No waiting', 'No gu
   <div class="wrap spot__in">
     <div class="spot__collage">
       <figure class="spot__a" data-depth="0.05" data-mask>${img('rallyx-now-open', { alt: 'Rally X from the street: a NOW OPEN banner for pickleball and tennis under a city tower', sizes: '(min-width: 900px) 34vw, 70vw' })}</figure>
-      <figure class="spot__b" data-depth="0.12" data-mask>${img('rallyx-backhand-net', { alt: 'A player reaches for a backhand, seen through the net', sizes: '(min-width: 900px) 22vw, 50vw' })}</figure>
-      <figure class="spot__c" data-depth="0.2" data-mask>${img('rallyx-paddle-wall', { alt: 'Pickleball paddles hanging on a wall', sizes: '(min-width: 900px) 22vw, 50vw' })}</figure>
+      <figure class="spot__b" data-depth="0.07" data-mask>${img('rallyx-backhand-net', { alt: 'A player reaches for a backhand, seen through the net', sizes: '(min-width: 900px) 22vw, 50vw' })}</figure>
+      <figure class="spot__c" data-depth="0.09" data-mask>${img('rallyx-paddle-wall', { alt: 'Pickleball paddles hanging on a wall', sizes: '(min-width: 900px) 22vw, 50vw' })}</figure>
     </div>
     <div class="spot__copy" data-reveal>
       ${kicker('New on the scene')}
       <h2 class="d1 spot__h" id="rx-h">Rally<span class="spot__hx">X</span></h2>
       <p class="lede">Pickleball and tennis under one roof: lime lines on the floor, a wall of paddles and the city right outside. Now open.</p>
       <p class="chips">${chipSport('Pickleball')}${chipSport('Tennis')}<span class="chip chip--live">Now open</span></p>
-      ${ctas(btn('See Rally X', '/courts/rally-x/'), btn('Get notified', '/courts/rally-x/#notify', 'btn--ghost'))}
-      <p class="fine">Booking for Rally X on Served opens soon.</p>
+      ${ctas(btn('Book Rally X', '/courts/rally-x/availability/'), btn('See Rally X', '/courts/rally-x/', 'btn--ghost'))}
     </div>
   </div>
 </section>
@@ -147,11 +153,11 @@ ${marquee(['Pickleball', 'Tennis', 'Badminton', 'No calls', 'No waiting', 'No gu
 }
 
 // ============================================================ HOME HERO: live board (option B, picked 27 Nov 2026)
-const liveSports = () => SPORTS.filter((x) => x.live).map((x) => { const list = VENUES.filter((v) => v.sport === x.name); return { ...x, n: list.length, from: minRate(list) }; });
+const liveSports = () => SPORTS.filter((x) => x.live).map((x) => { const list = playsSport(x.name); return { ...x, n: list.length, from: minRate(list) }; });
 // Option B, "Live board", on the current site's hero photo and shade: the Served. wordmark down the right edge (turned to
 // read upward, baseline on the edge), kinetic sport word, sport buttons and search of one width, Install App, next open slots
 function heroB() {
-  const board = [...VENUES].sort((x, y) => x.open[0].localeCompare(y.open[0]) || y.rating - x.rating).map((v) => `<a class="bitem" href="${u(`/courts/${v.slug}/availability/`)}" data-tone="${v.tone}"><i class="bitem__dot"></i><b>${esc(v.name)}</b><span>${esc(v.city)}</span><span class="bitem__next" data-next="${v.open.join(',')}">Next <b>${fmtDate(v.open[0])}</b></span><em>${peso(v.rate)}/hr</em><span class="bitem__go">Book ${icon('arrow')}</span></a>`).join('');
+  const board = [...VENUES, RALLYX].sort((x, y) => x.open[0].localeCompare(y.open[0]) || y.rating - x.rating).map((v) => `<a class="bitem" href="${u(`/courts/${v.slug}/availability/`)}" data-tone="${v.tone}"><i class="bitem__dot"></i><b>${esc(v.name)}</b><span>${esc(v.city || 'Metro Manila')}</span><span class="bitem__next" data-next="${v.open.join(',')}">Next <b>${fmtDate(v.open[0])}</b></span><em>${peso(v.rate)}/hr${v.sample ? ' <small>sample</small>' : ''}</em><span class="bitem__go">Book ${icon('arrow')}</span></a>`).join('');
   return `<section class="hb" aria-labelledby="hb-h">
   <div class="hb__media" aria-hidden="true">
     <figure class="hb__bg">${img('live-hero-court', { alt: '', sizes: '100vw', eager: true, pos: '50% 32%' })}</figure>
@@ -159,10 +165,10 @@ function heroB() {
   </div>
   <span class="hb__mark" aria-hidden="true">${logoMark('hb__logo')}</span>
   <div class="wrap hb__in">
-    <p class="hb__live"><i></i>Live availability <span class="sep">/</span> ${VENUES.length} venues, ${TOTAL_COURTS} courts</p>
+    <p class="hb__live"><i></i>Live availability <span class="sep">/</span> ${VENUE_COUNT} venues, ${TOTAL_COURTS} courts</p>
     <h1 class="hb__h" id="hb-h"><span class="sr">Choose Your Court. Get Ready To Play.</span><span aria-hidden="true" class="hb__l hb__l--sm">Find your</span><span aria-hidden="true" class="hb__word"><span class="rot" data-rotate="Pickleball|Tennis|Badminton">Pickleball</span></span><span aria-hidden="true" class="hb__l">court</span></h1>
     <div class="hb__deck">
-      <div class="hb__sports">${liveSports().map((x) => `<a class="hb__sport" href="${u(`/courts/?sport=${x.name}`)}" data-tone="${x.tone}">${icon(x.icon)}<span><b>${x.name}</b><small>${x.n} venues <span class="sep">/</span> from ${peso(x.from)}/hr</small></span>${icon('arrow', 'hb__arrow')}</a>`).join('')}</div>
+      <div class="hb__sports">${liveSports().map((x) => `<a class="hb__sport" href="${u(`/courts/?sport=${x.name}`)}" data-tone="${x.tone}">${icon(x.icon)}<span><b>${x.name}</b><small>${x.n} venue${x.n === 1 ? '' : 's'} <span class="sep">/</span> from ${peso(x.from)}/hr</small></span>${icon('arrow', 'hb__arrow')}</a>`).join('')}</div>
       <div class="hb__find">
         <form class="hb__search" action="${u('/courts/')}" method="get" role="search" aria-label="Search courts">${icon('search')}<label class="sr" for="hbq">Court name or city</label><input id="hbq" name="q" type="search" placeholder="Court name or city" autocomplete="off"><label class="sr" for="hbd">When</label><select id="hbd" name="date" data-date-select><option value="">Any day</option></select><button type="submit" aria-label="Search courts">${icon('arrow')}</button></form>
         <button class="btn btn--accent hb__install" type="button" data-install>${icon('download')}<span>Install App</span></button>
@@ -178,7 +184,8 @@ function heroB() {
 function courts() {
   const surfaces = ['Acrylic', 'Clay', 'Hard', 'Wood'];
   const cards = VENUES.map((v) => `<div class="disc__item" data-item data-slug="${v.slug}" data-sport="${v.sport}" data-city="${v.city}" data-surface="${v.surface}" data-rate="${v.rate}" data-rating="${v.rating}" data-name="${esc(v.name.toLowerCase())} ${esc(v.address.toLowerCase())}" data-lat="${v.lat}" data-lng="${v.lng}" data-open="${v.open.join(',')}">${vcard(v)}</div>`).join('')
-    + `<div class="disc__item" data-item data-soon data-slug="rally-x" data-sport="Pickleball Tennis" data-city="" data-surface="" data-rate="99999" data-rating="0" data-name="rally x">${rallyCard()}</div>`;
+    + `<div class="disc__item" data-item data-slug="rally-x" data-sport="Pickleball Tennis" data-city="" data-surface="" data-rate="${RALLYX.rate}" data-rating="0" data-name="rally x ${esc(RALLYX.address.toLowerCase())}" data-open="${RALLYX.open.join(',')}">${rallyCard()}</div>`
+    + SOON.map((s) => `<div class="disc__item" data-item data-soon data-slug="${s.slug}" data-sport="${s.sport}" data-city="${s.city}" data-surface="" data-rate="99999" data-rating="0" data-name="${esc(`${s.name} ${s.short} ${s.address}`.toLowerCase())}">${soonCard(s)}</div>`).join('');
   const pins = VENUES.map((v) => ({ slug: v.slug, name: v.name, rate: v.rate, city: v.city, lat: v.lat, lng: v.lng, tone: v.tone, sport: v.sport, href: u(`/courts/${v.slug}/availability/`), page: u(`/courts/${v.slug}/`) }));
   const body = `
 ${phero({ k: 'Courts', h1: 'Find Your Court', lede: 'Every court on Served is real and ready to book. Filter by location, surface or price and lock your slot in minutes.', crumb: [['Home', '/'], ['Courts', '/courts/']], cls: 'phero--short', img: 'live-hero-court', pos: '50% 60%' })}
@@ -212,7 +219,7 @@ ${phero({ k: 'Courts', h1: 'Find Your Court', lede: 'Every court on Served is re
       <div class="ctas filters__ctas"><a class="btn btn--ghost" href="${u('/courts/')}" data-reset><span>Reset</span></a><button class="btn btn--accent" type="submit" data-apply><span>Apply</span></button></div>
     </form>
     <div class="disc__results">
-      <div class="disc__meta"><p class="disc__count" aria-live="polite" data-count-out><b>${VENUES.length}</b> courts available</p><p class="disc__chips" data-active-chips></p></div>
+      <div class="disc__meta"><p class="disc__count" aria-live="polite" data-count-out><b>${VENUE_COUNT}</b> courts available</p><p class="disc__chips" data-active-chips></p></div>
       <div class="disc__loader" data-loader hidden aria-hidden="true"><span class="ballload"><i></i></span></div>
       <div class="disc__list" data-list>${cards}</div>
       <div class="disc__map" data-map hidden>
@@ -238,6 +245,7 @@ function booking(v, mode) {
   const evening = v.booking.rates && Object.values(v.booking.rates).some((r) => r.label !== 'Standard');
   return `<section class="book" id="book" data-book="${json(bookData(v))}" data-mode="${mode}" aria-labelledby="book-h">
   <div class="wrap">
+    ${v.sample ? `<p class="book__sample">${icon('info')}<span>Sample rates, hours and courts: ${esc(v.name)} has not confirmed its own yet.</span></p>` : ''}
     <ol class="steps" data-steps aria-label="Booking steps"><li class="is-on"><b>1</b><span>Choose a date</span></li><li><b>2</b><span>Pick time &amp; court</span></li><li><b>3</b><span>Payment</span></li><li><b>4</b><span>Confirmation</span></li></ol>
     ${mode === 'venue' ? `<div class="book__head"><h2 class="d2" id="book-h">Book a slot<span class="pd">.</span></h2><p>Orange days have open slots at ${esc(v.name)}. Pick one to choose your time.</p></div>` : '<span id="book-h" class="sr">Booking</span>'}
     <div class="book__grid">
@@ -252,7 +260,7 @@ function booking(v, mode) {
           <div class="book__bh"><h3 class="d4">${icon('clock')}Pick time &amp; court</h3>${evening ? `<p class="ratekey"><span class="rk rk--std">Standard</span><span class="rk rk--eve">${icon('moon')}Evening rate</span></p>` : ''}</div>
           <p class="book__rule">Pick as many hours as you need, or tap Whole day for every open hour on a court. The hours do not have to be next to each other. To book another court as well, choose it and pick its hours; what you picked on the first is kept. Struck-through slots are already taken on the selected court.</p>
           <p class="book__lbl">Court selection</p>
-          <template data-court-tpl>${courtSvg(v.sport, 'cpk__court')}</template><div class="courtpick" data-courts role="radiogroup" aria-label="Court selection"></div>
+          ${[...new Set([v.sport, ...(v.sports || [])])].map((sp) => `<template data-court-tpl data-sport="${sp}">${courtSvg(sp, 'cpk__court')}</template>`).join('')}<div class="courtpick" data-courts role="radiogroup" aria-label="Court selection"></div>
           <div class="book__slh"><p class="book__lbl">Time slots</p><button class="btn btn--line btn--sm" type="button" data-wholeday aria-pressed="false">${icon('sun')}<span>Whole day on this court</span></button></div>
           <div class="slots" data-slots aria-label="Time slots"><p class="slots__empty">Choose a date to see times.</p></div>
         </div>
@@ -262,7 +270,7 @@ function booking(v, mode) {
         <div class="sum__body">
           <h3 class="d4" id="sum-h">Your selection</h3>
           <p class="sum__note">Nothing is reserved until payment.</p>
-          <dl class="sum__dl"><div><dt>Venue</dt><dd>${esc(v.name)}</dd></div><div><dt>Date</dt><dd data-sum-date>Select a date</dd></div><div class="sum__picks"><dt>Booking</dt><dd data-sum-picks>Select a time</dd></div><div><dt>Hours</dt><dd data-sum-hrs>0 hours</dd></div><div><dt>Rate</dt><dd>${peso(v.rate)} / hr (exclusive of service fees)</dd></div><div><dt>Subtotal</dt><dd data-sum-sub>${peso(0)}.00</dd></div><div><dt>Service fee (5%)</dt><dd data-sum-fee>${peso(0)}.00</dd></div></dl>
+          <dl class="sum__dl"><div><dt>Venue</dt><dd>${esc(v.name)}</dd></div><div><dt>Date</dt><dd data-sum-date>Select a date</dd></div><div class="sum__picks"><dt>Booking</dt><dd data-sum-picks>Select a time</dd></div><div><dt>Hours</dt><dd data-sum-hrs>0 hours</dd></div><div><dt>Rate</dt><dd>${peso(v.rate)} / hr${v.sample ? ', sample' : ''} (exclusive of service fees)</dd></div><div><dt>Subtotal</dt><dd data-sum-sub>${peso(0)}.00</dd></div><div><dt>Service fee (5%)</dt><dd data-sum-fee>${peso(0)}.00</dd></div></dl>
           <div class="sum__total"><span>Total</span><b data-sum-total>${peso(0)}.00</b></div>
         </div>
         <button class="btn btn--accent btn--lg sum__go" type="button" data-continue disabled><span>Continue to payment</span>${icon('arrow')}</button>
@@ -287,7 +295,7 @@ function booking(v, mode) {
     <h2 class="d2" id="done-h">Court secured<span class="pd">.</span></h2>
     <p class="done__sub">Booked and served. You’re on.</p>
     <div class="ticket" data-ticket></div>
-    <div class="ctas"><button class="btn btn--accent" type="button" data-ics><span>Add to calendar</span>${icon('download')}</button><a class="btn btn--ghost" href="${u('/courts/')}"><span>Book another court</span></a><a class="btn btn--line" href="${u('/account/')}"><span>My bookings</span></a></div>
+    <div class="ctas"><button class="btn btn--accent" type="button" data-ics><span>Add to calendar</span>${icon('download')}</button><a class="btn btn--ghost" href="#book" data-again><span>Book another time</span></a><a class="btn btn--line" href="${u('/account/')}"><span>My bookings</span></a></div>
     ${demoNote('Preview build: this is a demonstration of the confirmation step.')}
   </div></div>
   <noscript><div class="wrap"><p class="nojs">Turn on JavaScript to pick a slot. Next open day: ${fmtDate(v.open[0], { weekday: 'long', day: 'numeric', month: 'long' })}.</p></div></noscript>
@@ -298,13 +306,11 @@ function booking(v, mode) {
 function venuePage(v) {
   const sp = sportOf(v.sport);
   const city = CITIES.find((c) => c.name === v.city);
-  const similar = VENUES.filter((x) => x.slug !== v.slug && (x.sport === v.sport || x.city === v.city)).slice(0, 3);
   const q = encodeURIComponent(`${v.name}, ${v.address}`);
   const body = `
 <section class="vhero band band--night" data-tone="${v.tone}">
   <div class="band__clip" aria-hidden="true"><figure class="vhero__bg" data-depth="0.1">${img(v.img, { alt: '', sizes: '100vw', eager: true })}</figure><span class="vhero__scrim"></span></div>
   <div class="wrap vhero__in">
-    ${crumbs([['Home', '/'], ['Courts', '/courts/'], [v.name, `/courts/${v.slug}/`]])}
     <div class="vhero__grid">
       <div class="vhero__copy">
         <p class="chips">${chipSport(v.sport)}<span class="chip">${esc(v.surface)}</span>${score(v)}</p>
@@ -314,17 +320,12 @@ function venuePage(v) {
       </div>
       <div class="vhero__board board" data-reveal>
         ${priceTag(v, true)}${nextTag(v)}
-        ${ctas(`<a class="btn btn--accent btn--lg" href="#book"><span>Check availability</span>${icon('arrow')}</a>`, btn('Back to all courts', '/courts/', 'btn--ghost'))}
+        ${ctas(`<a class="btn btn--accent btn--lg" href="#book"><span>Check availability</span>${icon('arrow')}</a>`, btn('Get directions', `https://www.google.com/maps/search/?api=1&query=${q}`, 'btn--ghost', ' target="_blank" rel="noopener"'))}
       </div>
     </div>
   </div>
   <p class="photo-note" data-photo-note>Representative photo</p>
 </section>
-<nav class="vbar" aria-label="${esc(v.name)}"><div class="wrap vbar__in">
-  <a class="vbar__brand" href="#top" aria-label="${esc(v.name)}, back to top"><span class="vbar__mono" aria-hidden="true">${esc(v.name[0])}</span><b>${esc(v.name)}</b></a>
-  <div class="vbar__links"><a href="#book">Book</a><a href="#about">About</a><a href="#photos" data-vgal-link hidden>Photos</a><a href="#location">Location</a><a href="#reviews">Reviews</a></div>
-  <a class="btn btn--accent btn--sm vbar__go" href="#book"><span>Book now</span>${icon('arrow')}</a>
-</div></nav>
 ${booking(v, 'venue')}
 <section class="band band--night vinfo" id="about">
   <div class="wrap vinfo__grid">
@@ -356,7 +357,7 @@ ${booking(v, 'venue')}
       ${kicker('Location')}
       <h2 class="d2" id="loc-h">${esc(v.address)}</h2>
       <p class="lede">${esc(city.intro)}</p>
-      ${ctas(btn('Get directions', `https://www.google.com/maps/search/?api=1&query=${q}`, 'btn--ghost', ' target="_blank" rel="noopener"'), btn(`More courts in ${city.name}`, `/cities/${city.slug}/`, 'btn--line'))}
+      ${ctas(btn('Get directions', `https://www.google.com/maps/search/?api=1&query=${q}`, 'btn--ghost', ' target="_blank" rel="noopener"'))}
     </div>
     <div class="vloc__map board" data-mapembed data-src="https://www.google.com/maps?q=${q}&output=embed">
       ${img(v.place, { alt: v.place === 'place-up-diliman' ? 'The Academic Oval, University of the Philippines Diliman' : `${city.name} skyline`, sizes: '(min-width: 900px) 45vw, 100vw' })}
@@ -375,14 +376,8 @@ ${booking(v, 'venue')}
     ${v.reviews.length ? `<div class="vrev__grid" data-rail-scroll data-vrev>${v.reviews.map((r, i) => `<figure class="rcard" data-reveal style="--i:${i}"><blockquote>${esc(r.text)}</blockquote><figcaption><span class="rcard__av" aria-hidden="true">${esc(r.name[0].toUpperCase())}</span><b>${esc(r.name)}</b><small>${esc(r.date)}</small></figcaption></figure>`).join('')}</div><p class="fine">Reviews shown as captured from the current site on ${fmtDate(CAPTURED_ON, { day: 'numeric', month: 'long', year: 'numeric' })}.</p>` : `<p class="empty-line">${icon('sparkle')}No reviews yet. Be the first to play here and say how it went.</p>`}
   </div>
 </section>
-<section class="vend" aria-label="${esc(v.name)}"><div class="wrap vend__in">
-  <span class="vend__mono" aria-hidden="true">${esc(v.name[0])}</span>
-  <div class="vend__id"><b>${esc(v.name)}</b><span>${esc(v.address)}</span></div>
-  <a class="btn btn--accent" href="#book"><span>Book a court</span>${icon('arrow')}</a>
-  <p class="vend__by">Bookings by ${logoMark('vend__logo')}</p>
-</div></section>
-${similar.length ? `<section class="band band--night more" aria-labelledby="mo-h"><div class="wrap">${sh({ k: 'Keep scrolling, keep playing', h: '<span id="mo-h">More courts like this</span>', cls: 'sh--split' })}<div class="more__grid" data-rail-scroll>${similar.map((x) => vcard(x)).join('')}</div></div></section>` : ''}`;
-  return layout({ path: `/courts/${v.slug}/`, title: `${v.name}`, desc: `${v.desc} ${v.address}. ${peso(v.rate)} / hr. Check live availability and book on Served.`, body, active: 'courts', bodyCls: 'pg-venue', sticky: 'venue', venue: v,
+`;
+  return layout({ path: `/courts/${v.slug}/`, title: `${v.name}`, desc: `${v.desc} ${v.address}. ${peso(v.rate)} / hr. Check live availability and book on Served.`, body, active: 'courts', bodyCls: 'pg-venue', sticky: 'venue', venue: v, own: ownOf(v, true),
     schema: { '@context': 'https://schema.org', '@type': 'SportsActivityLocation', name: v.name, description: v.desc, address: { '@type': 'PostalAddress', streetAddress: v.area, addressLocality: v.city, addressCountry: 'PH' }, ...(v.reviewCount ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: v.rating, reviewCount: v.reviewCount } } : {}), amenityFeature: v.amenities.map((x) => ({ '@type': 'LocationFeatureSpecification', name: x, value: true })) } });
 }
 
@@ -392,63 +387,96 @@ function bookPage(v, mode) {
 <section class="bhero band band--night" data-tone="${v.tone}">
   <div class="band__clip" aria-hidden="true"><figure class="bhero__bg">${img(v.img, { alt: '', sizes: '100vw', eager: true })}</figure><span class="vhero__scrim"></span></div>
   <div class="wrap bhero__in">
-    ${crumbs(isSlots ? [['Home', '/'], ['Courts', '/courts/'], ['Availability', `/courts/${v.slug}/availability/`], ['Time & court', `/courts/${v.slug}/slots/`]] : [['Home', '/'], ['Courts', '/courts/'], [v.name, `/courts/${v.slug}/`], ['Availability', `/courts/${v.slug}/availability/`]])}
+    ${crumbs([[v.name, `/courts/${v.slug}/`], ['Availability', `/courts/${v.slug}/availability/`], ...(isSlots ? [['Time & court', `/courts/${v.slug}/slots/`]] : [])])}
     <div class="bhero__row">
       <div><h1 class="d1">${isSlots ? 'Pick Your Slot' : 'Check Availability'}</h1>
       <p class="lede" data-sel-line>${isSlots ? `Selected: <b data-sel-date>${fmtDate(v.open[0], { day: 'numeric', month: 'long', year: 'numeric' })}</b> at ${esc(v.name)}` : `Orange days have open slots at ${esc(v.name)} . Pick one to choose your time.`}</p></div>
-      <a class="bhero__venue" href="${venueHref(v)}"><span>${img(v.img, { alt: '', sizes: '64px' })}</span><b>${esc(v.name)}</b><small>${esc(v.address)} <span class="sep">/</span> ${peso(v.rate)} / hr</small></a>
+      <a class="bhero__venue" href="${venueHref(v)}"><span>${img(v.img, { alt: '', sizes: '64px' })}</span><b>${esc(v.name)}</b><small>${esc(v.address)} <span class="sep">/</span> ${peso(v.rate)} / hr${v.sample ? ' (sample)' : ''}</small></a>
     </div>
   </div>
 </section>
 ${booking(v, mode)}`;
-  return layout({ path: `/courts/${v.slug}/${mode}/`, title: `${isSlots ? 'Pick Your Slot' : 'Check Availability'}: ${v.name}`, desc: `Live availability at ${v.name}, ${v.address}. Pick a date, choose your time and court, and pay online.`, body, active: 'courts', bodyCls: 'pg-book', sticky: null, noFinal: true, vslug: v.slug });
+  return layout({ path: `/courts/${v.slug}/${mode}/`, title: `${isSlots ? 'Pick Your Slot' : 'Check Availability'}: ${v.name}`, desc: `Live availability at ${v.name}, ${v.address}. Pick a date, choose your time and court, and pay online.`, body, active: 'courts', bodyCls: 'pg-book', sticky: null, noFinal: true, vslug: v.slug, own: ownOf(v, false) });
 }
 
 // ============================================================ RALLY X
 function rallyx() {
   const R = RALLYX;
   const alts = { 'rallyx-now-open': 'Rally X street front with a NOW OPEN banner for pickleball and tennis', 'rallyx-forehand': 'A player hits a forehand on a Rally X court', 'rallyx-court-logo': 'The Rally X logo painted on the court', 'rallyx-paddle-ball': 'A paddle and a lime pickleball in front of a Rally X banner', 'rallyx-tennis-player': 'A player swings a tennis racket at Rally X', 'rallyx-paddle-wall': 'Pickleball paddles on a display wall', 'rallyx-backhand-net': 'A player reaches for a backhand behind the net', 'rallyx-target-net': 'A lime target net on court', 'rallyx-ready-position': 'A player in ready position on court', 'rallyx-paddles-court': 'Two paddles and two balls on a blue court', 'rallyx-paddle-wall-tall': 'A tall wall of paddles and balls', 'rallyx-facade': 'Rally X street front between city towers' };
-  const nearby = VENUES.filter((v) => ['Pickleball', 'Tennis'].includes(v.sport));
   const body = `
 <section class="vhero vhero--rx band band--night" data-tone="heat">
-  <div class="band__clip" aria-hidden="true"><figure class="vhero__bg" data-depth="0.1">${img('rallyx-now-open', { alt: '', sizes: '100vw', eager: true, pos: '50% 40%' })}</figure><span class="vhero__scrim"></span></div>
+  <div class="band__clip" aria-hidden="true"><figure class="vhero__bg" data-depth="0.1">${img(R.hero, { alt: '', sizes: '100vw', eager: true, pos: '50% 40%' })}</figure><span class="vhero__scrim"></span></div>
   <div class="wrap vhero__in">
-    ${crumbs([['Home', '/'], ['Courts', '/courts/'], ['Rally X', '/courts/rally-x/']])}
     <div class="vhero__grid">
       <div class="vhero__copy">
-        <p class="chips">${chipSport('Pickleball')}${chipSport('Tennis')}<span class="chip chip--live">Now open</span></p>
+        <p class="chips">${chipSport('Pickleball')}${chipSport('Tennis')}<span class="chip chip--live">Now open</span>${score(R)}</p>
         <h1 class="d1 vhero__h vhero__h--rx">Rally<span>X</span></h1>
-        <p class="vhero__meta">Pickleball and tennis <span class="sep">/</span> Metro Manila, address to be confirmed</p>
+        <p class="vhero__meta">Pickleball and tennis <span class="sep">/</span> ${esc(R.address)}</p>
       </div>
-      <div class="vhero__board board" id="notify">
-        <p class="kicker"><span class="kicker__ball"></span>Booking on Served opens soon</p>
-        <p class="vhero__soon">Be first on court when Rally X slots go live.</p>
-        <form class="notify" data-demo-form><label class="field"><span class="field__l">Email address</span><input type="email" name="email" required placeholder="you@email.com" autocomplete="email">${icon('mail', 'field__i')}</label><button class="btn btn--accent" type="submit"><span>Notify me</span>${icon('arrow')}</button></form>
-        ${demoNote()}
+      <div class="vhero__board board" data-reveal>
+        ${priceTag(R, true)}${nextTag(R)}
+        ${ctas(`<a class="btn btn--accent btn--lg" href="#book"><span>Check availability</span>${icon('arrow')}</a>`, btn('See the courts', '#photos', 'btn--ghost'))}
       </div>
     </div>
   </div>
 </section>
+${booking(R, 'venue')}
 ${marquee(['Rally X', 'Pickleball', 'Tennis', 'Now open', 'Rally X', 'Paddles up', 'Game on'], 'mq--accent')}
-<section class="band band--night rxg" aria-labelledby="rxg-h">
+<section class="band band--night rxg" id="photos" aria-labelledby="rxg-h">
   <div class="wrap">
     ${sh({ k: 'On court', h: '<span id="rxg-h">Inside Rally X<span class="pd">.</span></span>', lede: 'Photos supplied by the venue. Swipe or use the arrows, and tap a photo to open it full size.', cls: 'sh--split' })}
   </div>
   ${carousel(R.photos.map((p) => ({ html: img(p, { alt: alts[p], sizes: '(min-width: 900px) 36vw, 80vw' }), full: a(`assets/img/${p}-${IMAGES[p].sizes.at(-1)}.webp`), alt: alts[p] })), 'Rally X photos')}
 </section>
-<section class="band band--cream rxfacts" aria-labelledby="rxf-h">
+<section class="band band--cream rxfacts" id="about" aria-labelledby="rxf-h">
   <div class="wrap rxfacts__in">
-    <div data-reveal>${kicker('What we know')}<h2 class="d2" id="rxf-h">From the sign out front<span class="pd">.</span></h2><p class="lede">Only what Rally X shows on its own signage. Rates, hours, address and court count arrive with the listing.</p></div>
+    <div data-reveal>${kicker('What we know')}<h2 class="d2" id="rxf-h">From the sign out front<span class="pd">.</span></h2><p class="lede">What Rally X shows on its own signage, and what is still to be confirmed. Until it is, the rates, hours and courts in the booking are samples.</p></div>
     <ul class="facts">
       <li data-reveal><b>Now open</b><span>The street banner says so.</span></li>
       <li data-reveal><b>Pickleball and tennis</b><span>Both sports on the banner, both played on these floors.</span></li>
-      <li data-reveal><b>Book now for schedule and booking</b><span>The banner points players to booking. On Served, that switches on soon.</span></li>
+      <li data-reveal><b>Book now for schedule and booking</b><span>The banner points players to booking, and Rally X books on Served.</span></li>
       <li data-reveal><b>To be confirmed</b><span>Address, opening hours, rates and number of courts.</span></li>
     </ul>
   </div>
+</section>`;
+  return layout({ path: '/courts/rally-x/', title: 'Rally X: pickleball and tennis, now open', desc: 'Rally X is now open for pickleball and tennis. Check availability and book a court on Served.', body, active: 'courts', bodyCls: 'pg-venue pg-rx', ogImg: 'og-served.jpg', sticky: 'venue', venue: R, own: ownOf(R, true) });
+}
+
+// ============================================================ OPENING SOON (a venue coming to Served: its own page, a notify form)
+function soonPage(s) {
+  const body = `
+<section class="vhero band band--night" data-tone="${s.tone}">
+  <div class="band__clip" aria-hidden="true"><figure class="vhero__bg" data-depth="0.1">${img(s.hero, { alt: '', sizes: '100vw', eager: true })}</figure><span class="vhero__scrim"></span></div>
+  <div class="wrap vhero__in">
+    <div class="vhero__grid">
+      <div class="vhero__copy">
+        <p class="chips">${chipSport(s.sport)}<span class="chip chip--live">Opening soon</span></p>
+        <h1 class="d1 vhero__h">${esc(s.name)}</h1>
+        <p class="vhero__meta">${esc(s.sport)} <span class="sep">/</span> ${esc(s.address)}</p>
+      </div>
+      <div class="vhero__board board" id="notify">
+        <p class="kicker"><span class="kicker__ball"></span>Booking on Served opens soon</p>
+        <p class="vhero__soon">Be first on court when ${esc(s.short)} slots go live.</p>
+        <form class="notify" data-demo-form><label class="field"><span class="field__l">Email address</span><input type="email" name="email" required placeholder="you@email.com" autocomplete="email">${icon('mail', 'field__i')}</label><button class="btn btn--accent" type="submit"><span>Notify me</span>${icon('arrow')}</button></form>
+        ${demoNote()}
+      </div>
+    </div>
+  </div>
+  <p class="photo-note">UP Diliman, Wikimedia Commons</p>
 </section>
-<section class="band band--night more" aria-labelledby="nb-h"><div class="wrap">${sh({ k: 'Want to play today?', h: '<span id="nb-h">Pickleball and tennis you can book now</span>', cls: 'sh--split' })}<div class="more__grid" data-rail-scroll>${nearby.map((x) => vcard(x)).join('')}</div></div></section>`;
-  return layout({ path: '/courts/rally-x/', vslug: 'rally-x',title: 'Rally X: pickleball and tennis, now open', desc: 'Rally X is now open for pickleball and tennis. Booking on Served opens soon: get notified and see the courts.', body, active: 'courts', bodyCls: 'pg-venue pg-rx', ogImg: 'og-served.jpg' });
+<section class="band band--cream rxfacts" id="about" aria-labelledby="sf-h">
+  <div class="wrap rxfacts__in">
+    <div data-reveal>${kicker('What we know')}<h2 class="d2" id="sf-h">Coming to Served<span class="pd">.</span></h2><p class="lede">The name, the sport and the campus so far. The rest arrives with the listing.</p></div>
+    <ul class="facts">
+      <li data-reveal><b>${esc(s.sport)}</b><span>Courts at the UP College of Human Kinetics.</span></li>
+      <li data-reveal><b>${esc(s.address)}</b><span>On the UP Diliman campus.</span></li>
+      <li data-reveal><b>Opening soon</b><span>Booking on Served switches on when the courts are listed.</span></li>
+      <li data-reveal><b>To be confirmed</b><span>Opening hours, rates and number of courts.</span></li>
+    </ul>
+  </div>
+</section>`;
+  return layout({ path: `/courts/${s.slug}/`, title: `${s.name}: opening soon`, desc: `${s.name}, ${s.address}. Booking on Served opens soon: get notified.`, body, active: 'courts', bodyCls: 'pg-venue pg-soon', sticky: null,
+    own: { name: s.name, short: s.short, address: s.address, home: '#top', links: [['About', '#about']], cta: ['Get notified', '#notify'] } });
 }
 
 // ============================================================ PRICING
@@ -610,26 +638,26 @@ function sportsHub() {
 ${phero({ k: 'Sports', h1: 'Pick your sport<span class="pd">.</span>', lede: 'Three sports are live on Served, each with its own courts and colour. More are on the way, and we mark them clearly until they are bookable.', crumb: [['Home', '/'], ['Sports', '/sports/']], img: 'rallyx-paddles-court' })}
 <section class="band band--night shub">
   <div class="wrap shub__list">${SPORTS.map((s) => {
-    const list = VENUES.filter((v) => v.sport === s.name);
+    const list = playsSport(s.name);
     return `<article class="srow${s.live ? '' : ' srow--soon'}" id="${s.slug}" data-tone="${s.tone}" data-reveal>
       <div class="srow__media">${s.img ? img(s.card || s.img, { alt: '', sizes: '(min-width: 900px) 40vw, 100vw' }) : `<span class="srow__ph">${icon(s.icon)}</span>`}</div>
       <div class="srow__copy"><p class="srow__k">${icon(s.icon)}${s.kicker}</p><h2 class="d1">${s.name}</h2><p class="srow__line">${s.line}</p><p class="lede">${s.intro}</p>
-      ${s.live ? `<p class="srow__stats"><span><b>${list.length}</b> venues</span><span><b>${list.reduce((n, v) => n + v.courts, 0)}</b> courts</span><span>from <b>${peso(minRate(list))}</b> / hr</span></p>${ctas(btn(`Book ${s.name.toLowerCase()}`, `/courts/?sport=${s.name}`), btn(`About ${s.name.toLowerCase()} on Served`, `/sports/${s.slug}/`, 'btn--ghost'))}` : `<p class="soon soon--lg">Coming soon</p>${ctas(btn('List your court', '/list-your-court/', 'btn--ghost'))}`}</div></article>`;
+      ${s.live ? `<p class="srow__stats"><span><b>${list.length}</b> venue${list.length === 1 ? '' : 's'}</span><span><b>${list.reduce((n, v) => n + courtsFor(v, s.name), 0)}</b> courts</span><span>from <b>${peso(minRate(list))}</b> / hr</span></p>${ctas(btn(`Book ${s.name.toLowerCase()}`, `/courts/?sport=${s.name}`), btn(`About ${s.name.toLowerCase()} on Served`, `/sports/${s.slug}/`, 'btn--ghost'))}` : `<p class="soon soon--lg">Coming soon</p>${ctas(btn('List your court', '/list-your-court/', 'btn--ghost'))}`}</div></article>`;
   }).join('')}</div>
 </section>`;
   return layout({ path: '/sports/', title: 'Sports on Served: pickleball, tennis, badminton', desc: 'Book pickleball, tennis and badminton courts on Served. Basketball and padel are coming soon.', body, active: 'courts', bodyCls: 'pg-sports' });
 }
 function sportPage(s) {
-  const list = VENUES.filter((v) => v.sport === s.name);
-  const surfaces = [...new Set(list.map((v) => v.surface))];
-  const cities = [...new Set(list.map((v) => v.city))];
+  const list = playsSport(s.name);
+  const surfaces = [...new Set(list.map((v) => v.surface).filter(Boolean))];
+  const cities = [...new Set(list.map((v) => v.city).filter(Boolean))];
   const others = SPORTS.filter((x) => x.live && x.slug !== s.slug);
   const body = `
-${phero({ k: `${s.kicker}`, h1: `${s.name} courts`, lede: s.intro, crumb: [['Home', '/'], ['Sports', '/sports/'], [s.name, `/sports/${s.slug}/`]], img: s.img, tone: s.tone, cls: 'phero--sport', extra: `<p class="phero__stats"><span><b>${list.length}</b> venues</span><span><b>${list.reduce((n, v) => n + v.courts, 0)}</b> courts</span><span>from <b>${peso(minRate(list))}</b> / hr</span><span>${surfaces.join(', ')}</span></p>` })}
+${phero({ k: `${s.kicker}`, h1: `${s.name} courts`, lede: s.intro, crumb: [['Home', '/'], ['Sports', '/sports/'], [s.name, `/sports/${s.slug}/`]], img: s.img, tone: s.tone, cls: 'phero--sport', extra: `<p class="phero__stats"><span><b>${list.length}</b> venue${list.length === 1 ? '' : 's'}</span><span><b>${list.reduce((n, v) => n + courtsFor(v, s.name), 0)}</b> courts</span><span>from <b>${peso(minRate(list))}</b> / hr</span><span>${surfaces.join(', ')}</span></p>` })}
 <section class="band band--night spg" data-tone="${s.tone}">
   <div class="wrap">
     ${sh({ k: s.line, h: `Book ${s.name.toLowerCase()} now<span class="pd">.</span>`, lede: `Open slots in ${cities.join(', ')}.`, cls: 'sh--split' })}
-    <div class="more__grid">${list.map((v) => vcard(v)).join('')}</div>
+    <div class="more__grid">${list.map((v) => (v === RALLYX ? rallyCard() : vcard(v))).join('')}</div>
     ${ctas(btn(`All ${s.name.toLowerCase()} courts`, `/courts/?sport=${s.name}`, 'btn--ghost'))}
   </div>
 </section>
@@ -640,7 +668,7 @@ ${phero({ k: `${s.kicker}`, h1: `${s.name} courts`, lede: s.intro, crumb: [['Hom
   </div>
 </section>
 <section class="band band--night sother"><div class="wrap">${sh({ k: 'Switch sides', h: 'Other sports on Served.', cls: 'sh--split' })}<div class="sother__row">${others.map((o) => `<a class="scard scard--row" href="${u(`/sports/${o.slug}/`)}" data-tone="${o.tone}" data-tilt><span class="scard__img">${img(o.card || o.img, { alt: '', sizes: '50vw' })}</span><span class="scard__shade"></span><span class="scard__body"><span class="scard__line">${o.line}</span><span class="scard__name">${o.name}</span></span><span class="scard__go">${icon('arrow')}</span></a>`).join('')}</div></div></section>`;
-  return layout({ path: `/sports/${s.slug}/`, title: `${s.name} courts in Metro Manila`, desc: `Book ${s.name.toLowerCase()} courts on Served: ${list.length} venues, ${list.reduce((n, v) => n + v.courts, 0)} courts, from ${peso(minRate(list))} an hour. ${s.intro}`, body, active: 'courts', bodyCls: 'pg-sport' });
+  return layout({ path: `/sports/${s.slug}/`, title: `${s.name} courts in Metro Manila`, desc: `Book ${s.name.toLowerCase()} courts on Served: ${list.length} venue${list.length === 1 ? '' : 's'}, ${list.reduce((n, v) => n + courtsFor(v, s.name), 0)} courts, from ${peso(minRate(list))} an hour. ${s.intro}`, body, active: 'courts', bodyCls: 'pg-sport' });
 }
 
 // ============================================================ CITIES
@@ -753,7 +781,7 @@ ${phero({ k: 'About', h1: 'Finding a game is the easy part<span class="pd">.</sp
       <div data-reveal>${kicker('Who it is for')}<h2 class="d3">Players and the venues they love</h2><p>Casual players organising a spontaneous game, competitive players chasing their next session, barkadas planning weekend play, and court owners who want full courts without building their own booking site.</p></div>
       <div data-reveal>${kicker('Where it goes')}<h2 class="d3">Beyond the booking</h2><p>Open play, finding players, clubs, events and sports communities. Those are on the roadmap, and marked as concepts until they are live.</p></div>
     </div>
-    <ul class="abt__stats"><li><b data-count="${VENUES.length}">${VENUES.length}</b><span>venues</span></li><li><b data-count="${TOTAL_COURTS}">${TOTAL_COURTS}</b><span>courts</span></li><li><b data-count="3">3</b><span>sports live</span></li><li><b>₱0</b><span>to list a venue</span></li></ul>
+    <ul class="abt__stats"><li><b data-count="${VENUE_COUNT}">${VENUE_COUNT}</b><span>venues</span></li><li><b data-count="${TOTAL_COURTS}">${TOTAL_COURTS}</b><span>courts</span></li><li><b data-count="3">3</b><span>sports live</span></li><li><b>₱0</b><span>to list a venue</span></li></ul>
   </div>
 </section>
 <section class="band band--cream road"><div class="wrap">${sh({ k: 'Roadmap', h: 'Now, next, later<span class="pd">.</span>', cls: 'sh--center' })}<ol class="road__list">${ROADMAP.map((r, i) => `<li class="road__col${i === 0 ? ' is-live' : ''}" data-reveal style="--i:${i}"><p class="road__when">${r.when}${i === 0 ? ' <em>Live</em>' : ''}</p><ul>${r.items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></li>`).join('')}</ol></div></section>`;
@@ -860,7 +888,6 @@ function listingPage() {
 <section class="vhero band band--night" data-l-page>
   <div class="band__clip" aria-hidden="true"><figure class="vhero__bg" data-l-hero>${art.Pickleball.img}</figure><span class="vhero__scrim"></span></div>
   <div class="wrap vhero__in">
-    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="${u('/')}">Home</a></li><li><a href="${u('/courts/')}">Courts</a></li><li aria-current="page" data-l="name">Listing</li></ol></nav>
     <div class="vhero__grid">
       <div class="vhero__copy">
         <p class="chips"><span data-l-chip>${art.Pickleball.chip}</span><span class="chip" data-l="surface">Surface</span><span class="chip">${icon('sparkle')}New listing</span></p>
@@ -870,17 +897,12 @@ function listingPage() {
       </div>
       <div class="vhero__board board">
         <p class="price price--big"><b data-l="rate">₱0</b><span>/ hr</span><small>exclusive of service fees</small></p>
-        ${ctas(`<a class="btn btn--accent btn--lg" href="#book"><span>Check availability</span>${icon('arrow')}</a>`, btn('Back to all courts', '/courts/', 'btn--ghost'))}
+        ${ctas(`<a class="btn btn--accent btn--lg" href="#book"><span>Check availability</span>${icon('arrow')}</a>`)}
       </div>
     </div>
   </div>
   <p class="photo-note" data-photo-note>Representative photo</p>
 </section>
-<nav class="vbar" aria-label="Venue" data-l-page><div class="wrap vbar__in">
-  <a class="vbar__brand" href="#top"><span class="vbar__mono" aria-hidden="true" data-l="mono">V</span><b data-l="name">Listing</b></a>
-  <div class="vbar__links"><a href="#book">Book</a><a href="#about">About</a><a href="#photos" data-vgal-link hidden>Photos</a><a href="#location">Location</a></div>
-  <a class="btn btn--accent btn--sm vbar__go" href="#book"><span>Book now</span>${icon('arrow')}</a>
-</div></nav>
 <div data-l-page>${booking(tpl, 'venue')}</div>
 <section class="band band--night vinfo" id="about" data-l-page>
   <div class="wrap vinfo__grid">
@@ -893,17 +915,17 @@ function listingPage() {
 </section>
 <section class="band band--night vgal" id="photos" data-vgal hidden aria-labelledby="ph-h"><div class="wrap">${kicker('Photos')}<h2 class="d2" id="ph-h">Inside <span data-l="name">the venue</span></h2></div><div class="vgal__grid" data-vgal-grid></div></section>
 <section class="band band--iron vloc" id="location" data-l-page><div class="wrap">${kicker('Location')}<h2 class="d2" data-l="address">Address</h2><p class="lede" data-l-phone-wrap hidden>Call the venue on <b data-l="phone"></b>.</p>${ctas(`<a class="btn btn--ghost" data-l-dir href="#" target="_blank" rel="noopener"><span>Get directions</span>${icon('arrow-ne')}</a>`)}</div></section>
-<section class="vend" data-l-page><div class="wrap vend__in"><span class="vend__mono" aria-hidden="true" data-l="mono">V</span><div class="vend__id"><b data-l="name">Listing</b><span data-l="address"></span></div><a class="btn btn--accent" href="#book"><span>Book a court</span>${icon('arrow')}</a><p class="vend__by">Bookings by ${logoMark('vend__logo')}</p></div></section>
 <section class="band band--night" data-l-missing hidden><div class="wrap">${kicker('Listing')}<h1 class="d2">This listing lives in its owner's browser<span class="pd">.</span></h1><p class="lede">In this preview a new listing is kept in the browser of the owner who made it. Open it there, or browse the courts already on Served.</p>${ctas(btn('Browse courts', '/courts/'))}</div></section>
 <script>(function(){var A=${JSON.stringify(art).replace(/</g, '\\u003c')},AM=${JSON.stringify(amen)};
 var q=new URLSearchParams(location.search),id=q.get('id')||'',L=null;try{L=(JSON.parse(localStorage.getItem('srv.listings')||'[]')||[]).filter(function(x){return x.id===id;})[0]||null;}catch(e){}
 var $=function(s){return document.querySelector(s);},$$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
-if(!L||!A[L.sport]){$$('[data-l-page]').forEach(function(e){e.hidden=true;});$('[data-l-missing]').hidden=false;return;}
+var none=function(){$$('[data-l-page]').forEach(function(e){e.hidden=true;});$('[data-l-missing]').hidden=false;};
+if(!L||!A[L.sport]){none();document.addEventListener('DOMContentLoaded',none);return;}
 document.body.dataset.venue='listing-'+L.id;document.title=L.name+' | Served.';
 var peso=function(n){return '\\u20b1'+Number(n).toLocaleString('en-PH');},hl=function(h){return h===24?'midnight':((h%12||12)+':00 '+(h<12?'AM':'PM'));};
 var set=function(k,v){$$('[data-l="'+k+'"]').forEach(function(e){e.textContent=v;});};
 var place=L.city==='Other'?L.address:L.address+', '+L.city;
-set('name',L.name);set('mono',L.name.charAt(0).toUpperCase());set('sport',L.sport);set('surface',L.surface);set('courts',String(L.courts));set('place',place);set('address',place);set('rate',peso(L.rate));set('desc',L.desc);set('hours',hl(L.open)+' to '+hl(L.close));
+set('name',L.name);set('mono',L.name.charAt(0).toUpperCase());document.addEventListener('DOMContentLoaded',function(){set('name',L.name);set('mono',L.name.charAt(0).toUpperCase());set('address',place);});set('sport',L.sport);set('surface',L.surface);set('courts',String(L.courts));set('place',place);set('address',place);set('rate',peso(L.rate));set('desc',L.desc);set('hours',hl(L.open)+' to '+hl(L.close));
 if(L.phone){set('phone',L.phone);$('[data-l-phone-wrap]').hidden=false;}
 $('[data-l-chip]').innerHTML=A[L.sport].chip;$('[data-l-hero]').innerHTML=A[L.sport].img;
 var t=$('[data-court-tpl]');if(t)t.innerHTML=A[L.sport].court;var dc=$('.done__court');if(dc)dc.setAttribute('d',A[L.sport].done);
@@ -916,7 +938,8 @@ if(L.eveningRate)hours.forEach(function(h){if(h>=18)rates[h]={rate:+L.eveningRat
 for(var c=0;c<+L.courts;c++)courts.push({id:'c'+(c+1),name:'Court '+String.fromCharCode(65+c)});
 var bk=$('[data-book]');bk.setAttribute('data-book',JSON.stringify({slug:'listing-'+L.id,name:L.name,rate:+L.rate,fee:${SITE.feeRate},max:${SITE.maxHours},hours:hours,rates:Object.keys(rates).length?rates:null,courts:courts,open:open,full:[],taken:{},address:place,links:{venue:'./?id='+L.id,availability:'./?id='+L.id+'#book',slots:'./?id='+L.id+'#book',courts:'../',signin:'../../sign-in/'}}));
 })();</script>`;
-  return layout({ path: '/courts/listing/', title: 'Venue listing', desc: 'A venue listed on Served by its owner.', body, active: 'courts', bodyCls: 'pg-venue', sticky: null, noFinal: true });
+  return layout({ path: '/courts/listing/', title: 'Venue listing', desc: 'A venue listed on Served by its owner.', body, active: 'courts', bodyCls: 'pg-venue', sticky: null, noFinal: true,
+    own: { name: 'Listing', address: '', fill: true, home: '#top', links: [['Book', '#book'], ['About', '#about'], ['Photos', '#photos', ' data-vgal-link hidden'], ['Location', '#location']], cta: ['Book now', '#book'] } });
 }
 
 // ============================================================ LAB: section divider options (27 Nov 2026, for the client to pick one)
@@ -942,7 +965,7 @@ ${sec('cream', 'Featured venues', 'Courts now serving.', 'Light section below th
 <div id="dv-b">${opt('B', 'Ball on the line', 'A ball rides the seam, half in each colour, and rolls across as you scroll. On the line counts as in.')}</div>
 ${sec('cream', 'How it works', 'Sign up, find, play.', 'Light section above the seam.')}
 <div class="dv dv--ball" aria-hidden="true"><span class="dv__ball">${ballSvg}</span></div>
-${sec('night', 'Rally X', 'Now open in Taguig.', 'Black section below the seam.')}
+${sec('night', 'Rally X', 'Now open for pickleball and tennis.', 'Black section below the seam.')}
 
 <div id="dv-c">${opt('C', 'Serve arc', 'The next colour rises in a shallow arc and a serve traces it, landing as the ball at the far end.')}</div>
 ${sec('night', 'Cities', 'Courts near you.', 'Black section above the seam.')}
@@ -982,7 +1005,7 @@ ${sec('night', 'Help centre', 'Questions, answered.', 'Black section below the s
 .dv-sheet::before { content: ""; position: absolute; top: 14px; left: 50%; width: 46px; height: 5px; translate: -50% 0; border-radius: 3px; background: rgba(10, 10, 10, .28); }
 /* E: split word */
 .dv--word { height: 0; overflow: visible; }
-.dv--word .dv__w { position: absolute; left: 50%; top: 0; translate: -50% -50%; white-space: nowrap; font: 900 clamp(56px, 11vw, 170px)/.8 var(--f-display); font-stretch: 125%; letter-spacing: -.02em; pointer-events: none; }
+.dv--word .dv__w { position: absolute; left: 50%; top: 0; translate: -50% -50%; white-space: nowrap; font: 900 clamp(36px, 11vw, 170px)/.8 var(--f-display); font-stretch: 125%; letter-spacing: -.02em; pointer-events: none; }
 .dv--word .dv__w--top { color: var(--ink); clip-path: inset(-20% -20% 50% -20%); }
 .dv--word .dv__w--bot { color: var(--accent); clip-path: inset(50% -20% -20% -20%); }
 @supports (animation-timeline: view()) {
@@ -1020,6 +1043,9 @@ export function pages() {
     add(`/courts/${v.slug}/slots/`, () => bookPage(v, 'slots'));
   }
   add('/courts/rally-x/', rallyx);
+  add('/courts/rally-x/availability/', () => bookPage(RALLYX, 'availability'));
+  add('/courts/rally-x/slots/', () => bookPage(RALLYX, 'slots'));
+  for (const x of SOON) add(`/courts/${x.slug}/`, () => soonPage(x));
   add('/pricing/', pricing);
   add('/list-your-court/', listCourt);
   add('/contact/', contact);

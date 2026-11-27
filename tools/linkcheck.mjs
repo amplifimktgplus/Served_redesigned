@@ -37,7 +37,8 @@ for (const f of files) {
   for (const m of html.matchAll(/<a [^>]*href="([^"#]+)"[^>]*>(?:(?!<\/a>)[\s\S])*?(Book|courts|Courts|Search courts|Find a court)(?:(?!<\/a>)[\s\S])*?<\/a>/g)) {
     const t = target(f, m[1]); if (!t || !existsSync(t)) continue;
     const dest = readFileSync(t, 'utf8');
-    if (!/class="vcard|data-book=|data-disc/.test(dest)) destBad.push(`${f.replace(DIST, '')} -> ${m[1]}`);
+    // a venue opening soon is a real destination too: its own page with the notify form (id="notify")
+    if (!/class="vcard|data-book=|data-disc|id="notify"/.test(dest)) destBad.push(`${f.replace(DIST, '')} -> ${m[1]}`);
   }
 }
 console.log(`pages ${files.length}, local refs ${refs}, broken ${bad.length}`);

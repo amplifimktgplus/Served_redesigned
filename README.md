@@ -10,7 +10,7 @@ Every page carries `noindex, nofollow`. Forms, sign-in and payment are demonstra
 
 | Area | Pages |
 |---|---|
-| Discovery | Home, Courts (list and map, filters, "near me"), 6 venue pages, Rally X |
+| Discovery | Home, Courts (list and map, filters, "near me"), venue pages that read as each venue's own site, Rally X (bookable, sample rates), an opening-soon venue |
 | Booking | Availability and slot pages for every venue (live-style date rail, court picker, slot grid, summary, payment and confirmation) |
 | Sports and cities | Sports hub plus pickleball, tennis and badminton; cities hub plus Taguig, Pasig, Quezon City, Marikina, Muntinlupa (Batangas, meaning Nasugbu and its venue, is paused in `src/content.mjs`) |
 | Community | Play mode (open play, find players, clubs and ranking, tournaments, events), marked as concepts |

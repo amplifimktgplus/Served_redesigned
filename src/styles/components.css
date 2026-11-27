@@ -137,10 +137,10 @@
 .mcard__go .ico { width: 16px; height: 16px; }
 
 /* generic horizontal rail */
-.rail { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 10px; scrollbar-width: thin; scrollbar-color: var(--iron-3) transparent; }
+.rail { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 10px 6px 14px; margin: -10px -6px -4px; scroll-padding-inline: 6px; /* room for the hover lift and focus ring; the margins keep the layout */ scrollbar-width: thin; scrollbar-color: var(--iron-3) transparent; }
 
 /* tabs */
-.coll__tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin-bottom: 18px; padding-bottom: 4px; }
+.coll__tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 6px 6px 8px; margin: -6px -6px 14px; } /* room for focus rings inside the scroller */
 .coll__tabs::-webkit-scrollbar { display: none; }
 .tab { flex: none; min-height: 46px; padding: 0 18px; border-radius: var(--pill); border: 1px solid var(--line-2); font: 700 14.5px/1 var(--f-ui); color: var(--text-2); transition: background var(--d-2) var(--ease), color var(--d-1), border-color var(--d-1); }
 .tab:hover { color: var(--text); border-color: var(--accent); }
@@ -261,3 +261,9 @@
 .rotbadge svg { position: absolute; inset: 0; width: 100%; height: 100%; animation: spin 18s linear infinite; }
 .rotbadge text { font: 800 9.6px/1 var(--f-display); letter-spacing: .21em; fill: var(--text); font-stretch: 110%; }
 .rotbadge__ball { width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 34% 30%, var(--accent-hot), var(--accent) 46%, #c2410c); box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 55%, transparent); animation: bounceSm 2.4s var(--ease-io) infinite; }
+
+/* sample values (Rally X until it confirms its own): always labelled where they show */
+.sample { font-style: normal; font-weight: 750; color: var(--accent); }
+.book__sample { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; padding: 12px 16px; border-radius: 14px; border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent); color: var(--text-2); font-size: 14px; line-height: 1.4; }
+.book__sample .ico { flex: none; width: 18px; height: 18px; color: var(--accent); }
+.bitem em small { font-size: .72em; font-style: normal; opacity: .75; margin-left: 2px; }
