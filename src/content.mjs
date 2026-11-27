@@ -22,7 +22,7 @@ export const SITE = {
   tagline: 'Every court. One tap away.', // CAPTURED (hero kicker)
   blurb: 'Served puts every court in one place, with live availability and instant booking. No calls, no waiting, no guesswork. Find your court, lock your slot, and show up ready to play.', // CAPTURED (footer)
   feeRate: 0.05, // CAPTURED (pricing: 5% service fee)
-  maxHours: 4, // CAPTURED (slot board)
+  maxHours: null, // the current site caps a court at 4 hours; the client lifted the cap (27 Nov 2026): any hours, or the whole day
 };
 
 // ---------- sports ----------
@@ -123,7 +123,7 @@ export const COLLECTIONS = [
 // ---------- FAQ: every answer is built from captured copy ----------
 export const FAQ = [
   { cat: 'Booking', q: 'How do I book a court?', a: 'Find your court, pick an orange day, choose your time and court, then pay online. Nothing is reserved until payment, and the court is held while you pay, so nothing is double-booked.' },
-  { cat: 'Booking', q: 'How many hours can I book at once?', a: 'Pick up to 4 hours on a court. They do not have to be next to each other. To book another court as well, choose it and pick its hours; what you picked on the first is kept.' },
+  { cat: 'Booking', q: 'How many hours can I book at once?', a: 'As many as you need, up to the whole day. Pick single hours, or tap Whole day to take every open hour on a court. The hours do not have to be next to each other, and you can book more than one court in the same booking.' },
   { cat: 'Booking', q: 'What does a struck-through slot mean?', a: 'Struck-through slots are already taken on the selected court. Switch courts to see what is open there.' },
   { cat: 'Booking', q: 'Is every court on Served real?', a: 'Every court on Served is real and ready to book.' },
   { cat: 'Payments and fees', q: 'How much does Served cost a player?', a: 'Searching and comparing courts costs nothing. You pay the venue’s rate plus a 5% service fee, shown before you pay.' },

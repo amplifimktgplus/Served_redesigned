@@ -21,7 +21,9 @@ type about a fifth smaller than the first pass, no oversized lead cards.
   contact, sign-in, sign-up, forgot-password and staff sign-in pages.
 - All six live venues with their rates, surfaces, court counts, amenities, owners, ratings and reviews.
 - Real slot boards: opening hours per venue, per-court taken slots, the UP Diliman evening rate (₱1,100 from
-  6 PM), the 5% service fee, the 4-hours-per-court rule, the 24-hour refund rule.
+  6 PM), the 5% service fee, the 24-hour refund rule.
+- Changed at the client's request (27 Nov 2026): the current site's 4 hours per court is lifted. Players pick any
+  number of hours, or tap Whole day to take every open hour on a court, priced at the venue's own hourly rates.
 - The URL structure, including `/courts?sport=`, `/pricing#players`, `/pricing#owners`, `/sign-up?role=owner`.
 - One captured line changed by a word: "Green days have open slots" reads "Orange days have open slots",
   because open days are orange in this palette.
@@ -75,6 +77,8 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
 - Owners list their venues: name, sport, city, address, courts, surface, rates (with an optional evening rate),
   hours, amenities and a description. A listing gets its own venue page, shows under "New on Served" in the
   courts directory, takes bookings at the owner's own rates and hours, and can be edited or removed.
+- Guests can book without an account: name, mobile number and email at the account step, then payment. The
+  confirmation carries a reference, and registering later with the same email brings the booking into the account.
 - Owners have two views. The owner view is the court page studio; the player view books courts and shows
   bookings. An owner who tries to book from the owner view is offered a one-tap switch to player.
 - `contact?subject=Listing my court` opens the contact form with that subject picked, as on the current site.
@@ -117,3 +121,5 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
 9. Which court listings can the concept show? Venue data comes only from your own site; a full partner list (or
    the venues' permission) would let the directory grow.
 10. Court page studio: should owner changes publish at once or go through a review first?
+11. Whole-day bookings: should there be a day rate, a minimum or a cap per player? The concept charges the
+    hourly rates added up.

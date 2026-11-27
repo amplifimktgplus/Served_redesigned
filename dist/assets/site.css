@@ -1535,6 +1535,13 @@ html:has(.hdr.is-hidden) .vbar { top: 0; }
 .vend__id span { color: var(--text-3); font-size: 14px; }
 .vend__by { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin: 0; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--text-3); }
 .vend__logo { height: 16px; width: auto; aspect-ratio: 1637.2 / 498.5; fill: currentColor; color: var(--text-2); }
+.book__slh { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+.book__slh .book__lbl { margin: 0; }
+[data-wholeday][aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+[data-wholeday]:disabled { opacity: .45; cursor: not-allowed; }
+.gate__or { display: flex; align-items: center; gap: 12px; margin: 20px 0 12px; font: 700 12px/1 var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); }
+.gate__or::before, .gate__or::after { content: ""; flex: 1; height: 1px; background: var(--line-2); }
+.gate__guest { display: grid; gap: 12px; }
 .studio__tools { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; }
 .olist__form { display: grid; gap: 18px; padding: clamp(20px, 3vw, 32px); max-width: 880px; }
 .olist__am { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; min-width: 0; }

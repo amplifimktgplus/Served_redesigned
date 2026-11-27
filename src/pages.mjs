@@ -229,7 +229,8 @@ ${phero({ k: 'Courts', h1: 'Find Your Court', lede: 'Every court on Served is re
 
 // ============================================================ BOOKING WIDGET
 function bookData(v) {
-  return { slug: v.slug, name: v.name, rate: v.rate, fee: v.booking.feeRate ?? SITE.feeRate, max: v.booking.maxHours ?? SITE.maxHours, hours: v.booking.hours,
+  // max: no cap. The current site's 4 hours per court was lifted at the client's request (27 Nov 2026), whole day included
+  return { slug: v.slug, name: v.name, rate: v.rate, fee: v.booking.feeRate ?? SITE.feeRate, max: SITE.maxHours, hours: v.booking.hours,
     rates: v.booking.rates, courts: v.booking.courts, open: v.open, full: v.full, taken: v.booking.taken, address: v.address,
     links: { venue: u(`/courts/${v.slug}/`), availability: u(`/courts/${v.slug}/availability/`), slots: u(`/courts/${v.slug}/slots/`), courts: u('/courts/'), signin: u('/sign-in/') } };
 }
@@ -249,10 +250,10 @@ function booking(v, mode) {
         </div>
         <div class="book__blk" data-blk="time">
           <div class="book__bh"><h3 class="d4">${icon('clock')}Pick time &amp; court</h3>${evening ? `<p class="ratekey"><span class="rk rk--std">Standard</span><span class="rk rk--eve">${icon('moon')}Evening rate</span></p>` : ''}</div>
-          <p class="book__rule">Pick up to 4 hours on a court &mdash; they do not have to be next to each other. To book another court as well, choose it and pick its hours; what you picked on the first is kept. Struck-through slots are already taken on the selected court.</p>
+          <p class="book__rule">Pick as many hours as you need, or tap Whole day for every open hour on a court. The hours do not have to be next to each other. To book another court as well, choose it and pick its hours; what you picked on the first is kept. Struck-through slots are already taken on the selected court.</p>
           <p class="book__lbl">Court selection</p>
           <template data-court-tpl>${courtSvg(v.sport, 'cpk__court')}</template><div class="courtpick" data-courts role="radiogroup" aria-label="Court selection"></div>
-          <p class="book__lbl">Time slots</p>
+          <div class="book__slh"><p class="book__lbl">Time slots</p><button class="btn btn--line btn--sm" type="button" data-wholeday aria-pressed="false">${icon('sun')}<span>Whole day on this court</span></button></div>
           <div class="slots" data-slots aria-label="Time slots"><p class="slots__empty">Choose a date to see times.</p></div>
         </div>
       </div>
@@ -339,7 +340,7 @@ ${booking(v, 'venue')}
       <h2 class="d3">Good to know</h2>
       <ul class="rules">
         <li>${icon('shield')}<span>Nothing is reserved until payment.</span></li>
-        <li>${icon('clock')}<span>Pick up to 4 hours on a court.</span></li>
+        <li>${icon('clock')}<span>Book by the hour, or the whole day.</span></li>
         <li>${icon('wallet')}<span>A 5% service fee is shown before you pay.</span></li>
         <li>${icon('check')}<span>Court price refunded if you cancel 24 hours before your slot.</span></li>
       </ul>
@@ -887,7 +888,7 @@ function listingPage() {
       <dl class="specs"><div><dt>Surface</dt><dd data-l="surface"></dd></div><div><dt>Courts on site</dt><dd data-l="courts"></dd></div><div><dt>Sport</dt><dd data-l="sport"></dd></div><div><dt>Open</dt><dd data-l="hours"></dd></div></dl></div>
     <div class="vinfo__am"><h2 class="d3">Amenities</h2><ul class="amen" data-l-amen></ul>
       <h2 class="d3">Good to know</h2>
-      <ul class="rules"><li>${icon('shield')}<span>Nothing is reserved until payment.</span></li><li>${icon('clock')}<span>Pick up to 4 hours on a court.</span></li><li>${icon('wallet')}<span>A 5% service fee is shown before you pay.</span></li></ul></div>
+      <ul class="rules"><li>${icon('shield')}<span>Nothing is reserved until payment.</span></li><li>${icon('clock')}<span>Book by the hour, or the whole day.</span></li><li>${icon('wallet')}<span>A 5% service fee is shown before you pay.</span></li></ul></div>
   </div>
 </section>
 <section class="band band--night vgal" id="photos" data-vgal hidden aria-labelledby="ph-h"><div class="wrap">${kicker('Photos')}<h2 class="d2" id="ph-h">Inside <span data-l="name">the venue</span></h2></div><div class="vgal__grid" data-vgal-grid></div></section>

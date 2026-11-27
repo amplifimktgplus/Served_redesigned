@@ -594,8 +594,23 @@
       courtsBox.innerHTML = B.courts.map((c) => { const n = (st.picks[c.id] || new Set()).size; return `<button class="cpk" type="button" role="radio" aria-checked="${c.id === st.court}" data-court="${c.id}" aria-label="${esc(c.name)}${n ? `, ${n} hour${n > 1 ? 's' : ''} picked` : ''}">${courtTpl}<b>${esc(c.name.replace(/^Court\s*/i, ''))}</b>${n ? `<span class="cpk__n">${n}</span>` : ''}</button>`; }).join('');
     }
     courtsBox.addEventListener('click', (e) => { const b = e.target.closest('.cpk'); if (!b) return; st.court = b.dataset.court; drawCourts(); drawSlots(); });
+    // whole day: every open hour left on the picked court that day (taken and past hours are skipped)
+    const wd = $('[data-wholeday]', el);
+    const freeHours = () => { if (!st.date) return []; const taken = (B.taken[st.date] && B.taken[st.date][st.court]) || []; const nowH = st.date === today ? nowHour() : -1; return B.hours.filter((h) => !taken.includes(h) && h > nowH); };
+    const syncWD = () => {
+      if (!wd) return; const free = freeHours(); const mine = st.picks[st.court] || new Set(); const full = free.length > 0 && free.every((h) => mine.has(h));
+      wd.setAttribute('aria-pressed', String(full)); $('span', wd).textContent = full ? 'Clear this court' : 'Whole day on this court'; wd.disabled = !st.date || free.length === 0;
+    };
+    if (wd) wd.addEventListener('click', () => {
+      if (!st.date) { toast('Choose a date first.'); return; }
+      const free = freeHours(); if (!free.length) { toast('No open hours left on this court that day.'); return; }
+      const set = st.picks[st.court] || (st.picks[st.court] = new Set());
+      if (free.every((h) => set.has(h))) { set.clear(); toast('Cleared this court.'); }
+      else { free.forEach((h) => set.add(h)); const gone = B.hours.length - free.length; toast(`Whole day: ${free.length} hours on this court${gone ? `, ${gone} already taken or past` : ''}.`); }
+      drawCourts(); drawSlots(); paintSum();
+    });
     function drawSlots() {
-      if (!st.date) { slotsBox.innerHTML = '<p class="slots__empty">Choose a date to see times.</p>'; return; }
+      if (!st.date) { slotsBox.innerHTML = '<p class="slots__empty">Choose a date to see times.</p>'; syncWD(); return; }
       const taken = (B.taken[st.date] && B.taken[st.date][st.court]) || [];
       const mine = st.picks[st.court] || new Set();
       const nowH = st.date === today ? nowHour() : -1;
@@ -603,13 +618,14 @@
         const r = rateOf(h); const off = taken.includes(h) || h <= nowH; const eve = r.label !== 'Standard';
         return `<button class="slot${eve ? ' is-eve' : ''}" type="button" data-h="${h}" aria-pressed="${mine.has(h)}"${off ? ' disabled' : ''} aria-label="${hh(h)} to ${hh(h + 1)}, ${pesoI(r.rate)}, ${r.label}${off ? ', taken' : ''}"><b>${hh(h)}</b><span class="slot__to">to ${hh(h + 1)}</span><small>${eve ? '<svg class="ico" aria-hidden="true"><use href="#i-moon"/></svg>' : ''}${pesoI(r.rate)} <span class="sep">/</span> ${r.label}</small></button>`;
       }).join('');
+      syncWD();
     }
     slotsBox.addEventListener('click', (e) => {
       const b = e.target.closest('.slot'); if (!b || b.disabled) return;
       const h = +b.dataset.h; const set = st.picks[st.court] || (st.picks[st.court] = new Set());
-      if (set.has(h)) set.delete(h); else { if (set.size >= B.max) { b.classList.remove('is-max'); void b.offsetWidth; b.classList.add('is-max'); toast(`Up to ${B.max} hours on a court. Pick another court to add more.`); return; } set.add(h); }
+      if (set.has(h)) set.delete(h); else { if (B.max && set.size >= B.max) { b.classList.remove('is-max'); void b.offsetWidth; b.classList.add('is-max'); toast(`Up to ${B.max} hours on a court. Pick another court to add more.`); return; } set.add(h); }
       b.setAttribute('aria-pressed', String(set.has(h)));
-      drawCourts(); paintSum();
+      drawCourts(); paintSum(); syncWD();
     });
     // summary
     const out = (k) => $(`[data-sum-${k}]`, el);
@@ -657,13 +673,21 @@
       const R = root.dataset.root || './'; const next = encodeURIComponent(here);
       gateEl = d.createElement('div'); gateEl.className = 'sheet'; gateEl.hidden = true;
       gateEl.setAttribute('role', 'dialog'); gateEl.setAttribute('aria-modal', 'true'); gateEl.setAttribute('aria-labelledby', 'gate-h');
-      gateEl.innerHTML = `<div class="sheet__in board gate"><button class="iconbtn sheet__x" type="button" data-gate-close aria-label="Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button><p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>One quick step</p><h2 class="d3" id="gate-h">Book as a player</h2><p class="gate__p">Create a free account or sign in to finish this booking. Your date and times are kept for you.</p><div class="ctas"><a class="btn btn--accent" href="${R}sign-up/?next=${next}"><span>Create account</span><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="btn btn--ghost" href="${R}sign-in/?next=${next}"><span>Sign in</span></a></div><p class="demo-note"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>Preview: accounts live in this browser only.</p></div>`;
+      gateEl.innerHTML = `<div class="sheet__in board gate"><button class="iconbtn sheet__x" type="button" data-gate-close aria-label="Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button><p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>One quick step</p><h2 class="d3" id="gate-h">How would you like to book?</h2><p class="gate__p">Sign in or create a free account to keep your bookings in one place. Or book as a guest with your name, mobile number and email. Your date and times are kept either way.</p><div class="ctas"><a class="btn btn--accent" href="${R}sign-up/?next=${next}"><span>Sign up</span><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="btn btn--ghost" href="${R}sign-in/?next=${next}"><span>Sign in</span></a></div><p class="gate__or"><span>or book as a guest</span></p><form class="gate__guest" data-guest novalidate><div class="cform__row"><label class="field"><span class="field__l">Full name</span><input name="gname" required maxlength="60" autocomplete="name"></label><label class="field"><span class="field__l">Mobile number</span><input name="gphone" type="tel" required pattern="[0-9+ \\(\\)]{7,16}" maxlength="16" autocomplete="tel" placeholder="09XX XXX XXXX"></label></div><label class="field"><span class="field__l">Email for your booking</span><input name="gemail" type="email" required maxlength="80" autocomplete="email"></label><button class="btn btn--line btn--block" type="submit"><span>Continue as guest</span><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></button></form><p class="demo-note"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>Preview: accounts and bookings live in this browser only.</p></div>`;
       el.appendChild(gateEl);
       $('[data-gate-close]', gateEl).addEventListener('click', () => { closeSheet(gateEl); go.focus(); });
       gateEl.addEventListener('click', (e) => { if (e.target === gateEl) closeSheet(gateEl); });
       $$('a', gateEl).forEach((a) => a.addEventListener('click', holdPicks));
+      const gf = $('[data-guest]', gateEl);
+      gf.addEventListener('submit', (e) => {
+        e.preventDefault(); if (!gf.checkValidity()) { gf.reportValidity(); return; }
+        ss.set('srv.guest', JSON.stringify({ name: gf.elements.gname.value.trim(), email: gf.elements.gemail.value.trim().toLowerCase(), phone: gf.elements.gphone.value.trim() }));
+        closeSheet(gateEl); go.click();
+      });
       return gateEl;
     }
+    // a guest's details last for this visit, so a second booking does not ask again
+    const guest = () => { try { return JSON.parse(ss.get('srv.guest') || 'null'); } catch (e) { return null; } };
     // back from signing in: restore the held picks and go straight to payment (after the accounts script loads)
     setTimeout(() => {
       let pend = null; try { pend = JSON.parse(ss.get('srv.pending') || 'null'); } catch (e) { pend = null; }
@@ -689,11 +713,11 @@
       return swEl;
     }
     go.addEventListener('click', () => {
-      const who = acct();
-      if (!who) { holdPicks(); openSheet(gate()); return; }
-      if (who.role === 'owner' && (who.mode || 'owner') === 'owner') { openSheet(switchGate()); return; }
-      const L = lines();
-      $('[data-pay-sum]', el).innerHTML = `<div class="row"><span>${esc(B.name)}</span><b>${fmt(st.date, { weekday: 'short', day: 'numeric', month: 'short' })}</b></div>${L.map((l) => `<div class="row"><span>${esc(l.court)}</span><span>${l.hours.map((h) => hh(h)).join(', ')}</span></div>`).join('')}<div class="row"><span>Subtotal</span><span>${peso(st.sub)}</span></div><div class="row"><span>Service fee (5%)</span><span>${peso(st.fee)}</span></div><div class="row t"><span>Total</span><b>${peso(st.total)}</b></div>`;
+      const who = acct(); const g = who ? null : guest();
+      if (!who && !g) { holdPicks(); openSheet(gate()); return; }
+      if (who && who.role === 'owner' && (who.mode || 'owner') === 'owner') { openSheet(switchGate()); return; }
+      const L = lines(); const by = who ? `${esc(who.first)} ${esc(who.last)}` : `${esc(g.name)} (guest)`;
+      $('[data-pay-sum]', el).innerHTML = `<div class="row"><span>${esc(B.name)}</span><b>${fmt(st.date, { weekday: 'short', day: 'numeric', month: 'short' })}</b></div>${L.map((l) => `<div class="row"><span>${esc(l.court)}</span><span>${l.hours.map((h) => hh(h)).join(', ')}</span></div>`).join('')}<div class="row"><span>Booked by</span><span>${by}</span></div><div class="row"><span>Subtotal</span><span>${peso(st.sub)}</span></div><div class="row"><span>Service fee (5%)</span><span>${peso(st.fee)}</span></div><div class="row t"><span>Total</span><b>${peso(st.total)}</b></div>`;
       $('[data-pay-label]', el).textContent = 'Pay ' + peso(st.total);
       setStep(3); openSheet(pay);
     });
@@ -705,7 +729,15 @@
         const L = lines(); const m = ($('input[name="paym"]:checked', el) || {}).parentElement;
         $('[data-ticket]', el).innerHTML = `<div class="row"><span>Venue</span><b>${esc(B.name)}</b></div><div class="row"><span>Date</span><b>${fmt(st.date, { weekday: 'long', day: 'numeric', month: 'long' })}</b></div>${L.map((l) => `<div class="row"><span>${esc(l.court)}</span><b>${l.hours.map((h) => hh(h)).join(', ')}</b></div>`).join('')}<div class="row"><span>Paid with</span><b>${m ? esc(m.textContent.trim()) : ''}</b></div><div class="row t"><span>Total</span><b>${peso(st.total)}</b></div>`;
         steps.forEach((s) => { s.classList.add('is-done'); s.classList.remove('is-on'); }); steps[3].classList.add('is-on'); steps[3].classList.remove('is-done');
-        if (W.__srv.acct) W.__srv.acct.addBooking({ venue: B.name, slug: B.slug, address: B.address, date: st.date, lines: L, sub: st.sub, fee: st.fee, total: st.total, paidWith: m ? m.textContent.trim() : '' });
+        const ref = W.__srv.acct ? W.__srv.acct.addBooking({ venue: B.name, slug: B.slug, address: B.address, date: st.date, lines: L, sub: st.sub, fee: st.fee, total: st.total, paidWith: m ? m.textContent.trim() : '' }) : null;
+        const g = acct() ? null : guest(); const tk = $('[data-ticket]', el);
+        if (ref) tk.insertAdjacentHTML('afterbegin', `<div class="row"><span>Reference</span><b>${esc(ref)}</b></div>`);
+        // a guest keeps the reference; registering with the same email later brings the booking into the account
+        const mine = $('a[href$="account/"]', done);
+        if (g) {
+          tk.insertAdjacentHTML('beforeend', `<div class="row"><span>Guest</span><b>${esc(g.name)}, ${esc(g.phone)}</b></div>`);
+          if (mine) { mine.href = `${root.dataset.root || './'}sign-up/?email=${encodeURIComponent(g.email)}&next=account/`; $('span', mine).textContent = 'Save it to an account'; }
+        } else if (mine) { mine.href = `${root.dataset.root || './'}account/`; $('span', mine).textContent = 'My bookings'; }
         openSheet(done);
       }, RM ? 50 : 1300);
     });

@@ -28,12 +28,16 @@
   const goOn = (u) => { location.href = R + (safeNext() || landing(u)); };
   const signOut = () => { LS.set('srv.session', null); toast('Signed out.'); };
   const setMode = (mode) => { const u = me(); if (!u || u.role !== 'owner') return; LS.set('srv.users', users().map((x) => (x.email === u.email ? { ...x, mode } : x))); };
+  // a booking belongs to the signed-in account, or to a guest's email (registering with that email later claims it)
   function addBooking(b) {
-    const u = me(); if (!u) return;
+    const u = me(); let g = null;
+    if (!u) { try { g = JSON.parse(sessionStorage.getItem('srv.guest') || 'null'); } catch (e) { g = null; } }
+    if (!u && !g) return null;
     const all = LS.get('srv.bookings', []);
     const id = 'SV-' + Date.now().toString(36).toUpperCase().slice(-6);
-    all.unshift({ ...b, id, email: u.email, status: 'confirmed', created: new Date().toISOString() });
+    all.unshift({ ...b, id, email: u ? u.email : g.email, guest: !u, ...(g ? { guestName: g.name, guestPhone: g.phone } : {}), status: 'confirmed', created: new Date().toISOString() });
     LS.set('srv.bookings', all);
+    return id;
   }
   S.acct = { me, addBooking, signOut, setMode };
 
@@ -68,6 +72,7 @@
 
   const fUp = $('form[data-auth="register"]');
   if (fUp) {
+    if (qs.get('email') && fUp.elements.email) fUp.elements.email.value = qs.get('email'); // a guest saving their booking to an account
     fUp.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!fUp.checkValidity()) { fUp.reportValidity(); return; }
