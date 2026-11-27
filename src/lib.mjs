@@ -288,7 +288,6 @@ export function stickyBar(kind = 'site', v = null) {
       <button class="stick__x" type="button" data-stick-x aria-label="Hide this bar">${icon('close')}</button></div></aside>`;
   }
   return `<aside class="stick" data-stick aria-label="Quick booking" hidden><div class="stick__in">
-    <span class="stick__ball" aria-hidden="true"></span>
     <p class="stick__txt"><b>Your next game is calling.</b><small>${VENUE_COUNT} venues <span class="sep">/</span> ${COURT_COUNT} courts <span class="sep">/</span> 3 sports</small></p>
     <div class="stick__acts">
       <a class="stick__ic" href="${u('/courts/?view=map')}" aria-label="Map view">${icon('map')}<span>Map</span></a>
