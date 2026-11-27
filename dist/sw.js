@@ -2,7 +2,7 @@
    you have opened readable offline. Pages, styles, scripts and photos come from the network first, so a
    new deploy shows straight away; the cache only answers when the network cannot. Fonts never change,
    so they come from the cache first. The build stamps VERSION, and each deploy clears the last cache. */
-const VERSION = '04a67c643d';
+const VERSION = '08fd99c840';
 const CACHE = `served-${VERSION}`;
 // styles, script and logo carry a build hash in their URLs, so they are cached as pages ask for them
 const SHELL = ['./', 'assets/favicon.svg', 'manifest.webmanifest', 'assets/img/app-icon-192.png'];

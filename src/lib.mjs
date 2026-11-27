@@ -139,10 +139,10 @@ export const courtD = (sport, x, y, w, h, r = 4) => roundRect(x, y, w, h, r) + c
 export function vcard(v, { variant = '', lazy = true } = {}) {
   const sp = sportOf(v.sport);
   return `<article class="vcard ${variant}" data-tone="${sp.tone}" data-tilt data-reveal>
-  <a class="vcard__media" href="${u(`/courts/${v.slug}/`)}" tabindex="-1" aria-hidden="true">${img(v.img, { alt: '', sizes: '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${v.featured ? '<span class="ribbon">Featured</span>' : ''}</a>
-  <div class="vcard__tags">${chipSport(v.sport)}${score(v)}</div>
+  <a class="vcard__media" href="${u(`/courts/${v.slug}/`)}" tabindex="-1" aria-hidden="true">${img(v.img, { alt: '', sizes: '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${v.featured ? '<span class="ribbon">Featured</span>' : ''}${v.demo ? '<span class="ribbon ribbon--sample">Sample</span>' : ''}</a>
+  <div class="vcard__tags">${v.sports && v.sports.length > 1 ? `<span class="vcard__sports">${v.sports.map((s) => chipSport(s)).join('')}</span>` : chipSport(v.sport)}${score(v)}</div>
   <div class="vcard__body">
-    <h3 class="vcard__name"><a href="${u(`/courts/${v.slug}/`)}">${esc(v.name)}</a></h3>
+    <h3 class="vcard__name"><a href="${u(`/courts/${v.slug}/`)}">${esc(v.name)}</a>${v.demo ? '<span class="sr"> (sample listing)</span>' : ''}</h3>
     <p class="vcard__meta">${icon('pin')}<span>${esc(v.address)}</span><span class="sep">/</span><span>${esc(v.surface)}</span><span class="sep">/</span><span>${v.courts} courts</span></p>
     <p class="vcard__desc">${esc(v.desc)}</p>
     <div class="vcard__foot">${priceTag(v)}${nextTag(v)}</div>
@@ -394,7 +394,7 @@ ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script
 ${sprite()}
 ${own ? '' : splash()}
 ${own ? ownHeader(own) : header(active)}
-<main id="main">
+<main id="main" data-tape="${esc((own && venue ? [venue.name, 'Book a court', ...(venue.sports || [venue.sport])] : ['Pickleball', 'Tennis', 'Badminton', 'Book instantly', 'Game on']).join('|'))}">
 ${body}
 ${noFinal || own ? '' : finalCta()}
 </main>

@@ -91,8 +91,18 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
 - `contact?subject=Listing my court` opens the contact form with that subject picked, as on the current site.
 - What the capture could not see: on the current site the owner dashboard and a player's bookings sit behind
   sign-in, so the concept builds its own versions of them rather than copying them.
-- Section dividers: five options at `/lab/dividers/`. Rule: a divider only sits where the background colour
-  changes, so the one divider that sat between two black sections was removed.
+- Section dividers (client's pick, 27 Nov: a mix of three of the ten options shown). No rounded top edges; a divider
+  sits only where the background colour changes, chosen from the two colours: into a light section the light colour
+  sweeps in on a slanted edge (wipe); into or out of a light or orange section the next one rises over the last,
+  square-cornered (sheet); between two different darks a strip of orange court tape crosses the seam, its words running
+  with the scroll (never two tapes in a row). On a venue's own page the tape carries the venue's name; into the Rally X
+  section it is Rally X's neon with its words. Motion follows the scroll in Chrome, Edge and Safari; elsewhere, and
+  with reduced motion, each seam shows its finished state.
+- Rally X on the home page (client's pick, 27 Nov, option D of five layouts shown): the venue's own black and neon
+  green, and a photo seen through the brush-stroke X of the Rally X logo, traced from the banner in the venue's photo
+  (`tools/rallyx-x.py`), sunk in with an inner shadow and graded black to neon green. The only neon green on the site.
+- The option pages (`/lab/rally-x/`, `/lab/dividers/`) were removed once the client picked.
+- Footer: the base row's line sits clear of the Served. logo (client, 27 Nov).
 
 ## Marked as concept, not live
 

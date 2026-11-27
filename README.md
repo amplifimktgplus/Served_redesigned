@@ -22,7 +22,7 @@ Accounts work in the browser with no server: players register and can then book 
 waits while a guest signs up), and owners set their court page's colours, hero photo and gallery, which every page
 of that venue then wears. Everything is kept in the visitor's own browser.
 
-42 pages in all while Batangas is paused, plus the section divider options at `/lab/dividers/`. URLs kept from the current site (`/courts`, `/courts/<venue>`, `/courts/<venue>/availability`, `/courts/<venue>/slots`, `/pricing`, `/list-your-court`, `/contact`, `/sign-in`, `/sign-up`, `/forgot-password`, `/staff/sign-in`).
+47 pages in all while Batangas is paused, the 404 page included. URLs kept from the current site (`/courts`, `/courts/<venue>`, `/courts/<venue>/availability`, `/courts/<venue>/slots`, `/pricing`, `/list-your-court`, `/contact`, `/sign-in`, `/sign-up`, `/forgot-password`, `/staff/sign-in`).
 
 ## Build
 
@@ -31,6 +31,7 @@ node src/build.mjs          # renders src/ into dist/
 node tools/linkcheck.mjs    # every local link and image resolves; every Book link lands on bookable courts
 python3 tools/images.py     # re-encodes the photo set to WebP (needs Pillow); pass names to redo only those
 python3 tools/logo.py       # traces the supplied logo into src/data/logo.json (needs OpenCV and Pillow)
+python3 tools/rallyx-x.py   # traces the X of the Rally X logo, from the banner in the venue's photo, into src/data/rallyx-x.json
 ```
 
 No npm packages. `dist/` is what GitHub Pages serves (branch `gh-pages`).
@@ -40,6 +41,7 @@ No npm packages. `dist/` is what GitHub Pages serves (branch `gh-pages`).
 - Words, venue facts, rates, slot boards, amenities and reviews: the current Served. site, captured 26 Nov 2026.
 - Rally X photos: supplied by the venue.
 - Logo: the official Served. logo, supplied 27 Nov 2026, traced to vector by `tools/logo.py` (favicon and app icons use its S).
+- Rally X section: the X of the Rally X logo as printed on the venue's banner (in its own photo), traced by `tools/rallyx-x.py`; the section wears Rally X's black and neon green.
 - Tennis and badminton card photos: supplied for this concept on 26 Nov 2026; licence to be confirmed before launch.
 - Sign-in photo: supplied for this concept on 27 Nov 2026 (Unsplash, Moises Alex).
 - Home hero photo: the current Served. site's own hero image.

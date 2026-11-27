@@ -1,9 +1,12 @@
 // src/pages.mjs: one function per page type. Captured words are carried verbatim; new pages are written for Served.
+import { readFileSync } from 'node:fs';
 import { SITE, SPORTS, CITIES, VENUES, RALLYX, SOON, VENUE_COUNT, COURT_COUNT, playsSport, courtsFor, COLLECTIONS, FAQ, PLAY, ROADMAP, CREDITS, CAPTURED_ON, IMAGES } from './content.mjs';
 import { layout, u, a, esc, peso, json, dot, fmtDate, img, icon, kicker, sh, btn, ctas, chipSport, score, priceTag, nextTag, courtSvg, courtD, logoMark, carousel,
   vcard, rallyCard, soonCard, marquee, divider, faqList, sportOf, amenityIcon, setPage } from './lib.mjs';
 
 const TOTAL_COURTS = COURT_COUNT; // Rally X included
+const NUM_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const numWord = (n, cap = false) => { const w = NUM_WORDS[n] || String(n); return cap ? w[0].toUpperCase() + w.slice(1) : w; };
 const minRate = (list) => Math.min(...list.filter((v) => !v.sample).map((v) => v.rate)); // a sample rate never sets a 'from' price
 const crumbs = (items) => `<nav class="crumbs" aria-label="Breadcrumb"><ol>${items.map(([t, h], i) => i === items.length - 1 ? `<li aria-current="page">${esc(t)}</li>` : `<li><a href="${u(h)}">${esc(t)}</a></li>`).join('')}</ol></nav>`;
 const demoNote = (t = 'Preview build: this form does not send anything.') => `<p class="demo-note">${icon('info')}${t}</p>`;
@@ -23,26 +26,55 @@ function phero({ k, h1, lede, crumb, img: im, tone = '', cls = '', extra = '', p
 </section>`;
 }
 
-// ============================================================ RALLY X spotlight (home), shared with its layout options at /lab/rally-x/
+// ============================================================ RALLY X spotlight (home)
+// Option D from the layout options, picked by the client on 27 Nov 2026 and dressed in Rally X's own black and neon
+// green: a photo seen through the brush-stroke X of the Rally X logo (traced from the venue's banner photo by
+// tools/rallyx-x.py), sunk in with an inner shadow and graded black to neon green. This section is the only neon green
+// on the site; everything else keeps Served's own palette.
+const RX_X = JSON.parse(readFileSync(new URL('./data/rallyx-x.json', import.meta.url), 'utf8'));
+const RX_PHOTO = 'rallyx-forehand';
 const RX_LEDE = 'Pickleball and tennis under one roof: lime lines on the floor, a wall of paddles and the city right outside. Now open.';
 const rxChips = () => `<p class="chips">${chipSport('Pickleball')}${chipSport('Tennis')}<span class="chip chip--live">Now open</span></p>`;
 const rxCtas = () => ctas(btn('Book Rally X', '/courts/rally-x/availability/'), btn('See Rally X', '/courts/rally-x/', 'btn--ghost'));
+// the X window: the traced X is drawn once (#rxw-x) and reused for the clip, the glow and the small X in the name
+function rxWindow() {
+  const { w, h, d } = RX_X, pad = 24;
+  const src = a(`assets/img/${RX_PHOTO}-${IMAGES[RX_PHOTO].sizes.at(-1)}.webp`);
+  return `<svg class="rxw" viewBox="${-pad} ${-pad} ${w + 2 * pad} ${h + 2 * pad}" role="img" aria-label="A player swings a paddle at Rally X, seen through the brush-stroke X of the Rally X logo">
+  <defs>
+    <path id="rxw-x" d="${d}" fill-rule="evenodd" clip-rule="evenodd"/>
+    <linearGradient id="rxw-g" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcf53a"/><stop offset="1" stop-color="#6fcf3a"/></linearGradient>
+    <clipPath id="rxw-c"><use href="#rxw-x"/></clipPath>
+    <filter id="rxw-glow" x="-15%" y="-25%" width="130%" height="150%"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="rxw-duo" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="table" tableValues="0.02 0.27 0.78 0.94"/><feFuncG type="table" tableValues="0.02 0.52 0.95 1"/><feFuncB type="table" tableValues="0.02 0.05 0.16 0.68"/></feComponentTransfer></filter>
+    <filter id="rxw-in" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+      <feComponentTransfer in="SourceAlpha" result="out"><feFuncA type="table" tableValues="1 0"/></feComponentTransfer>
+      <feGaussianBlur in="out" stdDeviation="8" result="soft"/><feOffset in="soft" dx="6" dy="9" result="cast"/>
+      <feGaussianBlur in="out" stdDeviation="2.4" result="rim"/>
+      <feMerge result="both"><feMergeNode in="cast"/><feMergeNode in="cast"/><feMergeNode in="rim"/></feMerge>
+      <feFlood flood-color="#000" flood-opacity=".95"/><feComposite in2="both" operator="in" result="shade"/>
+      <feComposite in="shade" in2="SourceAlpha" operator="in" result="inner"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="inner"/></feMerge>
+    </filter>
+  </defs>
+  <use class="rxw__glow" href="#rxw-x" fill="url(#rxw-g)" filter="url(#rxw-glow)"/>
+  <g filter="url(#rxw-in)"><g clip-path="url(#rxw-c)"><rect width="${w}" height="${h}" fill="#050505"/><image class="rxw__img" href="${src}" x="${-pad}" y="${(-h * 0.35).toFixed(1)}" width="${w + 2 * pad}" height="${(h * 1.7).toFixed(1)}" preserveAspectRatio="xMidYMid slice" filter="url(#rxw-duo)"/></g></g>
+</svg>`;
+}
+// speed streaks like the ones on Rally X's banner, faint, on the black band only (never over a photo)
+const rxStreaks = () => `<svg class="rxs__streaks" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="rxs-sg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#6fcf3a" stop-opacity="0"/><stop offset="1" stop-color="#dcf53a"/></linearGradient></defs><g fill="url(#rxs-sg)"><path d="M0 300 150 0h18L18 300z"/><path d="M40 360 230-10h10L52 360z"/><path d="M-10 520 120 250h8L-2 520z"/><path d="M1440 470 1290 800h16l150-330z"/><path d="M1400 560 1250 820h12l150-260z"/></g></svg>`;
 function rallySpot(id = 'rx-h') {
-  return `<section class="band band--iron spot" aria-labelledby="${id}">
-  <div class="band__clip" aria-hidden="true"><span class="spot__x">X</span></div>
-  <div class="wrap spot__in">
-    <div class="spot__collage">
-      <figure class="spot__a" data-depth="0.05" data-mask>${img('rallyx-now-open', { alt: 'Rally X from the street: a NOW OPEN banner for pickleball and tennis under a city tower', sizes: '(min-width: 900px) 34vw, 70vw' })}</figure>
-      <figure class="spot__b" data-depth="0.07" data-mask>${img('rallyx-backhand-net', { alt: 'A player reaches for a backhand, seen through the net', sizes: '(min-width: 900px) 22vw, 50vw' })}</figure>
-      <figure class="spot__c" data-depth="0.09" data-mask>${img('rallyx-paddle-wall', { alt: 'Pickleball paddles hanging on a wall', sizes: '(min-width: 900px) 22vw, 50vw' })}</figure>
-    </div>
-    <div class="spot__copy" data-reveal>
+  return `<section class="band rxs" aria-labelledby="${id}">
+  <div class="band__clip" aria-hidden="true">${rxStreaks()}</div>
+  <div class="wrap rxs__in">
+    <div class="rxs__copy" data-reveal>
       ${kicker('New on the scene')}
-      <h2 class="d1 spot__h" id="${id}">Rally<span class="spot__hx">X</span></h2>
+      <h2 class="d1 rxs__h" id="${id}">Rally<span class="sr"> X</span><svg class="rxs__mini" viewBox="0 0 ${RX_X.w} ${RX_X.h}" aria-hidden="true" focusable="false"><use href="#rxw-x" fill="url(#rxw-g)"/></svg></h2>
       <p class="lede">${RX_LEDE}</p>
       ${rxChips()}
       ${rxCtas()}
     </div>
+    <div class="rxs__win">${rxWindow()}</div>
   </div>
 </section>`;
 }
@@ -68,11 +100,11 @@ function home({ path = '/', hero = heroB(), bodyCls = 'pg-home' } = {}) {
       <p class="coll__rule">${icon('info')}How we picked: ${c.rule}. <b>${list.length} venue${list.length === 1 ? '' : 's'}</b></p>
       <div class="rail" data-rail-scroll>${list.map((v) => `<a class="mcard" href="${u(`/courts/${v.slug}/availability/`)}" data-tone="${v.tone}">
         <span class="mcard__img">${img(v.img, { alt: '', sizes: '320px' })}</span>
-        <span class="mcard__body">${chipSport(v.sport, 'chip--xs')}<b>${esc(v.name)}</b><small>${esc(v.address)}</small><span class="mcard__foot"><em>${peso(v.rate)} / hr</em><span class="mcard__go">Book ${icon('arrow')}</span></span></span></a>`).join('')}</div></div>`;
+        <span class="mcard__body">${chipSport(v.sport, 'chip--xs')}<b>${esc(v.name)}</b><small>${esc(v.address)}</small><span class="mcard__foot"><em>${peso(v.rate)} / hr${v.demo ? ' <small>sample</small>' : ''}</em><span class="mcard__go">Book ${icon('arrow')}</span></span></span></a>`).join('')}</div></div>`;
   }).join('');
   const cityCards = CITIES.map((c) => {
     const list = VENUES.filter((v) => v.city === c.name);
-    return `<a class="ccard" href="${u(`/cities/${c.slug}/`)}" data-reveal>${img(c.img, { alt: '', sizes: '(min-width: 900px) 30vw, 80vw' })}<span class="ccard__body"><small>${esc(c.area)}</small><b>${c.name}</b><em>${list.length} venue${list.length > 1 ? 's' : ''} <span class="sep">/</span> ${[...new Set(list.map((v) => v.sport))].join(', ')}</em></span><span class="ccard__go">${icon('arrow')}</span></a>`;
+    return `<a class="ccard" href="${u(`/cities/${c.slug}/`)}" data-reveal>${img(c.img, { alt: '', sizes: '(min-width: 900px) 30vw, 80vw' })}<span class="ccard__body"><small>${esc(c.area)}</small><b>${c.name}</b><em>${list.length} venue${list.length > 1 ? 's' : ''} <span class="sep">/</span> ${[...new Set(list.flatMap((v) => v.sports || [v.sport]))].join(', ')}</em></span><span class="ccard__go">${icon('arrow')}</span></a>`;
   }).join('');
   const body = `
 ${hero}
@@ -165,7 +197,7 @@ const liveSports = () => SPORTS.filter((x) => x.live).map((x) => { const list = 
 // Option B, "Live board", on the current site's hero photo and shade: the Served. wordmark down the right edge (turned to
 // read upward, baseline on the edge), kinetic sport word, sport buttons and search of one width, Install App, next open slots
 function heroB() {
-  const board = [...VENUES, RALLYX].sort((x, y) => x.open[0].localeCompare(y.open[0]) || y.rating - x.rating).map((v) => `<a class="bitem" href="${u(`/courts/${v.slug}/availability/`)}" data-tone="${v.tone}"><i class="bitem__dot"></i><b>${esc(v.name)}</b><span>${esc(v.city || 'Metro Manila')}</span><span class="bitem__next" data-next="${v.open.join(',')}">Next <b>${fmtDate(v.open[0])}</b></span><em>${peso(v.rate)}/hr${v.sample ? ' <small>sample</small>' : ''}</em><span class="bitem__go">Book ${icon('arrow')}</span></a>`).join('');
+  const board = [...VENUES, RALLYX].sort((x, y) => x.open[0].localeCompare(y.open[0]) || y.rating - x.rating).map((v) => `<a class="bitem" href="${u(`/courts/${v.slug}/availability/`)}" data-tone="${v.tone}"><i class="bitem__dot"></i><b>${esc(v.name)}</b><span>${esc(v.city || 'Metro Manila')}</span><span class="bitem__next" data-next="${v.open.join(',')}">Next <b>${fmtDate(v.open[0])}</b></span><em>${peso(v.rate)}/hr${v.sample || v.demo ? ' <small>sample</small>' : ''}</em><span class="bitem__go">Book ${icon('arrow')}</span></a>`).join('');
   return `<section class="hb" aria-labelledby="hb-h">
   <div class="hb__media" aria-hidden="true">
     <figure class="hb__bg">${img('live-hero-court', { alt: '', sizes: '100vw', eager: true, pos: '50% 32%' })}</figure>
@@ -190,8 +222,8 @@ function heroB() {
 
 // ============================================================ COURTS (discovery)
 function courts() {
-  const surfaces = ['Acrylic', 'Clay', 'Hard', 'Wood'];
-  const cards = VENUES.map((v) => `<div class="disc__item" data-item data-slug="${v.slug}" data-sport="${v.sport}" data-city="${v.city}" data-surface="${v.surface}" data-rate="${v.rate}" data-rating="${v.rating}" data-name="${esc(v.name.toLowerCase())} ${esc(v.address.toLowerCase())}" data-lat="${v.lat}" data-lng="${v.lng}" data-open="${v.open.join(',')}">${vcard(v)}</div>`).join('')
+  const surfaces = ['Acrylic', 'Clay', 'Hard', 'Synthetic', 'Wood'].filter((s) => VENUES.some((v) => v.surface === s));
+  const cards = VENUES.map((v) => `<div class="disc__item" data-item data-slug="${v.slug}" data-sport="${(v.sports || [v.sport]).join(' ')}" data-city="${v.city}" data-surface="${v.surface}" data-rate="${v.rate}" data-rating="${v.rating}" data-name="${esc(v.name.toLowerCase())} ${esc(v.address.toLowerCase())}" data-lat="${v.lat}" data-lng="${v.lng}" data-open="${v.open.join(',')}">${vcard(v)}</div>`).join('')
     + `<div class="disc__item" data-item data-slug="rally-x" data-sport="Pickleball Tennis" data-city="" data-surface="" data-rate="${RALLYX.rate}" data-rating="0" data-name="rally x ${esc(RALLYX.address.toLowerCase())}" data-open="${RALLYX.open.join(',')}">${rallyCard()}</div>`
     + SOON.map((s) => `<div class="disc__item" data-item data-soon data-slug="${s.slug}" data-sport="${s.sport}" data-city="${s.city}" data-surface="" data-rate="99999" data-rating="0" data-name="${esc(`${s.name} ${s.short} ${s.address}`.toLowerCase())}">${soonCard(s)}</div>`).join('');
   const pins = VENUES.map((v) => ({ slug: v.slug, name: v.name, rate: v.rate, city: v.city, lat: v.lat, lng: v.lng, tone: v.tone, sport: v.sport, href: u(`/courts/${v.slug}/availability/`), page: u(`/courts/${v.slug}/`) }));
@@ -233,7 +265,7 @@ ${phero({ k: 'Courts', h1: 'Find Your Court', lede: 'Every court on Served is re
       <div class="disc__map" data-map hidden>
         <div class="map board"><svg class="map__svg" viewBox="0 0 1000 720" role="img" aria-label="Stylised map of venues across Metro Manila"><g class="map__grid"></g><g class="map__roads"></g><g class="map__labels"></g><g class="map__pins"></g></svg>
         <div class="map__card" data-map-card hidden></div>
-        <p class="map__note">${icon('info')}Pins mark each venue’s city, not its exact address.${CITIES.some((c) => c.slug === 'nasugbu') ? ' Nasugbu sits off the map, to the south west.' : ''}</p></div>
+        <p class="map__note">${icon('info')}Pins are approximate, not exact addresses.${CITIES.some((c) => c.slug === 'nasugbu') ? ' Nasugbu sits off the map, to the south west.' : ''}</p></div>
       </div>
       <div class="empty" data-empty hidden><svg class="empty__net" viewBox="0 0 240 120" aria-hidden="true"><path d="M10 100h220M30 100V30h180v70M30 30h180" /><path d="M30 45h180M30 60h180M30 75h180M30 90h180M60 30v70M90 30v70M120 30v70M150 30v70M180 30v70" opacity=".35"/></svg><p class="d3">Out. No courts match that.</p><p>Try another date, widen the price or clear a filter.</p><a class="btn btn--accent" href="${u('/courts/')}" data-reset><span>Reset filters</span></a></div>
     </div>
@@ -254,6 +286,7 @@ function booking(v, mode) {
   return `<section class="book" id="book" data-book="${json(bookData(v))}" data-mode="${mode}" aria-labelledby="book-h">
   <div class="wrap">
     ${v.sample ? `<p class="book__sample">${icon('info')}<span>Sample rates, hours and courts: ${esc(v.name)} has not confirmed its own yet.</span></p>` : ''}
+    ${v.demo ? `<p class="book__sample">${icon('info')}<span>Sample listing: ${esc(v.name)} is a real venue that is not on Served. Booking here is a demo.</span></p>` : ''}
     <ol class="steps" data-steps aria-label="Booking steps"><li class="is-on"><b>1</b><span>Choose a date</span></li><li><b>2</b><span>Pick time &amp; court</span></li><li><b>3</b><span>Payment</span></li><li><b>4</b><span>Confirmation</span></li></ol>
     ${mode === 'venue' ? `<div class="book__head"><h2 class="d2" id="book-h">Book a slot<span class="pd">.</span></h2><p>Orange days have open slots at ${esc(v.name)}. Pick one to choose your time.</p></div>` : '<span id="book-h" class="sr">Booking</span>'}
     <div class="book__grid">
@@ -321,7 +354,7 @@ function venuePage(v) {
   <div class="wrap vhero__in">
     <div class="vhero__grid">
       <div class="vhero__copy">
-        <p class="chips">${chipSport(v.sport)}<span class="chip">${esc(v.surface)}</span>${score(v)}</p>
+        <p class="chips">${(v.sports || [v.sport]).map((s) => chipSport(s)).join('')}<span class="chip">${esc(v.surface)}</span>${score(v)}${v.demo ? '<span class="chip chip--sample">Sample listing</span>' : ''}</p>
         ${v.by ? `<p class="vhero__by"><span class="vhero__mono" aria-hidden="true">${esc(v.name[0])}</span>By ${esc(v.by)}</p>` : ''}
         <h1 class="d1 vhero__h">${esc(v.name)}</h1>
         <p class="vhero__meta">${esc(v.area ? v.area + ', ' + v.city : v.city)} <span class="sep">/</span> ${esc(v.surface)} surface <span class="sep">/</span> ${v.courts} courts available</p>
@@ -341,7 +374,8 @@ ${booking(v, 'venue')}
       ${kicker('The venue')}
       <h2 class="d2">About ${esc(v.name)}</h2>
       <p class="lede">${esc(v.desc)}</p>
-      <dl class="specs">${[['Surface', v.surface], ['Court size', v.courtSize], ['Courts on site', v.courts], ['Sport', v.sport]].map(([k, x]) => `<div><dt>${k}</dt><dd>${esc(x)}</dd></div>`).join('')}</dl>
+      <dl class="specs">${[['Surface', v.surface], ['Court size', v.courtSize], ['Courts on site', v.courts], [(v.sports || []).length > 1 ? 'Sports' : 'Sport', (v.sports || [v.sport]).join(', ')], ['Setting', v.setting ? v.setting[0].toUpperCase() + v.setting.slice(1) : ''], ['Hours', v.hoursText]]
+        .filter(([, x]) => x !== null && x !== undefined && x !== '').map(([k, x]) => `<div><dt>${k}</dt><dd>${esc(x)}</dd></div>`).join('')}</dl>
     </div>
     <div class="vinfo__am" data-reveal>
       <h2 class="d3">Amenities</h2>
@@ -683,10 +717,10 @@ ${phero({ k: `${s.kicker}`, h1: `${s.name} courts`, lede: s.intro, crumb: [['Hom
 const credit = (file) => CREDITS.find((c) => c.file === file);
 function citiesHub() {
   const body = `
-${phero({ k: 'Cities', h1: 'The city is the playground<span class="pd">.</span>', lede: 'Six cities, six ways to play. Pick yours and see what is open.', crumb: [['Home', '/'], ['Cities', '/cities/']], img: 'city-golden-hour' })}
+${phero({ k: 'Cities', h1: 'The city is the playground<span class="pd">.</span>', lede: `${numWord(CITIES.length, true)} cities, ${numWord(CITIES.length)} ways to play. Pick yours and see what is open.`, crumb: [['Home', '/'], ['Cities', '/cities/']], img: 'city-golden-hour' })}
 <section class="band band--night chub"><div class="wrap"><div class="chub__grid">${CITIES.map((c, i) => {
     const list = VENUES.filter((v) => v.city === c.name);
-    return `<a class="ccard ccard--big" href="${u(`/cities/${c.slug}/`)}" data-reveal style="--i:${i % 3}">${img(c.img, { alt: '', sizes: '(min-width: 900px) 33vw, 100vw' })}<span class="ccard__body"><small>${esc(c.area)}</small><b>${c.name}</b><em>${list.length} venue${list.length > 1 ? 's' : ''} <span class="sep">/</span> ${[...new Set(list.map((v) => v.sport))].join(', ')}</em></span><span class="ccard__go">${icon('arrow')}</span></a>`;
+    return `<a class="ccard ccard--big" href="${u(`/cities/${c.slug}/`)}" data-reveal style="--i:${i % 3}">${img(c.img, { alt: '', sizes: '(min-width: 900px) 33vw, 100vw' })}<span class="ccard__body"><small>${esc(c.area)}</small><b>${c.name}</b><em>${list.length} venue${list.length > 1 ? 's' : ''} <span class="sep">/</span> ${[...new Set(list.flatMap((v) => v.sports || [v.sport]))].join(', ')}</em></span><span class="ccard__go">${icon('arrow')}</span></a>`;
   }).join('')}</div>${ctas(btn('See them on the map', '/courts/?view=map'))}</div></section>`;
   return layout({ path: '/cities/', title: 'Courts by city', desc: `Book courts in ${CITIES.slice(0, -1).map((c) => c.name).join(', ')} and ${CITIES.at(-1).name} on Served.`, body, active: 'courts', bodyCls: 'pg-cities' });
 }
@@ -695,7 +729,7 @@ function cityPage(c) {
   const cr = credit(c.img);
   const others = CITIES.filter((x) => x.slug !== c.slug);
   const body = `
-${phero({ k: c.area, h1: `Courts in ${c.name}`, lede: c.intro, crumb: [['Home', '/'], ['Cities', '/cities/'], [c.name, `/cities/${c.slug}/`]], img: c.img, extra: `<p class="phero__stats"><span><b>${list.length}</b> venue${list.length > 1 ? 's' : ''}</span><span><b>${list.reduce((n, v) => n + v.courts, 0)}</b> courts</span><span>${[...new Set(list.map((v) => v.sport))].join(', ')}</span></p>` })}
+${phero({ k: c.area, h1: `Courts in ${c.name}`, lede: c.intro, crumb: [['Home', '/'], ['Cities', '/cities/'], [c.name, `/cities/${c.slug}/`]], img: c.img, extra: `<p class="phero__stats"><span><b>${list.length}</b> venue${list.length > 1 ? 's' : ''}</span><span><b>${list.reduce((n, v) => n + v.courts, 0)}</b> courts</span><span>${[...new Set(list.flatMap((v) => v.sports || [v.sport]))].join(', ')}</span></p>` })}
 ${cr ? `<p class="credit-line wrap">Photo: ${esc(cr.title)}, ${esc(cr.author)}, ${esc(cr.license)}, via Wikimedia Commons</p>` : ''}
 <section class="band band--night spg"><div class="wrap">${sh({ k: 'Open near you', h: `Book in ${c.name}<span class="pd">.</span>`, cls: 'sh--split' })}<div class="more__grid">${list.map((v) => vcard(v)).join('')}</div></div></section>
 <section class="band band--iron"><div class="wrap">${sh({ k: 'Nearby', h: 'Other cities', cls: 'sh--split' })}<div class="chips chips--lg">${others.map((o) => `<a class="chip chip--lg" href="${u(`/cities/${o.slug}/`)}">${icon('pin')}${o.name}</a>`).join('')}</div></div></section>`;
@@ -950,335 +984,6 @@ var bk=$('[data-book]');bk.setAttribute('data-book',JSON.stringify({slug:'listin
     own: { name: 'Listing', address: '', fill: true, home: '#top', links: [['Book', '#book'], ['About', '#about'], ['Photos', '#photos', ' data-vgal-link hidden'], ['Location', '#location']], cta: ['Book now', '#book'] } });
 }
 
-// ============================================================ LAB: section divider options (27 Nov 2026, for the client to pick one)
-// Rule from the client: a divider only sits where the next section's background colour changes.
-function labDividers() {
-  const ballSvg = '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="url(#dvg)"/><path d="M14 17c7 7 7 23 0 30M50 17c-7 7-7 23 0 30" fill="none" stroke="#0a0a0a" stroke-width="2.6" stroke-linecap="round" opacity=".55"/><defs><radialGradient id="dvg" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#ff9a5a"/><stop offset=".5" stop-color="#ff6b18"/><stop offset="1" stop-color="#c2410c"/></radialGradient></defs></svg>';
-  const sec = (bg, k, h, p, cls = '') => `<section class="dvx dvx--${bg}${cls ? ' ' + cls : ''}"><div class="wrap"><p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>${k}</p><h2 class="d2">${h}</h2><p class="lede">${p}</p></div></section>`;
-  const opt = (id, name, how) => `<div class="dvx__tag wrap"><b>${id}</b><span><strong>${name}</strong>${how}</span></div>`;
-  // a wave 2880 wide (twice the view), one period every 720, so sliding it by 720 loops without a jump
-  const wave = (y, amp) => `M0 ${y}Q180 ${y - amp} 360 ${y}${Array.from({ length: 7 }, (_, i) => `T${720 + i * 360} ${y}`).join('')}V120H0Z`;
-  const tape = 'Pickleball<i></i>Tennis<i></i>Badminton<i></i>Book instantly<i></i>Game on<i></i>';
-  const body = `
-<section class="band band--night dvx-top"><div class="wrap">
-  <p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>Options to pick from</p>
-  <h1 class="d1">Section dividers</h1>
-  <p class="lede">Ten ways to mark the change from one section to the next: A to E from before, and five new transitions, F to J, that move with your scroll. None of them rounds the top corners. Each one is shown at a real change of background colour, because a divider only appears where the colour changes. Pick one and it goes on every colour change across the site.</p>
-  <nav class="dvx-jump" aria-label="Options"><a href="#dv-a">A Baseline</a><a href="#dv-b">B Ball on the line</a><a href="#dv-c">C Serve arc</a><a href="#dv-d">D Sheet</a><a href="#dv-e">E Split word</a><a href="#dv-f">F Wipe</a><a href="#dv-g">G Angle</a><a href="#dv-h">H Court tape</a><a href="#dv-i">I Wave</a><a href="#dv-j">J Stack</a></nav>
-  <p class="dvx-note">The motion follows your scroll in Chrome, Edge and Safari; other browsers and reduced motion show the finished state.</p>
-</div></section>
-
-<div id="dv-a">${opt('A', 'Baseline', 'An orange court baseline painted along the seam, its centre mark pointing into the next section. It draws out from the centre as the seam comes up the screen.')}</div>
-${sec('night', 'Pick your sport', 'Three sports live.', 'Black section above the seam.')}
-<div class="dv dv--base" aria-hidden="true"><span class="dv__line"></span><span class="dv__mark"></span></div>
-${sec('cream', 'Featured venues', 'Courts now serving.', 'Light section below the seam.')}
-
-<div id="dv-b">${opt('B', 'Ball on the line', 'A ball rides the seam, half in each colour, and rolls across as you scroll. On the line counts as in.')}</div>
-${sec('cream', 'How it works', 'Sign up, find, play.', 'Light section above the seam.')}
-<div class="dv dv--ball" aria-hidden="true"><span class="dv__ball">${ballSvg}</span></div>
-${sec('night', 'Rally X', 'Now open for pickleball and tennis.', 'Black section below the seam.')}
-
-<div id="dv-c">${opt('C', 'Serve arc', 'The next colour rises in a shallow arc and a serve traces it, landing as the ball at the far end.')}</div>
-${sec('night', 'Cities', 'Courts near you.', 'Black section above the seam.')}
-<div class="dv dv--arc dv--to-iron" aria-hidden="true"><svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path class="dv__fill" d="M0 120Q720-24 1440 120Z"/><path class="dv__trail" d="M120 108Q720 4 1320 108" pathLength="1"/></svg><span class="dv__land"></span></div>
-${sec('iron', 'Play mode', 'Who is playing?', 'Navy section below the seam.')}
-
-<div id="dv-d">${opt('D', 'Sheet', 'The next section rises over the last like a card being dealt, square-cornered, settling flat and full width as it reaches the top of the screen.')}</div>
-${sec('iron', 'Pricing', 'Simple and transparent.', 'Navy section above the seam.')}
-<section class="dvx dvx--accent dv-sheet"><div class="wrap"><p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>Ready</p><h2 class="d2">Game on.</h2><p class="lede">Orange section rising over the navy one.</p></div></section>
-
-<div id="dv-e">${opt('E', 'Split word', 'A word in giant type sits across the seam, each half in the colour that reads on its own background. It drifts sideways as you scroll.')}</div>
-${sec('accent', 'List your court', 'Your venue, booked.', 'Orange section above the seam.')}
-<div class="dv dv--word" aria-hidden="true"><span class="dv__w dv__w--top">GAME ON</span><span class="dv__w dv__w--bot">GAME ON</span></div>
-${sec('night', 'Help centre', 'Questions, answered.', 'Black section below the seam.')}
-
-<div id="dv-f">${opt('F', 'Wipe', 'The next colour sweeps across from left to right on a slanted edge as it comes up the screen, like a court being swept between games.')}</div>
-${sec('night', 'Cities', 'Courts near you.', 'Black section above the seam.')}
-${sec('cream', 'Featured venues', 'Courts now serving.', 'Light section, swept in from the left.', 'dv-wipe')}
-
-<div id="dv-g">${opt('G', 'Angle', 'The seam tilts like a court line seen from the baseline: the next colour lifts on the right as the seam comes up the screen, and holds a shallow angle.')}</div>
-${sec('cream', 'How it works', 'Sign up, find, play.', 'Light section above the seam.')}
-<div class="dv dv--angle" aria-hidden="true"><svg viewBox="0 0 1440 100" preserveAspectRatio="none"><path d="M0 100L1440 0V100Z"/></svg></div>
-${sec('iron', 'Rally X', 'Now open for pickleball and tennis.', 'Navy section below the seam.')}
-
-<div id="dv-h">${opt('H', 'Court tape', 'A strip of orange court tape crosses the seam at a slight angle, its words running sideways as you scroll.')}</div>
-${sec('iron', 'Pricing', 'Simple and transparent.', 'Navy section above the seam.')}
-<div class="dv dv--tape" aria-hidden="true"><div class="dv__tape"><span>${tape.repeat(4)}</span></div></div>
-${sec('night', 'Contact', 'Talk to the team.', 'Black section below the seam.')}
-
-<div id="dv-i">${opt('I', 'Wave', 'Two soft waves of the next colour roll in from either side, like a net settling after a shot, and come to rest as a gentle curve.')}</div>
-${sec('night', 'Play mode', 'Who is playing?', 'Black section above the seam.')}
-<div class="dv dv--wave" aria-hidden="true"><svg viewBox="0 0 2880 120" preserveAspectRatio="none"><path class="dv__w1" d="${wave(46, 26)}"/><path class="dv__w2" d="${wave(70, 20)}"/></svg></div>
-${sec('cream', 'List your court', 'Your venue, booked.', 'Light section below the seam.')}
-
-<div id="dv-j">${opt('J', 'Stack', 'The section you are leaving holds still and dims back while the next one slides up over it on a straight edge, like pages stacking.')}</div>
-<div class="dv-stack">
-${sec('iron', 'About Served.', 'Every court, one tap away.', 'Navy section that holds still.', 'dv-stack__under')}
-${sec('accent', 'Ready', 'Game on.', 'Orange section sliding up over it.', 'dv-stack__over')}
-</div>
-<div class="dvx-end"></div>
-<style>
-.dvx-top { padding-bottom: 40px; } .dvx-top .lede { margin-top: 14px; }
-.dvx-jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; } .dvx-jump a { padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--text); text-decoration: none; font: 700 14px/1 var(--f-ui); } .dvx-jump a:hover { border-color: var(--accent); color: var(--accent); }
-.dvx-note { margin-top: 14px; font-size: 13.5px; color: var(--text-3); }
-.dvx__tag { display: flex; gap: 16px; align-items: flex-start; padding-block: 56px 22px; } .dvx__tag b { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--accent); color: var(--ink); font: 900 20px/1 var(--f-display); } .dvx__tag span { max-width: 70ch; color: var(--text-2); } .dvx__tag strong { display: block; color: var(--text); font: 850 20px/1.2 var(--f-display); text-transform: uppercase; margin-bottom: 4px; }
-.dvx { position: relative; padding-block: clamp(56px, 7vw, 96px); } .dvx .lede { margin-top: 10px; }
-.dvx--night { background: var(--ink); } .dvx--iron { background: var(--iron); } .dvx--cream { background: var(--cream); color: var(--ink); } .dvx--accent { background: var(--accent); color: var(--ink); }
-.dvx--cream .lede, .dvx--accent .lede { color: rgba(10, 10, 10, .72); } .dvx--accent .kicker { color: var(--ink); } .dvx--accent .kicker__ball { background: var(--ink); }
-.dv { position: relative; height: 0; z-index: 3; }
-/* A: baseline */
-.dv--base .dv__line { position: absolute; left: 0; right: 0; top: -3px; height: 6px; background: var(--accent); }
-.dv--base .dv__mark { position: absolute; left: 50%; top: -3px; width: 6px; height: 28px; translate: -50% 0; background: var(--accent); border-radius: 0 0 3px 3px; }
-/* B: ball on the line */
-.dv--ball .dv__ball { position: absolute; top: 0; left: 50%; width: clamp(44px, 5vw, 68px); aspect-ratio: 1; translate: -50% -50%; filter: drop-shadow(0 16px 18px rgba(0, 0, 0, .45)); }
-.dv--ball .dv__ball svg { display: block; width: 100%; height: 100%; }
-/* C: serve arc */
-.dv--arc svg { position: absolute; left: 0; bottom: 0; width: 100%; height: clamp(48px, 7vw, 110px); overflow: visible; }
-.dv--arc .dv__fill { fill: var(--iron); }
-.dv--arc .dv__trail { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.dv--arc .dv__land { position: absolute; right: calc(120 / 1440 * 100%); bottom: calc(clamp(48px, 7vw, 110px) * 12 / 120); width: 16px; height: 16px; translate: 50% 50%; border-radius: 50%; background: var(--accent); box-shadow: 0 0 18px rgba(255, 107, 24, .7); }
-/* D: sheet (square corners: no rounded top edges, client 27 Nov 2026) */
-.dv-sheet { box-shadow: 0 -30px 60px -24px rgba(0, 0, 0, .6); transform-origin: 50% 0; }
-/* E: split word */
-.dv--word { height: 0; overflow: visible; }
-.dv--word .dv__w { position: absolute; left: 50%; top: 0; translate: -50% -50%; white-space: nowrap; font: 900 clamp(36px, 11vw, 170px)/.8 var(--f-display); font-stretch: 125%; letter-spacing: -.02em; pointer-events: none; }
-.dv--word .dv__w--top { color: var(--ink); clip-path: inset(-20% -20% 50% -20%); }
-.dv--word .dv__w--bot { color: var(--accent); clip-path: inset(50% -20% -20% -20%); }
-/* F: wipe (the black of the page shows where the light section has not been swept in yet) */
-.dv-wipe { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
-/* G: angle */
-.dv--angle svg { position: absolute; left: 0; bottom: -1px; width: 100%; height: clamp(34px, 5vw, 80px); transform-origin: 50% 100%; }
-.dv--angle path { fill: var(--iron); }
-/* H: court tape (the tape is wider than the screen; the strip clips it sideways only) */
-.dv--tape { overflow-x: clip; overflow-y: visible; z-index: 4; }
-.dv__tape { position: absolute; left: -6%; right: -6%; top: 0; translate: 0 -50%; rotate: -2.2deg; padding-block: clamp(10px, 1.2vw, 16px); background: var(--accent); color: var(--ink); white-space: nowrap; overflow: hidden; box-shadow: 0 20px 40px -20px rgba(0, 0, 0, .7); }
-.dv__tape span { display: inline-flex; align-items: center; gap: .7em; font: 900 clamp(15px, 1.7vw, 24px)/1 var(--f-display); font-stretch: 118%; letter-spacing: .05em; text-transform: uppercase; }
-.dv__tape i { width: .5em; height: .5em; border-radius: 50%; background: var(--ink); flex: none; }
-/* I: wave (twice the width of the screen, so it can slide a full period) */
-.dv--wave { overflow-x: clip; overflow-y: visible; }
-.dv--wave svg { position: absolute; left: 0; bottom: -1px; width: 200%; max-width: none; height: clamp(40px, 6vw, 96px); transform-origin: 50% 100%; overflow: visible; }
-.dv--wave .dv__w1 { fill: var(--cream); opacity: .42; }
-.dv--wave .dv__w2 { fill: var(--cream); }
-/* J: stack */
-.dv-stack { timeline-scope: --dvstack; }
-.dv-stack__under { position: sticky; top: 0; z-index: 0; transform-origin: 50% 20%; }
-.dv-stack__over { position: relative; z-index: 1; view-timeline-name: --dvstack; min-height: 70vh; box-shadow: 0 -34px 60px -30px rgba(0, 0, 0, .75); }
-.dvx-end { height: 72px; }
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .dv--base .dv__line { animation: dvGrow linear both; animation-timeline: view(); animation-range: entry 0% cover 45%; }
-    .dv--base .dv__mark { animation: dvDrop linear both; animation-timeline: view(); animation-range: cover 30% cover 50%; }
-    .dv--ball .dv__ball { animation: dvRoll linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
-    .dv--arc .dv__trail { stroke-dasharray: 1; animation: dvDraw linear both; animation-timeline: view(); animation-range: entry 10% cover 50%; }
-    .dv--arc .dv__land { animation: dvLand linear both; animation-timeline: view(); animation-range: cover 40% cover 55%; }
-    .dv-sheet { animation: dvSheet linear both; animation-timeline: view(); animation-range: entry 0% entry 90%; }
-    .dv--word .dv__w { animation: dvDrift linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
-    .dv-wipe { animation: dvWipe linear both; animation-timeline: view(); animation-range: entry 0% entry 85%; }
-    .dv--angle svg { animation: dvTilt linear both; animation-timeline: view(); animation-range: entry 0% cover 45%; }
-    .dv__tape span { animation: dvTape linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
-    .dv--wave svg { animation: dvSettle linear both; animation-timeline: view(); animation-range: entry 0% cover 50%; }
-    .dv--wave .dv__w1 { animation: dvWaveL linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
-    .dv--wave .dv__w2 { animation: dvWaveR linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
-    .dv-stack__under { animation: dvUnder linear both; animation-timeline: --dvstack; animation-range: entry 0% entry 100%; }
-  }
-}
-@keyframes dvWipe { from { clip-path: polygon(0 0, 0 0, -12% 100%, 0 100%); } to { clip-path: polygon(0 0, 112% 0, 100% 100%, 0 100%); } }
-@keyframes dvTilt { from { scale: 1 0; } to { scale: 1 1; } }
-@keyframes dvTape { from { translate: 0 0; } to { translate: -32% 0; } }
-@keyframes dvSettle { from { scale: 1 1.9; } to { scale: 1 1; } }
-@keyframes dvWaveL { from { transform: translateX(0); } to { transform: translateX(-720px); } }
-@keyframes dvWaveR { from { transform: translateX(-720px); } to { transform: translateX(0); } }
-@keyframes dvUnder { to { scale: .93; filter: brightness(.45); } }
-@keyframes dvGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@keyframes dvDrop { from { height: 0; } to { height: 28px; } }
-@keyframes dvRoll { from { left: 6%; rotate: -200deg; } to { left: 94%; rotate: 360deg; } }
-@keyframes dvDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes dvLand { from { scale: 0; } 70% { scale: 1.3; } to { scale: 1; } }
-@keyframes dvSheet { from { scale: .9; translate: 0 48px; } to { scale: 1; translate: 0 0; } }
-@keyframes dvDrift { from { translate: -40% -50%; } to { translate: -60% -50%; } }
-</style>`;
-  return layout({ path: '/lab/dividers/', title: 'Section divider options', desc: 'Section divider and transition options for the Served. concept.', body, bodyCls: 'pg-lab', sticky: null, noFinal: true });
-}
-
-// ============================================================ LAB: Rally X section layouts (27 Nov 2026, for the client to pick one)
-// The section on the home page as it is now, then four new layouts, all with the same words and the venue's own photos.
-const RX_ALT = {
-  'rallyx-now-open': 'Rally X from the street: a NOW OPEN banner for pickleball and tennis under a city tower',
-  'rallyx-forehand': 'A player swings a paddle low in the golden afternoon light at Rally X',
-  'rallyx-backhand-net': 'A player reaches for a backhand, seen through the net',
-  'rallyx-paddle-ball': 'A paddle and a pickleball in front of the Rally X banner',
-  'rallyx-tennis-player': 'A player with a tennis racket on the Rally X court',
-  'rallyx-paddle-wall': 'Pickleball paddles hanging on a wall',
-  'rallyx-paddle-wall-tall': 'A wall of pickleball paddles and balls',
-  'rallyx-target-net': 'A pickleball training target with a lime frame on the court',
-  'rallyx-court-logo': 'The Rally X logo painted on the court floor',
-  'rallyx-ready-position': 'A player waits in the ready position, seen through the net',
-  'rallyx-paddles-court': 'Two paddles and two balls on a blue pickleball court',
-  'rallyx-facade': 'Rally X from the car park: the NOW OPEN banner and a street-art wall',
-};
-function labRallyX() {
-  const tag = (id, name, how) => `<div class="lab-tag wrap"><b>${id}</b><span><strong>${name}</strong>${how}</span></div>`;
-  const thumbs = ['rallyx-now-open', 'rallyx-forehand', 'rallyx-tennis-player', 'rallyx-court-logo'];
-  const reel = ['rallyx-now-open', 'rallyx-forehand', 'rallyx-paddle-ball', 'rallyx-backhand-net', 'rallyx-tennis-player', 'rallyx-paddle-wall-tall',
-    'rallyx-target-net', 'rallyx-court-logo', 'rallyx-ready-position', 'rallyx-paddles-court', 'rallyx-facade', 'rallyx-paddle-wall'];
-  const card = (p, dup) => `<figure class="lrxb__card">${img(p, { alt: dup ? '' : RX_ALT[p], sizes: '(min-width: 900px) 20vw, 45vw' })}</figure>`;
-  const xPhoto = a(`assets/img/rallyx-paddle-wall-${IMAGES['rallyx-paddle-wall'].sizes.find((s) => s >= 1000)}.webp`);
-  const body = `
-<section class="band band--night lab-top"><div class="wrap">
-  <p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>Options to pick from</p>
-  <h1 class="d1">Rally X section</h1>
-  <p class="lede">The home page’s Rally X section, five ways: the layout it has now, then four new ones, A to D. Every option uses the same words and Rally X’s own photos. Pick one and it replaces the section on the home page.</p>
-  <nav class="lab-jump" aria-label="Options"><a href="#lrx-now">Now: Collage</a><a href="#lrx-a">A Split poster</a><a href="#lrx-b">B Photo reel</a><a href="#lrx-c">C Bento</a><a href="#lrx-d">D X window</a></nav>
-  <p class="lab-note">The motion follows your scroll in Chrome, Edge and Safari; other browsers and reduced motion show the finished state.</p>
-</div></section>
-
-<div id="lrx-now">${tag('Now', 'Collage', 'What the home page has today: three photos overlapping on the left, the name on the right.')}</div>
-${rallySpot('lrx-now-h')}
-
-<div id="lrx-a">${tag('A', 'Split poster', 'One big photo runs from the edge of the screen to the middle, with the name and booking on the other half. Tap the small photos to change the big one. The photo slides open as it comes up the screen.')}</div>
-<section class="band band--iron lrx lrx--a" aria-labelledby="lrxa-h"><div class="lrxa" data-lrxa>
-  <figure class="lrxa__photo">${thumbs.map((p, i) => img(p, { alt: RX_ALT[p], sizes: '(min-width: 900px) 50vw, 100vw', cls: i ? '' : 'is-on', attrs: i ? ' aria-hidden="true"' : '' })).join('')}</figure>
-  <div class="lrxa__copy" data-reveal>
-    ${kicker('New on the scene')}
-    <h2 class="d1 lrxa__h" id="lrxa-h">Rally <span>X</span></h2>
-    <p class="lede">${RX_LEDE}</p>
-    ${rxChips()}
-    ${rxCtas()}
-    <div class="lrxa__thumbs" role="group" aria-label="Choose a photo">${thumbs.map((p, i) => `<button class="lrxa__t" type="button" aria-pressed="${i ? 'false' : 'true'}" aria-label="Show photo: ${esc(RX_ALT[p])}">${img(p, { alt: '', sizes: '84px' })}</button>`).join('')}</div>
-  </div>
-</div></section>
-
-<div id="lrx-b">${tag('B', 'Photo reel', 'The name in giant type, then all twelve Rally X photos gliding past in a reel that speeds up while you scroll and pauses under the pointer.')}</div>
-<section class="band band--iron lrx lrx--b" aria-labelledby="lrxb-h">
-  <div class="wrap lrxb__head" data-reveal>
-    ${kicker('New on the scene')}
-    <h2 class="d1 lrxb__h" id="lrxb-h">Rally<span>X</span></h2>
-    <p class="lede">${RX_LEDE}</p>
-  </div>
-  <div class="lrxb__reel" data-marquee="0.6"><div class="mq__track"><div class="mq__run">${reel.map((p) => card(p, false)).join('')}</div><div class="mq__run" aria-hidden="true">${reel.map((p) => card(p, true)).join('')}</div></div></div>
-  <div class="wrap lrxb__foot" data-reveal>${rxChips()}${rxCtas()}</div>
-</section>
-
-<div id="lrx-c">${tag('C', 'Bento', 'A grid of tiles: the name and booking on a dark tile, Now open on an orange one, and three photos around them. The tiles rise in turn as they come into view.')}</div>
-<section class="band band--iron lrx lrx--c" aria-labelledby="lrxc-h"><div class="wrap"><div class="lrxc">
-  <figure class="lrxc__a" data-reveal style="--i:0">${img('rallyx-now-open', { alt: RX_ALT['rallyx-now-open'], sizes: '(min-width: 1000px) 25vw, (min-width: 561px) 50vw, 100vw' })}</figure>
-  <div class="lrxc__t" data-reveal style="--i:1">
-    ${kicker('New on the scene')}
-    <h2 class="d1 lrxc__h" id="lrxc-h">Rally<span>X</span></h2>
-    <p class="lede">${RX_LEDE}</p>
-    ${rxCtas()}
-  </div>
-  <figure class="lrxc__b" data-reveal style="--i:2">${img('rallyx-forehand', { alt: RX_ALT['rallyx-forehand'], sizes: '(min-width: 1000px) 25vw, (min-width: 561px) 50vw, 100vw' })}</figure>
-  <div class="lrxc__o" data-reveal style="--i:3"><span class="lrxc__live"><i aria-hidden="true"></i>Now open</span><b>Pickleball and tennis</b><small>Book on Served</small></div>
-  <figure class="lrxc__w" data-reveal style="--i:4">${img('rallyx-paddles-court', { alt: RX_ALT['rallyx-paddles-court'], sizes: '(min-width: 1000px) 50vw, 100vw' })}</figure>
-</div></div></section>
-
-<div id="lrx-d">${tag('D', 'X window', 'The X of the name becomes a window onto the paddle wall. It turns upright and the photo pans inside it as you scroll.')}</div>
-<section class="band band--iron lrx lrx--d" aria-labelledby="lrxd-h"><div class="wrap lrxd">
-  <div class="lrxd__copy" data-reveal>
-    ${kicker('New on the scene')}
-    <h2 class="d1 lrxd__h" id="lrxd-h">Rally<span class="sr"> X</span><span class="lrxd__mini" aria-hidden="true" style="background-image:url('${xPhoto}')">X</span></h2>
-    <p class="lede">${RX_LEDE}</p>
-    ${rxChips()}
-    ${rxCtas()}
-  </div>
-  <div class="lrxd__x"><span class="lrxd__glyph" role="img" aria-label="${esc(RX_ALT['rallyx-paddle-wall'])}, seen through a giant X" style="background-image:url('${xPhoto}')">X</span></div>
-</div></section>
-<div class="lab-end"></div>
-<style>
-.lab-top { padding-bottom: 40px; } .lab-top .lede { margin-top: 14px; max-width: 72ch; }
-.lab-jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; } .lab-jump a { padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--text); text-decoration: none; font: 700 14px/1 var(--f-ui); } .lab-jump a:hover { border-color: var(--accent); color: var(--accent); }
-.lab-note { margin-top: 14px; font-size: 13.5px; color: var(--text-3); }
-.lab-tag { display: flex; gap: 16px; align-items: flex-start; padding-block: 56px 22px; }
-.lab-tag b { flex: none; min-width: 44px; height: 44px; padding-inline: 10px; display: grid; place-items: center; border-radius: 12px; background: var(--accent); color: var(--ink); font: 900 18px/1 var(--f-display); text-transform: uppercase; }
-.lab-tag span { max-width: 72ch; color: var(--text-2); } .lab-tag strong { display: block; color: var(--text); font: 850 20px/1.2 var(--f-display); text-transform: uppercase; margin-bottom: 4px; }
-.lab-end { height: 72px; }
-.lrx .lede { max-width: 54ch; }
-/* A: split poster */
-.lrx--a { padding-block: 0; }
-.lrxa { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: min(88vh, 780px); }
-.lrxa__photo { position: relative; margin: 0; overflow: hidden; min-height: 460px; background: var(--ink); }
-.lrxa__photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; scale: 1.05; transition: opacity .7s var(--ease), scale 1.4s var(--ease); }
-.lrxa__photo img.is-on { opacity: 1; scale: 1; }
-.lrxa__copy { align-self: center; max-width: 660px; padding: clamp(48px, 6vw, 96px) var(--gutter) clamp(48px, 6vw, 96px) clamp(32px, 5vw, 88px); }
-.lrxa__h { font-size: clamp(3.6rem, 7.4vw, 7.6rem); line-height: .84; margin-top: 14px; } .lrxa__h span { color: var(--accent); }
-.lrxa__copy .lede { margin-top: 20px; } .lrxa__copy .chips { margin-top: 22px; }
-.lrxa__thumbs { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
-.lrxa__t { width: clamp(60px, 6vw, 84px); aspect-ratio: 1; padding: 0; border: 0; border-radius: 14px; overflow: hidden; cursor: pointer; background: var(--ink); opacity: .5; outline: 2px solid transparent; outline-offset: 3px; transition: opacity .3s, outline-color .3s; }
-.lrxa__t img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.lrxa__t:hover { opacity: .85; } .lrxa__t[aria-pressed="true"] { opacity: 1; outline-color: var(--accent); }
-/* B: photo reel */
-.lrxb__head { display: grid; justify-items: center; text-align: center; }
-.lrxb__h { display: flex; align-items: flex-end; gap: .08em; font-size: clamp(4rem, 13vw, 13rem); line-height: .8; margin-top: 16px; }
-.lrxb__h span { color: var(--accent); font-stretch: 125%; }
-.lrxb__head .lede { margin-top: 20px; }
-.lrxb__reel { margin-top: clamp(32px, 4vw, 56px); overflow: hidden; padding-block: 12px 34px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.lrxb__card { flex: none; width: clamp(168px, 19vw, 280px); aspect-ratio: 3 / 4; margin: 0 clamp(12px, 1.4vw, 20px) 0 0; border-radius: 20px; overflow: hidden; background: var(--ink); }
-.lrxb__card:nth-child(even) { translate: 0 20px; }
-.lrxb__card img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.lrxb__foot { display: grid; justify-items: center; gap: 22px; margin-top: clamp(20px, 2.4vw, 36px); } .lrxb__foot .chips, .lrxb__foot .ctas { justify-content: center; }
-@media (prefers-reduced-motion: reduce) { .lrxb__reel { overflow-x: auto; } }
-/* C: bento */
-.lrxc { display: grid; gap: clamp(10px, 1.2vw, 16px); grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: minmax(clamp(150px, 14vw, 215px), auto); grid-template-areas: "a t t b" "a t t b" "a o w w"; }
-.lrxc > * { margin: 0; border-radius: 22px; }
-.lrxc figure { overflow: hidden; background: var(--ink); }
-.lrxc figure img { display: block; width: 100%; height: 100%; object-fit: cover; transition: scale .9s var(--ease); }
-.lrxc figure:hover img { scale: 1.04; }
-.lrxc__a { grid-area: a; } .lrxc__t { grid-area: t; } .lrxc__b { grid-area: b; } .lrxc__o { grid-area: o; } .lrxc__w { grid-area: w; }
-.lrxc__t { display: flex; flex-direction: column; justify-content: center; padding: clamp(24px, 2.8vw, 44px); background: var(--ink); border: 1px solid var(--line); }
-.lrxc__h { display: flex; align-items: flex-end; gap: .1em; font-size: clamp(3.2rem, 6.2vw, 6.4rem); line-height: .82; margin-top: 12px; } .lrxc__h span { color: var(--accent); font-stretch: 125%; }
-.lrxc__t .lede { margin-top: 14px; } .lrxc__t .ctas { margin-top: 22px; }
-.lrxc__o { display: flex; flex-direction: column; justify-content: space-between; gap: 14px; padding: clamp(18px, 2vw, 28px); background: var(--accent); color: var(--ink); }
-.lrxc__live { display: inline-flex; align-items: center; gap: 8px; font: 800 12.5px/1 var(--f-ui); letter-spacing: .14em; text-transform: uppercase; }
-.lrxc__live i { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); animation: livePulse 1.6s var(--ease) infinite; }
-.lrxc__o b { font: 900 clamp(24px, 2.4vw, 38px)/.92 var(--f-display); font-stretch: 112%; text-transform: uppercase; }
-.lrxc__o small { font: 700 14px/1.3 var(--f-ui); }
-@media (max-width: 999px) { .lrxc { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(clamp(140px, 26vw, 240px), auto); grid-template-areas: "t t" "a b" "a b" "o w"; } }
-@media (max-width: 560px) { .lrxc { grid-template-columns: 1fr; grid-auto-rows: auto; grid-template-areas: "t" "a" "o" "b" "w"; } .lrxc__a, .lrxc__b { aspect-ratio: 4 / 5; } .lrxc__w { aspect-ratio: 4 / 3; } }
-/* D: X window */
-.lrxd { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(24px, 4vw, 64px); }
-.lrxd__h { font-size: clamp(4rem, 10vw, 10.5rem); line-height: .82; margin-top: 14px; }
-.lrxd__copy .lede { margin-top: 20px; } .lrxd__copy .chips { margin-top: 22px; }
-.lrxd__x { display: grid; place-items: center; }
-.lrxd__glyph, .lrxd__mini { display: block; font: 900 clamp(15rem, 36vw, 38rem)/.8 var(--f-display); font-stretch: 125%; color: transparent; background-color: var(--accent); background-size: cover; background-position: 50% 50%; -webkit-background-clip: text; background-clip: text; rotate: -6deg; filter: drop-shadow(0 0 48px rgba(255, 107, 24, .28)); user-select: none; }
-.lrxd__mini { display: none; }
-.lrxc .btn { white-space: nowrap; }
-/* scroll-linked motion; without support or with reduced motion each option shows its finished state */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .lrxa__photo { animation: lrxOpen linear both; animation-timeline: view(); animation-range: entry 0% cover 45%; }
-    .lrxd__glyph { animation: lrxTurn linear both; animation-timeline: view(); animation-range: entry 0% exit 40%; }
-  }
-}
-@keyframes lrxOpen { from { clip-path: inset(0 42% 0 0); } to { clip-path: inset(0 0 0 0); } }
-@keyframes lrxTurn { from { rotate: -18deg; background-position: 50% 0%; } to { rotate: -6deg; background-position: 50% 70%; } }
-@media (max-width: 899px) {
-  .lrxa { grid-template-columns: 1fr; min-height: 0; }
-  .lrxa__photo { min-height: 0; aspect-ratio: 4 / 5; max-height: 76vh; }
-  .lrxa__copy { max-width: none; padding: 40px var(--gutter) 60px; }
-  .lrxd { grid-template-columns: 1fr; }
-  /* phones: the photo X sits in the name itself, so it still reads RALLY X */
-  .lrxd__x { display: none; }
-  .lrxd__h { display: flex; align-items: flex-end; gap: .1em; }
-  .lrxd__mini { display: inline-block; font-size: 1.45em; line-height: .76; background-position: 40% 30%; filter: brightness(1.45) saturate(1.2) drop-shadow(0 0 22px rgba(255, 107, 24, .35)); }
-}
-</style>
-<script>
-(function () {
-  document.querySelectorAll('[data-lrxa]').forEach(function (box) {
-    var imgs = box.querySelectorAll('.lrxa__photo img'), btns = box.querySelectorAll('.lrxa__t');
-    btns.forEach(function (b, i) {
-      b.addEventListener('click', function () {
-        btns.forEach(function (x, j) { x.setAttribute('aria-pressed', String(i === j)); });
-        imgs.forEach(function (im, j) { im.classList.toggle('is-on', i === j); if (i === j) im.removeAttribute('aria-hidden'); else im.setAttribute('aria-hidden', 'true'); });
-      });
-    });
-  });
-})();
-</script>`;
-  return layout({ path: '/lab/rally-x/', title: 'Rally X section options', desc: 'Layout options for the Rally X section on the Served. home page.', body, bodyCls: 'pg-lab', sticky: null, noFinal: true });
-}
-
 // ============================================================ registry
 export function pages() {
   const out = [];
@@ -1313,8 +1018,6 @@ export function pages() {
   add('/owner/studio/', studio);
   add('/owner/list/', ownerList);
   add('/courts/listing/', listingPage);
-  add('/lab/dividers/', labDividers);
-  add('/lab/rally-x/', labRallyX);
   add('/about/', about);
   add('/404', notFound);
   return out;

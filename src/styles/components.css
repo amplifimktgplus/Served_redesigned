@@ -6,9 +6,28 @@
 .band--cream { background: var(--cream); color: var(--ink); }
 .band--accent { background: var(--accent); color: var(--ink); }
 .band__grid { position: absolute; inset: 0; background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: var(--grid) var(--grid); background-position: center top; mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 20%, transparent 78%); -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 20%, transparent 78%); }
-/* contrast bands meet the band before on a straight edge: no rounded top corners (client, 27 Nov 2026). The divider
-   picked from /lab/dividers/ will mark each change of background colour. */
-.band--iron::before, .band--night.spot::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: radial-gradient(60% 50% at var(--lx, 85%) var(--ly, 0%), rgba(243, 145, 32, .12), transparent 70%); }
+/* contrast bands meet the band before on a straight edge: no rounded top corners (client, 27 Nov 2026). Each change of
+   background colour gets one of the dividers the client picked, a mix of the sheet, the wipe and the court tape; site.js
+   chooses which from the two colours, and the motion follows the scroll. Without scroll-linked animation support, or
+   with reduced motion, the seam shows its finished state. */
+.dvs-sheet { z-index: 1; transform-origin: 50% 0; box-shadow: 0 -30px 60px -24px rgba(0, 0, 0, .55); }
+.dvs-tape { position: relative; z-index: 4; height: 0; overflow-x: clip; overflow-y: visible; pointer-events: none; }
+.dvs-tape__in { position: absolute; left: -6%; right: -6%; top: 0; translate: 0 -50%; rotate: -2.2deg; padding-block: clamp(10px, 1.2vw, 16px); overflow: hidden; white-space: nowrap; background: var(--accent); color: var(--ink); box-shadow: 0 20px 40px -20px rgba(0, 0, 0, .7); }
+.dvs-tape__in span { display: inline-flex; align-items: center; gap: .7em; font: 900 clamp(15px, 1.7vw, 24px)/1 var(--f-display); font-stretch: 118%; letter-spacing: .05em; text-transform: uppercase; }
+.dvs-tape__in i { flex: none; width: .5em; height: .5em; border-radius: 50%; background: var(--ink); }
+.dvs-tape--rx .dvs-tape__in { background: #b4f224; } /* Rally X's neon, on the way into its section */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .dvs-wipe { animation: dvsWipe linear both; animation-timeline: view(); animation-range: entry 0% entry 85%; }
+    .dvs-sheet { animation: dvsSheet linear both; animation-timeline: view(); animation-range: entry 0% entry 90%; }
+    .dvs-tape__in span { animation: dvsTape linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+  }
+}
+/* the wipe ends on a clip larger than the section, so nothing reaching past its edges (a lift, a ring) is ever cut */
+@keyframes dvsWipe { from { clip-path: polygon(-20% -20%, -20% -20%, -32% 120%, -20% 120%); } to { clip-path: polygon(-20% -20%, 132% -20%, 120% 120%, -20% 120%); } }
+@keyframes dvsSheet { from { scale: .92; translate: 0 48px; } to { scale: 1; translate: 0 0; } }
+@keyframes dvsTape { from { translate: 0 0; } to { translate: -32% 0; } }
+.band--iron::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: radial-gradient(60% 50% at var(--lx, 85%) var(--ly, 0%), rgba(243, 145, 32, .12), transparent 70%); }
 .band--cream::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background-image: linear-gradient(rgba(10, 10, 10, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(10, 10, 10, .05) 1px, transparent 1px); background-size: var(--grid) var(--grid); mask-image: linear-gradient(180deg, #000, transparent 85%); -webkit-mask-image: linear-gradient(180deg, #000, transparent 85%); }
 
 /* section heads */
@@ -63,6 +82,11 @@
 .vcard__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 10, 10, .15) 0%, transparent 35%, rgba(23, 30, 30, .92) 100%), linear-gradient(90deg, color-mix(in srgb, var(--tone) 22%, transparent), transparent 45%); mix-blend-mode: normal; }
 .ribbon { position: absolute; z-index: 2; top: 14px; left: 14px; padding: 7px 11px; border-radius: 8px; background: var(--accent); color: var(--ink); font: 800 11px/1 var(--f-ui); letter-spacing: .14em; text-transform: uppercase; }
 .ribbon--rust { background: var(--rust); color: #fff; }
+/* sample listings (real venues not on Served, shown for the demo): a disclosure label, like "Representative photo" */
+.ribbon--sample { background: rgba(10, 10, 10, .8); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .45); }
+.chip--sample { border-style: dashed; border-color: rgba(255, 255, 255, .55); color: #fff; }
+.vcard__sports { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.mcard__foot em small { font-size: .62em; font-weight: 700; font-style: normal; letter-spacing: .04em; text-transform: uppercase; opacity: .75; margin-left: 4px; }
 .vcard__tags { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: -50px 14px 0; }
 .vcard__body { position: relative; z-index: 2; display: flex; flex-direction: column; flex: 1; padding: 14px 18px 18px; }
 .vcard__name { font: 850 clamp(20px, 1.7vw, 24px)/1.04 var(--f-display); font-stretch: 108%; text-transform: uppercase; letter-spacing: -.005em; margin-top: 4px; }
