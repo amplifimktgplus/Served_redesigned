@@ -12,7 +12,7 @@ Every page carries `noindex, nofollow`. Forms, sign-in and payment are demonstra
 |---|---|
 | Discovery | Home, Courts (list and map, filters, "near me"), 6 venue pages, Rally X |
 | Booking | Availability and slot pages for every venue (live-style date rail, court picker, slot grid, summary, payment and confirmation) |
-| Sports and cities | Sports hub plus pickleball, tennis and badminton; cities hub plus Taguig, Pasig, Quezon City, Marikina, Muntinlupa, Nasugbu |
+| Sports and cities | Sports hub plus pickleball, tennis and badminton; cities hub plus Taguig, Pasig, Quezon City, Marikina, Muntinlupa (Batangas, meaning Nasugbu and its venue, is paused in `src/content.mjs`) |
 | Community | Play mode (open play, find players, clubs and ranking, tournaments, events), marked as concepts |
 | Company | Pricing, List Your Court, Help centre and FAQ, About, Contact, Court Gallery |
 | Account | Sign in, Register, Forgot password, Staff sign in, My account (bookings, cancel), Court page studio for owners |
@@ -22,7 +22,7 @@ Accounts work in the browser with no server: players register and can then book 
 waits while a guest signs up), and owners set their court page's colours, hero photo and gallery, which every page
 of that venue then wears. Everything is kept in the visitor's own browser.
 
-46 pages in all, plus the section divider options at `/lab/dividers/`. URLs kept from the current site (`/courts`, `/courts/<venue>`, `/courts/<venue>/availability`, `/courts/<venue>/slots`, `/pricing`, `/list-your-court`, `/contact`, `/sign-in`, `/sign-up`, `/forgot-password`, `/staff/sign-in`).
+42 pages in all while Batangas is paused, plus the section divider options at `/lab/dividers/`. URLs kept from the current site (`/courts`, `/courts/<venue>`, `/courts/<venue>/availability`, `/courts/<venue>/slots`, `/pricing`, `/list-your-court`, `/contact`, `/sign-in`, `/sign-up`, `/forgot-password`, `/staff/sign-in`).
 
 ## Build
 

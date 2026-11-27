@@ -10,7 +10,7 @@ const vj = JSON.parse(readFileSync(join(HERE, 'data/venues.json'), 'utf8'));
 export const IMAGES = JSON.parse(readFileSync(join(HERE, 'data/images.json'), 'utf8'));
 // the official logo, traced from the supplied art by tools/logo.py: the S, the joined letters, the full stop
 export const LOGO = JSON.parse(readFileSync(join(HERE, 'data/logo.json'), 'utf8'));
-export const CREDITS = JSON.parse(readFileSync(join(HERE, '../refs/commons/credits.json'), 'utf8'));
+const CREDITS_ALL = JSON.parse(readFileSync(join(HERE, '../refs/commons/credits.json'), 'utf8'));
 export const CAPTURED_ON = vj.capturedOn;
 
 export const SITE = {
@@ -47,8 +47,12 @@ export const SPORTS = [
     intro: 'Walls in play, doubles only. Padel is not bookable on Served yet. Venue owners with padel courts can tell us they are ready.' },
 ];
 
+// Batangas (Nasugbu and its one venue, Pico de Loro) is off the site for now (client, 27 Nov 2026). Its data stays
+// here, so taking it off this list brings the city page, the venue and its collection back.
+const PAUSED = { cities: ['nasugbu'], venues: ['pico-de-loro-badminton-court'] };
+
 // ---------- cities (approximate centroids, used for the stylised map and "near me" distances) ----------
-export const CITIES = [
+const ALL_CITIES = [
   { slug: 'taguig', name: 'Taguig', area: 'BGC and around', img: 'city-taguig', lat: 14.5509, lng: 121.0503,
     intro: 'Bright courts in the middle of BGC, with flexible evening slots for the after-work crowd.' },
   { slug: 'pasig', name: 'Pasig', area: 'Ortigas Center', img: 'city-pasig', lat: 14.5866, lng: 121.0614,
@@ -62,6 +66,9 @@ export const CITIES = [
   { slug: 'nasugbu', name: 'Nasugbu', area: 'Pico de Loro, Batangas', img: 'city-nasugbu', lat: 14.2050, lng: 120.6120,
     intro: 'Indoor wood courts at Pico de Loro, for the weekend you take your game out of the city.' },
 ];
+export const CITIES = ALL_CITIES.filter((c) => !PAUSED.cities.includes(c.slug));
+// photo credits (and the gallery built from them) leave out the photos of a paused city
+export const CREDITS = CREDITS_ALL.filter((c) => !ALL_CITIES.some((x) => PAUSED.cities.includes(x.slug) && x.img === c.file));
 
 // ---------- venues ----------
 const SPORT_IMG = {
@@ -72,7 +79,7 @@ const SPORT_IMG = {
   'ortigas-smash-badminton': ['live-badminton', 'city-pasig'],
   'up-diliman-tennis-court': ['live-tennis', 'place-up-diliman'],
 };
-export const VENUES = vj.venues.filter((v) => !v.test).map((v) => {
+export const VENUES = vj.venues.filter((v) => !v.test && !PAUSED.venues.includes(v.slug)).map((v) => {
   const city = CITIES.find((c) => c.name === v.city);
   const sport = SPORTS.find((s) => s.name === v.sport);
   const [img, place] = SPORT_IMG[v.slug];
@@ -111,7 +118,7 @@ export const COLLECTIONS = [
   { id: 'indoor', name: 'Indoor and covered', rule: 'Described by the venue as indoor or covered', test: (v) => /indoor|covered/i.test(v.desc) },
   { id: 'weekend', name: 'Weekend getaway', rule: 'Outside Metro Manila', test: (v) => v.city === 'Nasugbu' },
   { id: 'big-groups', name: 'Big group nights', rule: 'Six courts or more on site', test: (v) => v.courts >= 6 },
-];
+].filter((c) => VENUES.some(c.test)); // a collection with no live venue (Weekend getaway while Batangas is paused) is not shown
 
 // ---------- FAQ: every answer is built from captured copy ----------
 export const FAQ = [

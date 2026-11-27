@@ -31,7 +31,10 @@ type about a fifth smaller than the first pass, no oversized lead cards.
 - Booking in one place: date rail, month calendar, court picker drawn as mini courts, slot grid with price
   states, live summary, payment sheet (GCash, Maya, QR Ph, card, bank), confirmation ticket and calendar file.
 - Discovery: sport, city, surface, price and date filters, a branded map view, "Play near me" distances.
-- New pages: sports (3), cities (6), Rally X, Play mode, Court Gallery, Help centre, About, 404.
+- New pages: sports (3), cities (5; Nasugbu, Batangas is paused for now with its venue), Rally X, Play mode,
+  Court Gallery, Help centre, About, 404.
+- Court photos (Rally X, and an owner's own photos) sit on a concave carousel: swipe, drag or use the arrows,
+  and tap to open full size. The logo's full stop moves like a serve toss, up to the top of the d.
 - Mobile: thumb-zone sticky bar (past the hero, hides at the footer, x hides it for the session), booking
   summary bar, full-screen filters, swipe rails, centred heads, full-width CTAs.
 - Installable app: Install App on the home hero opens the browser's own install prompt (Chrome, Edge, Android

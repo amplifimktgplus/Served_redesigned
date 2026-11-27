@@ -77,6 +77,14 @@
     setTimeout(end, 1500);
   } else { root.classList.remove('splash-on'); requestAnimationFrame(ready); }
 
+  // the logo's full stop: pointing at or focusing the logo tosses it like a serve, and a toss always finishes
+  if (!RM) $$('.logo').forEach((lg) => {
+    const dot = $('.logo__d', lg); if (!dot) return;
+    const toss = () => dot.classList.add('is-toss');
+    lg.addEventListener('pointerenter', toss); lg.addEventListener('focus', toss);
+    dot.addEventListener('animationend', () => dot.classList.remove('is-toss'));
+  });
+
   // ---------------------------------------------------------------- header, mega menus, drawer
   const hdr = $('[data-hdr]'); const drawer = $('[data-drawer]'); const burger = $('[data-burger]');
   let lastY = W.scrollY, megaOpen = null;
@@ -135,9 +143,8 @@
       ticking = false;
       const y = W.scrollY;
       if (hdr) {
+        // the header stays in view the whole way down (client, 27 Nov 2026); it only turns solid off the top
         hdr.classList.toggle('is-solid', y > 24 || !!megaOpen);
-        const hide = y > 420 && y > lastY + 4 && !megaOpen && (!drawer || drawer.hidden);
-        if (hide) hdr.classList.add('is-hidden'); else if (y < lastY - 4 || y < 420) hdr.classList.remove('is-hidden');
       }
       lastY = y;
       evalBar();
@@ -331,6 +338,47 @@
     hq.addEventListener('input', run);
     $$('[data-help-cat]').forEach((b) => b.addEventListener('click', () => { cat = b.dataset.helpCat; $$('[data-help-cat]').forEach((x) => x.classList.toggle('is-on', x === b)); run(); }));
   }
+
+  // ---------------------------------------------------------------- concave carousel for court photos
+  // A native scroller does the moving (touch, trackpad, keys, buttons, mouse drag); this only reads where each photo
+  // sits against the middle and hands it --cc-p (-1 left, 0 centre, 1 right) for the CSS to turn and lift it.
+  function initCC(cc) {
+    if (!cc) return;
+    const tr = $('[data-cc-track]', cc); if (!tr || tr.dataset.ccOn) return; tr.dataset.ccOn = '1';
+    const slides = $$('[data-cc-slide]', tr); const n = slides.length; const count = $('[data-cc-count]', cc);
+    let raf = 0, cur = 0;
+    const paint = () => {
+      raf = 0; const r = tr.getBoundingClientRect(); const mid = r.left + r.width / 2; let best = 0, bestD = Infinity;
+      slides.forEach((s, i) => {
+        const b = s.getBoundingClientRect(); const c = b.left + b.width / 2;
+        const p = Math.max(-1.6, Math.min(1.6, (c - mid) / (r.width / 2)));
+        s.style.setProperty('--cc-p', p.toFixed(3)); s.style.setProperty('--cc-a', Math.abs(p).toFixed(3));
+        const dd = Math.abs(c - mid); if (dd < bestD) { bestD = dd; best = i; }
+      });
+      cur = best; slides.forEach((s, i) => s.classList.toggle('is-mid', i === best));
+      if (count) count.textContent = `${best + 1} / ${n}`;
+    };
+    const req = () => { if (!raf) raf = requestAnimationFrame(paint); };
+    tr.addEventListener('scroll', req, { passive: true }); W.addEventListener('resize', req);
+    const go = (i) => { const s = slides[Math.max(0, Math.min(n - 1, i))]; tr.scrollTo({ left: s.offsetLeft - (tr.clientWidth - s.offsetWidth) / 2, behavior: RM ? 'auto' : 'smooth' }); };
+    const prev = $('[data-cc-prev]', cc), next = $('[data-cc-next]', cc);
+    if (prev) prev.addEventListener('click', () => go(cur - 1));
+    if (next) next.addEventListener('click', () => go(cur + 1));
+    tr.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') { e.preventDefault(); go(cur + 1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); go(cur - 1); } });
+    // mouse drag (touch and trackpads scroll natively); a drag never opens the photo it ends on
+    let drag = null, suppress = false;
+    tr.addEventListener('click', (ev) => { if (suppress) { suppress = false; ev.stopPropagation(); ev.preventDefault(); } }, true);
+    tr.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' || e.button !== 0) return; drag = { x: e.clientX, s: tr.scrollLeft, moved: false }; });
+    W.addEventListener('pointermove', (e) => { if (!drag) return; const dx = e.clientX - drag.x; if (!drag.moved && Math.abs(dx) > 5) { drag.moved = true; tr.classList.add('is-drag'); } if (drag.moved) tr.scrollLeft = drag.s - dx; });
+    W.addEventListener('pointerup', () => {
+      if (!drag) return; const moved = drag.moved; drag = null;
+      if (moved) { tr.classList.remove('is-drag'); go(cur); suppress = true; setTimeout(() => { suppress = false; }, 0); }
+    });
+    // open on the second photo, so the curve shows on both sides from the start
+    requestAnimationFrame(() => { if (n > 2) { const s = slides[1]; tr.scrollLeft = s.offsetLeft - (tr.clientWidth - s.offsetWidth) / 2; } paint(); });
+  }
+  $$('[data-cc]').forEach(initCC);
+  W.__srv.cc = initCC;
 
   // ---------------------------------------------------------------- gallery filter + lightbox
   const gf = $('[data-gal-filter]');

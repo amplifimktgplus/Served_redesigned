@@ -157,8 +157,11 @@
       const box = $('[data-vgal-grid]');
       if (box && cfg.gallery && cfg.gallery.length) Promise.all(cfg.gallery.map((id) => idb.get(id).catch(() => null))).then((blobs) => {
         const ok = blobs.filter(Boolean); if (!ok.length) return;
-        box.innerHTML = ok.map((b) => `<figure class="mz"><img src="${URL.createObjectURL(b)}" alt="Photo of ${esc($('.vbar__brand b') ? $('.vbar__brand b').textContent : 'the venue')}" loading="lazy"></figure>`).join('');
+        // the owner's photos on the same concave carousel as the venue photos elsewhere
+        const name = esc($('.vbar__brand b') ? $('.vbar__brand b').textContent : 'the venue'); const n = ok.length;
+        box.innerHTML = `<div class="cc" data-cc><div class="cc__track" data-cc-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="Photos of ${name}">${ok.map((b, i) => { const url = URL.createObjectURL(b); return `<figure class="cc__s" data-cc-slide aria-label="${i + 1} of ${n}"><button class="cc__btn" type="button" data-lightbox="${url}" aria-label="Enlarge photo ${i + 1} of ${name}"><img src="${url}" alt="Photo ${i + 1} of ${name}"></button></figure>`; }).join('')}</div><div class="cc__ui"><button class="iconbtn" type="button" data-cc-prev aria-label="Previous photo"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><span class="cc__count" data-cc-count aria-live="polite">1 / ${n}</span><button class="iconbtn" type="button" data-cc-next aria-label="Next photo"><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></button></div></div>`;
         const sec = $('[data-vgal]'); if (sec) sec.hidden = false; const ln = $('[data-vgal-link]'); if (ln) ln.hidden = false;
+        if (S.cc) S.cc($('[data-cc]', box));
       });
     }
   }

@@ -1,6 +1,6 @@
 // src/pages.mjs: one function per page type. Captured words are carried verbatim; new pages are written for Served.
 import { SITE, SPORTS, CITIES, VENUES, RALLYX, COLLECTIONS, FAQ, PLAY, ROADMAP, CREDITS, CAPTURED_ON, IMAGES } from './content.mjs';
-import { layout, u, a, esc, peso, json, dot, fmtDate, img, icon, kicker, sh, btn, ctas, chipSport, score, priceTag, nextTag, courtSvg, courtD, logoMark,
+import { layout, u, a, esc, peso, json, dot, fmtDate, img, icon, kicker, sh, btn, ctas, chipSport, score, priceTag, nextTag, courtSvg, courtD, logoMark, carousel,
   vcard, rallyCard, marquee, divider, faqList, sportOf, amenityIcon, setPage } from './lib.mjs';
 
 const TOTAL_COURTS = VENUES.reduce((n, v) => n + v.courts, 0);
@@ -98,7 +98,7 @@ ${marquee(['Pickleball', 'Tennis', 'Badminton', 'No calls', 'No waiting', 'No gu
 </section>
 <section class="band band--night cities" aria-labelledby="ci-h">
   <div class="wrap">
-    ${sh({ k: 'The city is the playground', h: '<span id="ci-h">Courts across the metro<span class="pd">.</span></span>', lede: 'From BGC to Diliman, and Pico de Loro when you want the weekend out of town.', cls: 'sh--split' })}
+    ${sh({ k: 'The city is the playground', h: '<span id="ci-h">Courts across the metro<span class="pd">.</span></span>', lede: CITIES.some((c) => c.slug === 'nasugbu') ? 'From BGC to Diliman, and Pico de Loro when you want the weekend out of town.' : `From BGC to Diliman, across ${CITIES.length} Metro Manila cities.`, cls: 'sh--split' })}
     <div class="cities__rail" data-rail-scroll>${cityCards}</div>
     ${ctas(btn('Open the map', '/courts/?view=map', 'btn--ghost'), btn('All cities', '/cities/', 'btn--line'))}
   </div>
@@ -214,7 +214,7 @@ ${phero({ k: 'Courts', h1: 'Find Your Court', lede: 'Every court on Served is re
       <div class="disc__map" data-map hidden>
         <div class="map board"><svg class="map__svg" viewBox="0 0 1000 720" role="img" aria-label="Stylised map of venues across Metro Manila"><g class="map__grid"></g><g class="map__roads"></g><g class="map__labels"></g><g class="map__pins"></g></svg>
         <div class="map__card" data-map-card hidden></div>
-        <p class="map__note">${icon('info')}Pins mark each venue’s city, not its exact address. Nasugbu sits off the map, to the south west.</p></div>
+        <p class="map__note">${icon('info')}Pins mark each venue’s city, not its exact address.${CITIES.some((c) => c.slug === 'nasugbu') ? ' Nasugbu sits off the map, to the south west.' : ''}</p></div>
       </div>
       <div class="empty" data-empty hidden><svg class="empty__net" viewBox="0 0 240 120" aria-hidden="true"><path d="M10 100h220M30 100V30h180v70M30 30h180" /><path d="M30 45h180M30 60h180M30 75h180M30 90h180M60 30v70M90 30v70M120 30v70M150 30v70M180 30v70" opacity=".35"/></svg><p class="d3">Out. No courts match that.</p><p>Try another date, widen the price or clear a filter.</p><a class="btn btn--accent" href="${u('/courts/')}" data-reset><span>Reset filters</span></a></div>
     </div>
@@ -343,7 +343,7 @@ ${booking(v, 'venue')}
   </div>
 </section>
 <section class="band band--night vgal" id="photos" data-vgal hidden aria-labelledby="ph-h">
-  <div class="wrap">${kicker('Photos')}<h2 class="d2" id="ph-h">Inside ${esc(v.name)}</h2><div class="masonry vgal__grid" data-vgal-grid></div></div>
+  <div class="wrap">${kicker('Photos')}<h2 class="d2" id="ph-h">Inside ${esc(v.name)}</h2></div><div class="vgal__grid" data-vgal-grid></div>
 </section>
 <section class="band band--iron vloc" id="location" aria-labelledby="loc-h">
   <div class="wrap vloc__grid">
@@ -427,9 +427,9 @@ function rallyx() {
 ${marquee(['Rally X', 'Pickleball', 'Tennis', 'Now open', 'Rally X', 'Paddles up', 'Game on'], 'mq--accent')}
 <section class="band band--night rxg" aria-labelledby="rxg-h">
   <div class="wrap">
-    ${sh({ k: 'On court', h: '<span id="rxg-h">Inside Rally X<span class="pd">.</span></span>', lede: 'Photos supplied by the venue. Tap any photo to open it full size.', cls: 'sh--split' })}
-    <div class="masonry" data-gallery>${R.photos.map((p, i) => `<figure class="mz${i % 5 === 0 ? ' mz--tall' : ''}" data-reveal style="--i:${i % 6}"><button class="mz__btn" type="button" data-lightbox="${a(`assets/img/${p}-${IMAGES[p].sizes.at(-1)}.webp`)}" aria-label="Open photo: ${esc(alts[p])}">${img(p, { alt: alts[p], sizes: '(min-width: 1000px) 33vw, 50vw' })}</button><figcaption>${esc(R.captions[p])}</figcaption></figure>`).join('')}</div>
+    ${sh({ k: 'On court', h: '<span id="rxg-h">Inside Rally X<span class="pd">.</span></span>', lede: 'Photos supplied by the venue. Swipe or use the arrows, and tap a photo to open it full size.', cls: 'sh--split' })}
   </div>
+  ${carousel(R.photos.map((p) => ({ html: img(p, { alt: alts[p], sizes: '(min-width: 900px) 36vw, 80vw' }), full: a(`assets/img/${p}-${IMAGES[p].sizes.at(-1)}.webp`), alt: alts[p], cap: R.captions[p] })), 'Rally X photos')}
 </section>
 <section class="band band--cream rxfacts" aria-labelledby="rxf-h">
   <div class="wrap rxfacts__in">
@@ -647,7 +647,7 @@ ${phero({ k: 'Cities', h1: 'The city is the playground<span class="pd">.</span>'
     const list = VENUES.filter((v) => v.city === c.name);
     return `<a class="ccard ccard--big" href="${u(`/cities/${c.slug}/`)}" data-reveal style="--i:${i % 3}">${img(c.img, { alt: '', sizes: '(min-width: 900px) 33vw, 100vw' })}<span class="ccard__body"><small>${esc(c.area)}</small><b>${c.name}</b><em>${list.length} venue${list.length > 1 ? 's' : ''} <span class="sep">/</span> ${[...new Set(list.map((v) => v.sport))].join(', ')}</em></span><span class="ccard__go">${icon('arrow')}</span></a>`;
   }).join('')}</div>${ctas(btn('See them on the map', '/courts/?view=map'))}</div></section>`;
-  return layout({ path: '/cities/', title: 'Courts by city', desc: 'Book courts in Taguig, Pasig, Quezon City, Marikina, Muntinlupa and Nasugbu on Served.', body, active: 'courts', bodyCls: 'pg-cities' });
+  return layout({ path: '/cities/', title: 'Courts by city', desc: `Book courts in ${CITIES.slice(0, -1).map((c) => c.name).join(', ')} and ${CITIES.at(-1).name} on Served.`, body, active: 'courts', bodyCls: 'pg-cities' });
 }
 function cityPage(c) {
   const list = VENUES.filter((v) => v.city === c.name);

@@ -48,11 +48,36 @@ html.is-ready .how__arc path.is-drawn { stroke-dashoffset: 0; }
 @keyframes ballHop { 0% { translate: -60px -40px; opacity: 0; } 40% { translate: -20px 0; opacity: 1; } 60% { translate: -8px -12px; } 80% { translate: 0 0; } 90% { translate: 0 -3px; } 100% { translate: 0 0; } }
 @keyframes ballDrop { 0% { translate: 0 -220%; } 40% { translate: 0 0; scale: 1.15 .85; } 55% { translate: 0 -55%; scale: 1; } 70% { translate: 0 0; scale: 1.08 .92; } 82% { translate: 0 -18%; scale: 1; } 92% { translate: 0 0; } 100% { translate: 0 0; } }
 @keyframes ballDropSm { 0% { translate: 0 -160px; opacity: 0; } 30% { opacity: 1; } 45% { translate: 0 0; scale: 1.2 .8; } 60% { translate: 0 -40px; scale: 1; } 75% { translate: 0 0; scale: 1.1 .9; } 86% { translate: 0 -10px; scale: 1; } 100% { translate: 0 0; } }
-@keyframes serveBall { 0% { translate: -30vw 40vh; scale: .6; } 35% { translate: -8vw -22vh; scale: 1.2; } 62% { translate: 0 0; scale: 1.25 .8; } 74% { translate: 0 -40px; scale: 1; } 86% { translate: 0 0; scale: 1.08 .94; } 100% { translate: 0 0; scale: 1; } }
+/* the logo's full stop moves like a ball tossed for a serve: up and slowing, a short hang, down and speeding up.
+   Its apex puts the top of the stop level with the top of the d: 276.5 of the logo's 498.5 units, which is
+   55.5% of the logo frame (splash and footer, whose element is the frame) or 280% of the stop itself (header). */
+@keyframes serveBall {
+  0% { translate: -30vw 40vh; scale: .6; animation-timing-function: cubic-bezier(.3, .6, .4, 1); }
+  26% { translate: -8vw -22vh; scale: 1.15; animation-timing-function: cubic-bezier(.6, 0, .9, .5); }
+  42% { translate: 0 0; scale: 1.2 .82; animation-timing-function: ease-out; }
+  48% { translate: 0 0; scale: 1; animation-timing-function: cubic-bezier(.2, .65, .35, 1); }
+  70% { translate: 0 -55.5%; scale: 1; animation-timing-function: linear; }
+  76% { translate: 0 -55.5%; animation-timing-function: cubic-bezier(.6, 0, .85, .4); }
+  94% { translate: 0 0; scale: 1.06 .94; animation-timing-function: ease-out; }
+  100% { translate: 0 0; scale: 1; }
+}
+@keyframes logoToss {
+  0% { translate: 0 0; animation-timing-function: cubic-bezier(.2, .65, .35, 1); }
+  42% { translate: 0 -280%; animation-timing-function: linear; }
+  52% { translate: 0 -280%; animation-timing-function: cubic-bezier(.6, 0, .85, .4); }
+  90% { translate: 0 0; scale: 1.1 .9; animation-timing-function: ease-out; }
+  100% { translate: 0 0; scale: 1; }
+}
 @keyframes wipeIn { to { clip-path: inset(-4% -2% -4% -2%); } }
-/* the logo's full stop dropping into place: the element is the whole logo frame, and the stop is about a fifth of
-   its height, so these steps are the earlier ball drop scaled to the frame */
-@keyframes dotDrop { 0% { translate: 0 -90%; } 40% { translate: 0 0; scale: 1.15 .85; } 55% { translate: 0 -11%; scale: 1; } 70% { translate: 0 0; scale: 1.08 .92; } 82% { translate: 0 -3.6%; scale: 1; } 92%, 100% { translate: 0 0; } }
+/* footer: the full stop dips, is tossed to the top of the d, hangs and is caught, all inside the logo frame */
+@keyframes dotToss {
+  0% { translate: 0 0; scale: 1; animation-timing-function: ease-in-out; }
+  10% { translate: 0 0; scale: 1.06 .92; animation-timing-function: cubic-bezier(.2, .65, .35, 1); }
+  44% { translate: 0 -55.5%; scale: 1; animation-timing-function: linear; }
+  52% { translate: 0 -55.5%; animation-timing-function: cubic-bezier(.6, 0, .85, .4); }
+  86% { translate: 0 0; scale: 1.06 .94; animation-timing-function: ease-out; }
+  100% { translate: 0 0; scale: 1; }
+}
 @keyframes splashOut { 0% { clip-path: inset(0 0 0 0); } 100% { clip-path: inset(0 0 100% 0); } }
 
 @media (prefers-reduced-motion: reduce) {

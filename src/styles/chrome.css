@@ -11,8 +11,9 @@
    in at the footer */
 .logo { display: inline-flex; align-items: center; text-decoration: none; color: var(--text); flex: none; line-height: 1; }
 .logo__svg { display: block; height: 30px; width: auto; aspect-ratio: 1637.2 / 498.5; fill: currentColor; overflow: visible; }
-.logo__d { transform-box: fill-box; transform-origin: 50% 100%; transition: translate .6s var(--spring); }
-.logo:hover .logo__d { translate: 0 -40%; }
+.logo__d { transform-box: fill-box; transform-origin: 50% 100%; }
+/* pointing at the logo tosses the full stop like a serve (site.js adds the class and lets the toss finish) */
+.logo__d.is-toss { animation: logoToss .9s both; }
 .logo--lg .logo__svg { height: 44px; }
 .logo--sm .logo__svg { height: 20px; }
 
@@ -139,11 +140,13 @@ html.book-active .stick { transform: translateY(140%); visibility: hidden; }
 .ftr__col ul { display: grid; gap: 4px; list-style: none; padding: 0; margin: 0; }
 .ftr__col a { display: inline-flex; min-height: 36px; align-items: center; color: var(--text-2); text-decoration: none; font-size: 15.5px; transition: color var(--d-1), translate var(--d-1); }
 .ftr__col a:hover { color: var(--accent); translate: 3px 0; }
-/* footer sign-off: the logo's letters as a mask over a moving foil, its full stop dropping in on its own */
-.ftr__word { position: relative; width: min(100%, 860px); aspect-ratio: 1637.2 / 498.5; margin: clamp(28px, 4vw, 52px) auto 0; overflow: hidden; pointer-events: none; }
-.ftr__w { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(239, 235, 223, .12) 30%, color-mix(in srgb, var(--accent) 60%, transparent) 50%, rgba(239, 235, 223, .12) 70%) 0 0 / 250% 100%; -webkit-mask: url(served-letters.svg) center / 100% 100% no-repeat; mask: url(served-letters.svg) center / 100% 100% no-repeat; animation: foil 12s linear infinite; }
-.ftr__d { position: absolute; inset: 0; background: var(--text); -webkit-mask: url(served-dot.svg) center / 100% 100% no-repeat; mask: url(served-dot.svg) center / 100% 100% no-repeat; transform-origin: 96.9% 73.5%; }
-.ftr__d.is-bouncing { animation: dotDrop 1.6s var(--ease-io) both; }
+/* footer sign-off: the logo as two masks over one moving foil, so the full stop wears the same colour as the
+   letters. Both start the foil together and the stop's toss waits paused, so turning it on never restarts the
+   foil. Nothing is clipped: the toss stays inside the frame and the frame does not hide overflow. */
+.ftr__word { --foil: linear-gradient(100deg, rgba(239, 235, 223, .12) 30%, color-mix(in srgb, var(--accent) 60%, transparent) 50%, rgba(239, 235, 223, .12) 70%) 0 0 / 250% 100%; position: relative; width: min(100%, 860px); aspect-ratio: 1637.2 / 498.5; margin: clamp(28px, 4vw, 52px) auto 0; pointer-events: none; }
+.ftr__w { position: absolute; inset: 0; background: var(--foil); -webkit-mask: url(served-letters.svg) center / 100% 100% no-repeat; mask: url(served-letters.svg) center / 100% 100% no-repeat; animation: foil 12s linear infinite; }
+.ftr__d { position: absolute; inset: 0; background: var(--foil); -webkit-mask: url(served-dot.svg) center / 100% 100% no-repeat; mask: url(served-dot.svg) center / 100% 100% no-repeat; transform-origin: 96.9% 73.5%; animation: foil 12s linear infinite, dotToss 1.6s linear both paused; }
+.ftr__d.is-bouncing { animation-play-state: running; }
 .ftr__base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; padding-top: 22px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--text-3); }
 .ftr__base a { color: var(--text-2); }
 .ftr__pill { padding: 6px 12px; border-radius: var(--pill); border: 1px solid var(--line-2); color: var(--text-2); }
@@ -161,7 +164,7 @@ html.splash-on .splash.is-out { animation: splashOut .7s var(--ease-io) forwards
 .splash__w, .splash__ball { position: absolute; inset: 0; }
 .splash__w svg, .splash__ball svg { display: block; width: 100%; height: 100%; fill: currentColor; overflow: visible; }
 .splash__w { clip-path: inset(-4% 102% -4% -2%); animation: wipeIn .7s var(--ease) .55s forwards; }
-.splash__ball { transform-origin: 96.9% 73.5%; animation: serveBall 1.1s var(--ease-io) both; }
+.splash__ball { transform-origin: 96.9% 73.5%; animation: serveBall 1.45s linear both; }
 
 /* toast */
 .toast { position: fixed; left: 50%; bottom: calc(24px + var(--bottom-stack) + env(safe-area-inset-bottom)); z-index: 400; transform: translate(-50%, 30px); opacity: 0; pointer-events: none; max-width: min(92vw, 520px); padding: 14px 20px; border-radius: 16px; background: var(--cream); color: var(--ink); font-weight: 650; font-size: 15px; box-shadow: 0 20px 50px -15px rgba(0, 0, 0, .7); transition: opacity var(--d-2) var(--ease), transform var(--d-2) var(--ease); }
