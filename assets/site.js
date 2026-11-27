@@ -258,22 +258,37 @@
     requestAnimationFrame(loop);
   });
 
-  // ---------------------------------------------------------------- text pressure: letters swell toward the pointer
-  $$('[data-pressure]').forEach((el) => {
-    const txt = el.textContent; el.textContent = '';
-    const spans = [...txt].map((ch) => { const s = d.createElement('span'); s.setAttribute('aria-hidden', 'true'); if (ch === ' ') s.textContent = '\u00a0'; else if (ch === '.') { s.textContent = '.'; s.className = 'pd'; } else s.textContent = ch; el.appendChild(s); return s; }).filter((s) => !s.classList.contains('pd'));
-    if (!FINE || RM) return;
-    let px = 0, py = 0, raf = 0;
-    const paint = () => {
-      raf = 0;
-      const box = el.getBoundingClientRect(); if (box.bottom < -200 || box.top > W.innerHeight + 200) return;
-      spans.forEach((s) => {
-        const r = s.getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-        const k = Math.max(0, 1 - Math.hypot(px - cx, py - cy) / 380);
-        s.style.fontVariationSettings = `"wght" ${Math.round(640 + 260 * k)}, "wdth" ${Math.round(88 + 37 * k)}`;
-      });
+  // ---------------------------------------------------------------- split-flap board: every tile clacks through random characters
+  // and lands on its own letter, the tiles starting left to right. Each tile: a still upper and lower half, and two flaps
+  // that turn over them (the old letter's top falls to the hinge, then the new letter's bottom falls into place).
+  // Without script or with reduced motion the markup already reads the final word.
+  $$('[data-flap]').forEach((board) => {
+    const tiles = $$('.flap__t', board);
+    if (!tiles.length || RM || !board.animate) return;
+    const CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', DUR = 120, STAG = 60, FLIPS = 8;
+    const face = (ch) => (ch === '.' ? '<b class="flap__ball"></b>' : ch === ' ' ? '' : esc(ch));
+    const put = (t, k, ch) => { $(`.flap__${k} > i`, t).innerHTML = face(ch); };
+    const turn = (t, to) => new Promise((done) => {
+      const from = t.dataset.now || ' ';
+      put(t, 'u', to); put(t, 'l', from); put(t, 'fu', from); put(t, 'fl', to);
+      const up = $('.flap__fu', t).animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-90deg)' }], { duration: DUR / 2, easing: 'cubic-bezier(.55,0,1,.45)', fill: 'forwards' });
+      const lo = $('.flap__fl', t).animate([{ transform: 'rotateX(90deg)' }, { transform: 'rotateX(0deg)' }], { duration: DUR / 2, delay: DUR / 2, easing: 'cubic-bezier(0,.55,.45,1)', fill: 'forwards' });
+      const end = () => { put(t, 'l', to); put(t, 'fu', to); up.cancel(); lo.cancel(); t.dataset.now = to; done(); };
+      lo.finished.then(end, end);
+    });
+    let busy = false;
+    const play = async () => {
+      if (busy) return; busy = true;
+      await Promise.all(tiles.map(async (t, i) => {
+        await new Promise((r) => setTimeout(r, i * STAG));
+        const n = FLIPS + i; // the later tiles turn a little longer, so the word lands left to right
+        for (let k = 1; k <= n; k++) await turn(t, k === n ? t.dataset.ch : CH[(Math.random() * CH.length) | 0]);
+      }));
+      busy = false;
     };
-    W.addEventListener('pointermove', (e) => { px = e.clientX; py = e.clientY; if (!raf) raf = requestAnimationFrame(paint); }, { passive: true });
+    tiles.forEach((t) => { ['u', 'l', 'fu', 'fl'].forEach((k) => put(t, k, ' ')); t.dataset.now = ' '; }); // blank until it is seen
+    if ('IntersectionObserver' in W) { const io = new IntersectionObserver((en) => { if (en[0].isIntersecting) { io.disconnect(); play(); } }, { threshold: 0.4 }); io.observe(board); } else play();
+    if (FINE) board.addEventListener('pointerenter', play);
   });
 
   // ---------------------------------------------------------------- dates for the hero search and discovery
@@ -476,7 +491,7 @@
         if (st.max_price && +it.dataset.rate > +st.max_price) ok = false;
         if (q && !it.dataset.name.includes(q)) ok = false;
         if (st.date && (soon || !(it.dataset.open || '').split(',').includes(st.date))) ok = false;
-        if (soon && (st.city || st.surface || st.max_price)) ok = false;
+        if (soon && (st.surface || st.max_price)) ok = false; // a venue opening soon still shows under its own city
         it.hidden = !ok; if (ok) shown.push(it);
         const vc = $('.vcard', it);
         let sl = $('.vcard__slots', it);
@@ -589,9 +604,10 @@
     calBtn.addEventListener('click', () => setCal(cal.hidden));
     // courts + slots
     const rateOf = (h) => (B.rates && B.rates[h]) ? B.rates[h] : { rate: B.rate, label: 'Standard' };
-    const courtTpl = ($('[data-court-tpl]') || {}).innerHTML || ''; // the venue's court lines, drawn server side
+    // the venue's court lines, drawn server side; a venue with more than one sport has a drawing per sport (court.sport)
+    const tpls = {}; $$('[data-court-tpl]').forEach((t, i) => { tpls[t.dataset.sport || ''] = t.innerHTML; if (!i) tpls[''] = t.innerHTML; });
     function drawCourts() {
-      courtsBox.innerHTML = B.courts.map((c) => { const n = (st.picks[c.id] || new Set()).size; return `<button class="cpk" type="button" role="radio" aria-checked="${c.id === st.court}" data-court="${c.id}" aria-label="${esc(c.name)}${n ? `, ${n} hour${n > 1 ? 's' : ''} picked` : ''}">${courtTpl}<b>${esc(c.name.replace(/^Court\s*/i, ''))}</b>${n ? `<span class="cpk__n">${n}</span>` : ''}</button>`; }).join('');
+      courtsBox.innerHTML = B.courts.map((c) => { const n = (st.picks[c.id] || new Set()).size; return `<button class="cpk" type="button" role="radio" aria-checked="${c.id === st.court}" data-court="${c.id}" aria-label="${esc(c.name)}${n ? `, ${n} hour${n > 1 ? 's' : ''} picked` : ''}">${tpls[c.sport] || tpls['']}<b>${esc(c.name.replace(/^Court\s*/i, ''))}</b>${n ? `<span class="cpk__n">${n}</span>` : ''}</button>`; }).join('');
     }
     courtsBox.addEventListener('click', (e) => { const b = e.target.closest('.cpk'); if (!b) return; st.court = b.dataset.court; drawCourts(); drawSlots(); });
     // whole day: every open hour left on the picked court that day (taken and past hours are skipped)
@@ -688,6 +704,9 @@
     }
     // a guest's details last for this visit, so a second booking does not ask again
     const guest = () => { try { return JSON.parse(ss.get('srv.guest') || 'null'); } catch (e) { return null; } };
+    // after a booking: another time at the same venue (a fresh board), never out to other courts
+    const again = $('[data-again]', el);
+    if (again) again.addEventListener('click', (e) => { e.preventDefault(); const to = new URL(B.links.availability, location.href); if (to.pathname === location.pathname && to.search === location.search) location.reload(); else location.href = to.href; });
     // back from signing in: restore the held picks and go straight to payment (after the accounts script loads)
     setTimeout(() => {
       let pend = null; try { pend = JSON.parse(ss.get('srv.pending') || 'null'); } catch (e) { pend = null; }
