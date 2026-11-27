@@ -32,15 +32,19 @@ function phero({ k, h1, lede, crumb, img: im, tone = '', cls = '', extra = '', p
 // tools/rallyx-x.py), sunk in with an inner shadow. The photo keeps its natural colours (client, 27 Nov 2026). This
 // section is the only neon green on the site; everything else keeps Served's own palette.
 const RX_X = JSON.parse(readFileSync(new URL('./data/rallyx-x.json', import.meta.url), 'utf8'));
-const RX_PHOTO = 'rallyx-paddle-wall'; // the paddle rack (client, 27 Nov 2026), in its natural colours
+// the player with the paddle (client, 27 Nov 2026), in natural colours, placed by tools/rallyx-fit.py so his face and
+// his paddle both show through the X (RX_X.fit); the same photo, blurred, fills the rest of the X behind it
+const RX_PHOTO = 'rallyx-forehand';
 const RX_LEDE = 'Pickleball and tennis under one roof: lime lines on the floor, a wall of paddles and the city right outside. Now open.';
 const rxChips = () => `<p class="chips">${chipSport('Pickleball')}${chipSport('Tennis')}<span class="chip chip--live">Now open</span></p>`;
 const rxCtas = () => ctas(btn('Book Rally X', '/courts/rally-x/availability/'), btn('See Rally X', '/courts/rally-x/', 'btn--ghost'));
 // the X window: the traced X is drawn once (#rxw-x) and reused for the clip, the glow and the small X in the name
 function rxWindow() {
-  const { w, h, d } = RX_X, pad = 24;
+  const { w, h, d, fit } = RX_X, pad = 24, f = fit.feather;
+  if (!fit || fit.photo !== RX_PHOTO) throw new Error('rallyx-x.json: run tools/rallyx-fit.py for the Rally X photo');
   const src = a(`assets/img/${RX_PHOTO}-${IMAGES[RX_PHOTO].sizes.at(-1)}.webp`);
-  return `<svg class="rxw" viewBox="${-pad} ${-pad} ${w + 2 * pad} ${h + 2 * pad}" role="img" aria-label="The paddle rack at Rally X, seen through the brush-stroke X of the Rally X logo">
+  const n = (v) => +v.toFixed(1);
+  return `<svg class="rxw" viewBox="${-pad} ${-pad} ${w + 2 * pad} ${h + 2 * pad}" role="img" aria-label="A player swings a paddle at Rally X, seen through the brush-stroke X of the Rally X logo">
   <defs>
     <path id="rxw-x" d="${d}" fill-rule="evenodd" clip-rule="evenodd"/>
     <linearGradient id="rxw-g" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcf53a"/><stop offset="1" stop-color="#6fcf3a"/></linearGradient>
@@ -55,9 +59,15 @@ function rxWindow() {
       <feComposite in="shade" in2="SourceAlpha" operator="in" result="inner"/>
       <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="inner"/></feMerge>
     </filter>
+    <filter id="rxw-back" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="6" edgeMode="duplicate"/><feComponentTransfer><feFuncR type="linear" slope=".85"/><feFuncG type="linear" slope=".85"/><feFuncB type="linear" slope=".85"/></feComponentTransfer></filter>
+    <filter id="rxw-soft" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur stdDeviation="${f / 2}"/></filter>
+    <mask id="rxw-fade" maskUnits="userSpaceOnUse" x="${n(fit.x - f)}" y="${n(fit.y - f)}" width="${n(fit.width + 2 * f)}" height="${n(fit.height + 2 * f)}"><rect x="${n(fit.x + f)}" y="${n(fit.y + f)}" width="${n(fit.width - 2 * f)}" height="${n(fit.height - 2 * f)}" fill="#fff" filter="url(#rxw-soft)"/></mask>
   </defs>
   <use class="rxw__glow" href="#rxw-x" fill="url(#rxw-g)" filter="url(#rxw-glow)"/>
-  <g filter="url(#rxw-in)"><g clip-path="url(#rxw-c)"><rect width="${w}" height="${h}" fill="#050505"/><image class="rxw__img" href="${src}" x="${-pad}" y="${(-h * 0.35).toFixed(1)}" width="${w + 2 * pad}" height="${(h * 1.7).toFixed(1)}" preserveAspectRatio="xMidYMid slice"/></g></g>
+  <g filter="url(#rxw-in)"><g clip-path="url(#rxw-c)"><rect width="${w}" height="${h}" fill="#050505"/><g class="rxw__img">
+    <image href="${src}" x="${fit.back.x}" y="${fit.back.y}" width="${fit.back.width}" height="${fit.back.height}" preserveAspectRatio="xMidYMid slice" filter="url(#rxw-back)"/>
+    <image href="${src}" x="${fit.x}" y="${fit.y}" width="${fit.width}" height="${fit.height}" preserveAspectRatio="xMidYMid slice" mask="url(#rxw-fade)"/>
+  </g></g></g>
 </svg>`;
 }
 // speed streaks like the ones on Rally X's banner, faint, on the black band only (never over a photo)
@@ -78,7 +88,7 @@ function rallySpot(id = 'rx-h') {
 </section>`;
 }
 
-// ============================================================ HOW IT WORKS (home), shared with its layout options at /lab/how/
+// ============================================================ HOW IT WORKS (home): step tabs, the client's pick (27 Nov 2026)
 // the three steps, in the current site's words (CAPTURED)
 const HOW = {
   k: 'How it works', h: 'How Served. Works', lede: 'Book a court, run your game, no calls, no waiting, no hassle.',
@@ -93,10 +103,10 @@ function howSection(id = 'how-h') {
   return `<section class="band band--cream how" aria-labelledby="${id}">
   <div class="wrap">
     ${sh({ k: HOW.k, h: `<span id="${id}">${HOW.h}</span>`, lede: HOW.lede, cls: 'sh--center' })}
-    <ol class="how__steps">
-${HOW.steps.map((s, i) => `      <li class="how__step" data-reveal style="--i:${i}"><span class="how__n">${s.n}</span><span class="how__ic">${icon(s.ic)}</span><h3>${s.h}</h3><p>${s.p}</p>${howLink(s)}</li>`).join('\n')}
-    </ol>
-    <svg class="how__arc" viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true"><path d="M60 130C300 -20 500 -20 600 80S900 180 1140 30" pathLength="1" data-draw/></svg>
+    <div class="stabs" data-stabs>
+      <div class="stabs__tabs" role="tablist" aria-label="Steps">${HOW.steps.map((s, i) => `<button class="stabs__tab" role="tab" type="button" id="${id}-t${i}" aria-controls="${id}-p${i}" aria-selected="${i ? 'false' : 'true'}" tabindex="${i ? -1 : 0}"><b>${s.n}</b><span>${s.h}</span><i class="stabs__bar" aria-hidden="true"></i></button>`).join('')}</div>
+      <div class="stabs__panels">${HOW.steps.map((s, i) => `<div class="stabs__panel" role="tabpanel" id="${id}-p${i}" aria-labelledby="${id}-t${i}"${i ? ' hidden' : ''}><span class="stabs__ic">${icon(s.ic)}</span><h3 class="d2">${s.h}</h3><p class="lede">${s.p}</p>${howLink(s)}<span class="stabs__n" aria-hidden="true">${s.n}</span></div>`).join('')}</div>
+    </div>
   </div>
 </section>`;
 }
@@ -188,9 +198,11 @@ ${howSection()}
         <li data-reveal style="--i:2"><b>Manage your court bookings with ease</b><p>Monitor all bookings you receive, forecast upcoming bookings or even generate reports with ease, all for free.</p></li>
       </ol>
       <a class="link link--ink" href="${u('/sign-up/?role=owner')}">List your court now ${icon('arrow')}</a>
-      <div class="receipt" data-reveal><p class="receipt__h">How a booking pays out</p>
-        <dl><div><dt>Your court rate</dt><dd>${peso(500)}.00</dd></div><div><dt>Service fee, paid by the player</dt><dd>+ ${peso(25)}.00</dd></div><div class="tot"><dt>Player pays</dt><dd>${peso(525)}.00</dd></div><div class="you"><dt>You receive</dt><dd>${peso(500)}.00</dd></div></dl>
-        <p class="receipt__f">No monthly fee and no commission</p></div>
+      <div class="receipt" data-calc data-reveal><p class="receipt__h">How a booking pays out</p>
+        <label class="receipt__rate"><span>Your court rate</span><b data-calc-o="rate">${peso(500)}.00</b><input class="calc__range" type="range" min="200" max="2000" step="50" value="500" data-calc-range aria-label="Your court rate per hour"></label>
+        <dl><div><dt>Service fee, paid by the player</dt><dd data-calc-o="fee">+ ${peso(25)}.00</dd></div><div class="tot"><dt>Player pays</dt><dd data-calc-o="pays">${peso(525)}.00</dd></div><div class="you"><dt>You receive</dt><dd data-calc-o="you">${peso(500)}.00</dd></div></dl>
+        <p class="receipt__f">No monthly fee and no commission</p>
+        <p class="receipt__note">For illustration only: slide to try a rate. Each court sets its own price, so these figures may not match an actual court's rate.</p></div>
     </div>
   </div>
 </section>
@@ -558,7 +570,7 @@ ${phero({ k: 'Pricing', h1: 'Simple Pricing', lede: 'Free to search and compare 
         <label class="field calc__in"><span class="field__l">Your court rate</span><input type="number" inputmode="numeric" min="100" max="10000" step="50" value="500" data-calc-rate aria-describedby="calc-note"><span class="calc__peso">₱</span></label>
         <input class="calc__range" type="range" min="200" max="2000" step="50" value="500" data-calc-range aria-label="Court rate slider">
         <dl class="calc__dl"><div><dt>Your court rate</dt><dd data-calc-o="rate">${peso(500)}.00</dd></div><div><dt>Service fee, paid by the player</dt><dd data-calc-o="fee">+ ${peso(25)}.00</dd></div><div class="tot"><dt>Player pays</dt><dd data-calc-o="pays">${peso(525)}.00</dd></div><div class="you"><dt>You receive</dt><dd data-calc-o="you">${peso(500)}.00</dd></div></dl>
-        <p class="fine" id="calc-note">No monthly fee and no commission. Paid out to the account you verify with us.</p></article>
+        <p class="fine" id="calc-note">No monthly fee and no commission. Paid out to the account you verify with us. For illustration only: each court sets its own price, so these figures may not match an actual court's rate.</p></article>
     </div>
     <ol class="psteps">
       <li data-reveal style="--i:0"><span>1</span><h3>1. List your venue</h3><p>Add your venue, courts, hours and rates. It takes minutes and costs nothing.</p></li>
@@ -996,138 +1008,6 @@ var bk=$('[data-book]');bk.setAttribute('data-book',JSON.stringify({slug:'listin
     own: { name: 'Listing', address: '', fill: true, home: '#top', links: [['Book', '#book'], ['About', '#about'], ['Photos', '#photos', ' data-vgal-link hidden'], ['Location', '#location']], cta: ['Book now', '#book'] } });
 }
 
-// ============================================================ LAB: How it works layouts (27 Nov 2026, for the client to pick one)
-// The section as it is now, then three new layouts; the words are the current site's, unchanged.
-function labHow() {
-  const tag = (id, name, how) => `<section class="band band--night lab-tagband"><div class="wrap lab-tag"><b>${id}</b><span><strong>${name}</strong>${how}</span></div></section>`;
-  const head = (id, cls = 'sh--center') => sh({ k: HOW.k, h: `<span id="${id}">${HOW.h}</span>`, lede: HOW.lede, cls });
-  const body = `
-<section class="band band--night lab-top"><div class="wrap">
-  <p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>Options to pick from</p>
-  <h1 class="d1">How it works</h1>
-  <p class="lede">The home page’s “How Served. works” section, four ways: the layout it has now, then three new ones, A to C. The words are the current site’s, unchanged. Pick one and it replaces the section on the home page.</p>
-  <nav class="lab-jump" aria-label="Options"><a href="#lhw-now">Now: Cards</a><a href="#lhw-a">A Rally line</a><a href="#lhw-b">B Big numbers</a><a href="#lhw-c">C Step tabs</a></nav>
-  <p class="lab-note">The motion follows your scroll in Chrome, Edge and Safari; other browsers and reduced motion show the finished state.</p>
-</div></section>
-<div id="lhw-now"></div>${tag('Now', 'Cards', 'What the home page has today: three cards with big numbers and an arc behind them.')}
-${howSection('lhw-now-h')}
-<div id="lhw-a"></div>${tag('A', 'Rally line', 'One court line joins the three steps, and a ball rallies along it as you scroll, from signing up to booking.')}
-<section class="band band--cream lhw lhw--a" aria-labelledby="lhwa-h"><div class="wrap">
-  ${head('lhwa-h')}
-  <ol class="lha">${HOW.steps.map((s, i) => `<li class="lha__step" data-reveal style="--i:${i}"><span class="lha__node">${icon(s.ic)}</span><span class="lha__n">Step ${s.n}</span><h3 class="d4">${s.h}</h3><p>${s.p}</p>${howLink(s)}</li>`).join('')}<li class="lha__ball" aria-hidden="true"></li></ol>
-</div></section>
-<div id="lhw-b"></div>${tag('B', 'Big numbers', 'The heading holds still on the left while the three steps pass on the right, each with a giant outlined number that fills with orange as it comes into view.')}
-<section class="band band--cream lhw lhw--b" aria-labelledby="lhwb-h"><div class="wrap lhb">
-  <div class="lhb__head">${head('lhwb-h', '')}${ctas(btn('Find a court', '/courts/'))}</div>
-  <ol class="lhb__list">${HOW.steps.map((s) => `<li class="lhb__row"><span class="lhb__n" aria-hidden="true">${s.n}</span><div class="lhb__txt"><h3 class="d3">${s.h}</h3><p>${s.p}</p>${howLink(s)}</div><span class="lhb__ic">${icon(s.ic)}</span></li>`).join('')}</ol>
-</div></section>
-<div id="lhw-c"></div>${tag('C', 'Step tabs', 'Three numbered tabs on one side and the chosen step large on the other. It moves to the next step on its own every few seconds, and stops when you point at it or pick a tab.')}
-<section class="band band--cream lhw lhw--c" aria-labelledby="lhwc-h"><div class="wrap">
-  ${head('lhwc-h')}
-  <div class="lhc" data-lhc>
-    <div class="lhc__tabs" role="tablist" aria-label="Steps">${HOW.steps.map((s, i) => `<button class="lhc__tab" role="tab" type="button" id="lhc-t${i}" aria-controls="lhc-p${i}" aria-selected="${i ? 'false' : 'true'}" tabindex="${i ? -1 : 0}"><b>${s.n}</b><span>${s.h}</span><i class="lhc__bar" aria-hidden="true"></i></button>`).join('')}</div>
-    <div class="lhc__panels">${HOW.steps.map((s, i) => `<div class="lhc__panel" role="tabpanel" id="lhc-p${i}" aria-labelledby="lhc-t${i}"${i ? ' hidden' : ''}><span class="lhc__ic">${icon(s.ic)}</span><h3 class="d2">${s.h}</h3><p class="lede">${s.p}</p>${howLink(s)}<span class="lhc__n" aria-hidden="true">${s.n}</span></div>`).join('')}</div>
-  </div>
-</div></section>
-<section class="band band--night lab-end"></section>
-<style>
-.lab-top { padding-bottom: 40px; } .lab-top .lede { margin-top: 14px; max-width: 72ch; }
-.lab-jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; } .lab-jump a { padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--text); text-decoration: none; font: 700 14px/1 var(--f-ui); } .lab-jump a:hover { border-color: var(--accent); color: var(--accent); }
-.lab-note { margin-top: 14px; font-size: 13.5px; color: var(--text-3); }
-.lab-tagband { padding-block: 52px 30px; }
-.lab-tag { display: flex; gap: 16px; align-items: flex-start; }
-.lab-tag b { flex: none; min-width: 44px; height: 44px; padding-inline: 10px; display: grid; place-items: center; border-radius: 10px; background: var(--accent); color: var(--ink); font: 900 18px/1 var(--f-display); text-transform: uppercase; }
-.lab-tag span { max-width: 72ch; color: var(--text-2); } .lab-tag strong { display: block; color: var(--text); font: 850 20px/1.2 var(--f-display); text-transform: uppercase; margin-bottom: 4px; }
-.lab-end { padding-block: 36px; }
-.lhw p { color: rgba(10, 10, 10, .72); }
-/* A: rally line */
-.lha { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 3vw, 48px); list-style: none; padding: 0; margin: clamp(36px, 4vw, 60px) 0 0; }
-.lha::before { content: ""; position: absolute; top: 34px; left: calc(100% / 6); right: calc(100% / 6); height: 3px; margin-top: -1.5px; border-radius: 2px; background: var(--ink); }
-.lha__step { position: relative; display: grid; justify-items: center; align-content: start; gap: 10px; text-align: center; }
-.lha__node { position: relative; z-index: 2; display: grid; place-items: center; width: 68px; height: 68px; border-radius: 50%; background: var(--ink); color: var(--accent); box-shadow: 0 0 0 8px var(--cream); }
-.lha__node .ico { width: 26px; height: 26px; }
-.lha__n { font: 800 12.5px/1 var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-top: 8px; }
-.lha__step p { max-width: 34ch; }
-.lha__ball { position: absolute; z-index: 1; top: 34px; left: calc(100% / 6); width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px rgba(255, 107, 24, .6); list-style: none; }
-/* B: big numbers */
-.lhb { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(32px, 5vw, 88px); align-items: start; }
-.lhb__head { position: sticky; top: 112px; } .lhb__head .ctas { margin-top: 26px; }
-.lhb__list { list-style: none; margin: 0; padding: 0; }
-.lhb__row { display: grid; grid-template-columns: clamp(118px, 13vw, 200px) minmax(0, 1fr) auto; gap: clamp(16px, 2.4vw, 36px); align-items: start; padding-block: clamp(28px, 3.2vw, 46px); border-top: 1px solid rgba(10, 10, 10, .14); }
-.lhb__row:last-child { border-bottom: 1px solid rgba(10, 10, 10, .14); }
-.lhb__n { font: 900 clamp(64px, 8vw, 128px)/.8 var(--f-display); font-stretch: 118%; color: transparent; -webkit-text-stroke: 2px var(--ink); background: linear-gradient(var(--accent), var(--accent)) 0 100% / 100% 100% no-repeat; -webkit-background-clip: text; background-clip: text; min-width: 1.5ch; }
-.lhb__txt h3 { margin-bottom: 10px; } .lhb__txt p { margin-bottom: 14px; max-width: 46ch; }
-.lhb__ic { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--ink); color: var(--accent); }
-/* C: step tabs */
-.lhc { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(18px, 3vw, 44px); margin-top: clamp(36px, 4vw, 60px); align-items: stretch; }
-.lhc__tabs { display: grid; gap: 12px; align-content: center; }
-.lhc__tab { position: relative; display: flex; align-items: center; gap: 18px; padding: 20px 22px; border: 1px solid rgba(10, 10, 10, .14); border-radius: var(--r-lg); background: rgba(255, 255, 255, .6); color: var(--ink); text-align: left; cursor: pointer; overflow: hidden; font: 800 18px/1.2 var(--f-ui); transition: background .3s, color .3s, border-color .3s; }
-.lhc__tab b { font: 900 30px/1 var(--f-display); font-stretch: 115%; color: rgba(10, 10, 10, .3); transition: color .3s; }
-.lhc__tab:hover { border-color: var(--ink); }
-.lhc__tab[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: #fff; } .lhc__tab[aria-selected="true"] b { color: var(--accent); }
-.lhc__bar { position: absolute; left: 0; bottom: 0; width: 0; height: 3px; background: var(--accent); }
-.lhc__tab[aria-selected="true"] .lhc__bar { animation: lhcBar 5s linear forwards; }
-.lhc.is-paused .lhc__bar { animation-play-state: paused; } .lhc.is-stopped .lhc__bar { display: none; }
-.lhc__panel { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 16px; height: 100%; min-height: 340px; padding: clamp(28px, 4vw, 56px); border-radius: var(--r-xl); background: var(--ink); color: var(--text); }
-.lhc__panel[hidden] { display: none; }
-.lhc__panel .lede { color: var(--text-2); max-width: 40ch; } .lhc__panel .link { color: var(--accent); }
-.lhc__ic { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--accent); color: var(--ink); } .lhc__ic .ico { width: 28px; height: 28px; }
-.lhc__n { position: absolute; right: 26px; bottom: 18px; font: 900 clamp(84px, 10vw, 150px)/.8 var(--f-display); font-stretch: 120%; color: rgba(239, 235, 223, .06); pointer-events: none; }
-@keyframes lhcBar { to { width: 100%; } }
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .lha__ball { animation: lhaBall linear both; animation-timeline: view(); animation-range: entry 60% cover 70%; }
-    .lhb__n { animation: lhbFill linear both; animation-timeline: view(); animation-range: entry 30% cover 45%; }
-    .lhc__panel:not([hidden]) { animation: lhcIn .5s var(--ease) both; }
-  }
-}
-@keyframes lhaBall { from { left: calc(100% / 6); } to { left: calc(500% / 6); } }
-@keyframes lhbFill { from { background-size: 100% 0%; } to { background-size: 100% 100%; } }
-@keyframes lhcIn { from { opacity: 0; translate: 0 12px; } }
-@media (prefers-reduced-motion: reduce) { .lhc__bar { display: none; } }
-@media (max-width: 820px) {
-  .lha { grid-template-columns: 1fr; gap: 34px; }
-  .lha::before { top: 34px; bottom: 34px; left: 34px; right: auto; width: 3px; height: auto; margin: 0 0 0 -1.5px; }
-  .lha__step { grid-template-columns: 68px minmax(0, 1fr); justify-items: start; text-align: left; column-gap: 18px; row-gap: 6px; }
-  .lha__step > :not(.lha__node) { grid-column: 2; } .lha__node { grid-row: 1 / span 4; } .lha__n { margin-top: 4px; }
-  .lha__ball { display: none; }
-  .lhb { grid-template-columns: 1fr; } .lhb__head { position: static; }
-  .lhb__row { grid-template-columns: clamp(84px, 24vw, 118px) minmax(0, 1fr); } .lhb__ic { display: none; }
-  .lhc { grid-template-columns: 1fr; } .lhc__panel { min-height: 0; }
-}
-</style>
-<script>
-(function () {
-  var box = document.querySelector('[data-lhc]'); if (!box) return;
-  var tabs = [].slice.call(box.querySelectorAll('.lhc__tab')), panels = [].slice.call(box.querySelectorAll('.lhc__panel'));
-  var RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches, cur = 0, timer = null, stopped = RM, inView = false;
-  function bars() { tabs.forEach(function (t) { var b = t.querySelector('.lhc__bar'); b.style.animation = 'none'; void b.offsetWidth; b.style.animation = ''; }); }
-  function arm() { clearTimeout(timer); if (!stopped && inView && !box.classList.contains('is-paused')) { bars(); timer = setTimeout(function () { show((cur + 1) % tabs.length); }, 5000); } }
-  function show(i, focus) {
-    cur = i;
-    tabs.forEach(function (t, j) { t.setAttribute('aria-selected', String(i === j)); t.tabIndex = i === j ? 0 : -1; });
-    panels.forEach(function (p, j) { p.hidden = i !== j; });
-    if (focus) tabs[i].focus();
-    arm();
-  }
-  function stop() { stopped = true; clearTimeout(timer); box.classList.add('is-stopped'); }
-  tabs.forEach(function (t, i) {
-    t.addEventListener('click', function () { stop(); show(i); });
-    t.addEventListener('keydown', function (e) {
-      var n = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
-      if (n) { e.preventDefault(); stop(); show((i + n + tabs.length) % tabs.length, true); }
-    });
-  });
-  box.addEventListener('pointerenter', function () { box.classList.add('is-paused'); clearTimeout(timer); });
-  box.addEventListener('pointerleave', function () { box.classList.remove('is-paused'); arm(); });
-  box.addEventListener('focusin', function () { stop(); });
-  if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { inView = en[0].isIntersecting; if (inView) arm(); else clearTimeout(timer); }).observe(box); else { inView = true; arm(); }
-  if (stopped) box.classList.add('is-stopped');
-})();
-</script>`;
-  return layout({ path: '/lab/how/', title: 'How it works: layout options', desc: 'Layout options for the How it works section on the Served. home page.', body, bodyCls: 'pg-lab', sticky: null, noFinal: true });
-}
-
 // ============================================================ registry
 export function pages() {
   const out = [];
@@ -1162,7 +1042,6 @@ export function pages() {
   add('/owner/studio/', studio);
   add('/owner/list/', ownerList);
   add('/courts/listing/', listingPage);
-  add('/lab/how/', labHow);
   add('/about/', about);
   add('/404', notFound);
   return out;

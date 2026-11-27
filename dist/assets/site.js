@@ -68,7 +68,21 @@
   // or scrolling leave at any time. While it is up, the page behind is inert, so focus stays on the splash.
   const ready = () => { root.classList.add('is-ready'); };
   const splash = $('[data-splash]');
-  if (root.classList.contains('splash-on') && splash) {
+  // The CTA is for desktop only (client, 27 Nov 2026): phones and tablets (no hover, or a narrow screen) get the classic
+  // splash, where the logo serves in and it closes on its own or at the first touch, key or scroll.
+  const ctaMode = W.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 761px)').matches;
+  if (root.classList.contains('splash-on') && splash && !ctaMode) {
+    let done = false;
+    const end = () => {
+      if (done) return; done = true; ss.set('srv.splash', '1');
+      splash.classList.add('is-out');
+      setTimeout(() => { root.classList.remove('splash-on'); }, 700);
+      setTimeout(ready, 250);
+      ['keydown', 'pointerdown', 'wheel', 'touchstart'].forEach((e) => W.removeEventListener(e, end));
+    };
+    ['keydown', 'pointerdown', 'wheel', 'touchstart'].forEach((e) => W.addEventListener(e, end, { passive: true }));
+    setTimeout(end, 1500);
+  } else if (root.classList.contains('splash-on') && splash) {
     let done = false;
     const behind = [...d.body.children].filter((el) => el !== splash && !/^(SCRIPT|TEMPLATE)$/.test(el.tagName));
     behind.forEach((el) => el.setAttribute('inert', ''));
@@ -418,12 +432,39 @@
   const subjQ = (qs.get('subject') || '').trim().toLowerCase(); const subjSel = $('select[name="subject"]');
   if (subjQ && subjSel) { const o = [...subjSel.options].find((x) => x.text.trim().toLowerCase() === subjQ); if (o) subjSel.value = o.value; }
 
+  // ---------------------------------------------------------------- step tabs (How it works): every five seconds the next step,
+  // waiting while the pointer is over them; focusing them or picking a tab stops the turning for good
+  $$('[data-stabs]').forEach((box) => {
+    const tabs = $$('.stabs__tab', box), panels = $$('.stabs__panel', box);
+    let cur = 0, timer = 0, stopped = RM, inView = false;
+    const bars = () => tabs.forEach((t) => { const b = $('.stabs__bar', t); b.style.animation = 'none'; void b.offsetWidth; b.style.animation = ''; });
+    const arm = () => { clearTimeout(timer); if (!stopped && inView && !box.classList.contains('is-paused')) { bars(); timer = setTimeout(() => show((cur + 1) % tabs.length), 5000); } };
+    const show = (i, focus) => {
+      cur = i;
+      tabs.forEach((t, j) => { t.setAttribute('aria-selected', String(i === j)); t.tabIndex = i === j ? 0 : -1; });
+      panels.forEach((p, j) => { p.hidden = i !== j; });
+      if (focus) tabs[i].focus();
+      arm();
+    };
+    const stop = () => { stopped = true; clearTimeout(timer); box.classList.add('is-stopped'); };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => { stop(); show(i); });
+      t.addEventListener('keydown', (e) => { const n = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]; if (n) { e.preventDefault(); stop(); show((i + n + tabs.length) % tabs.length, true); } });
+    });
+    box.addEventListener('pointerenter', () => { box.classList.add('is-paused'); clearTimeout(timer); });
+    box.addEventListener('pointerleave', () => { box.classList.remove('is-paused'); arm(); });
+    box.addEventListener('focusin', stop);
+    if ('IntersectionObserver' in W) new IntersectionObserver((en) => { inView = en[0].isIntersecting; if (inView) arm(); else clearTimeout(timer); }).observe(box); else { inView = true; arm(); }
+    if (stopped) box.classList.add('is-stopped');
+  });
+
   // ---------------------------------------------------------------- payout calculator
   $$('[data-calc]').forEach((c) => {
+    // the rate box is optional: the home page's receipt has only the slider (each court sets its own rate)
     const inp = $('[data-calc-rate]', c), rng = $('[data-calc-range]', c), out = (k) => $(`[data-calc-o="${k}"]`, c);
     const paint = (v) => { const r = Math.max(0, +v || 0); const fee = Math.round(r * 5) / 100; out('rate').textContent = peso(r); out('fee').textContent = '+ ' + peso(fee); out('pays').textContent = peso(r + fee); out('you').textContent = peso(r); };
-    inp.addEventListener('input', () => { rng.value = inp.value; paint(inp.value); });
-    rng.addEventListener('input', () => { inp.value = rng.value; paint(rng.value); });
+    if (inp) inp.addEventListener('input', () => { if (rng) rng.value = inp.value; paint(inp.value); });
+    if (rng) rng.addEventListener('input', () => { if (inp) inp.value = rng.value; paint(rng.value); });
   });
 
   // ---------------------------------------------------------------- help search + topics

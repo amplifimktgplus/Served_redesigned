@@ -230,7 +230,7 @@ function mega() {
       <div class="mega__col"><p class="mega__h">Pricing</p>
       <a class="mega__link" href="${u('/pricing/#players')}">${icon('user')}<span>For players<small>Venue rate plus a 5% service fee</small></span></a>
       <a class="mega__link" href="${u('/pricing/#owners')}">${icon('court')}<span>For court owners<small>₱0 to list, every month</small></span></a></div>
-      <div class="mega__note board"><p class="mega__h">Player pays</p><p class="mega__num">${peso(525)}</p><p>on a ${peso(500)} court hour. The venue receives ${peso(500)}.</p></div></div>`,
+      <div class="mega__note board"><p class="mega__h">Player pays</p><p class="mega__num">Rate + 5%</p><p>Each court sets its own hourly rate. The player pays it plus a 5% service fee; the venue receives its full rate.</p></div></div>`,
     list: `<div class="mega__cols mega__cols--sm">
       <div class="mega__col"><p class="mega__h">For venues</p>
       <a class="mega__link" href="${u('/list-your-court/')}">${icon('info')}<span>How listing works<small>Three steps to your first booking</small></span></a>

@@ -12,5 +12,23 @@
  "colors": {
   "light": "#c8d24f",
   "deep": "#76a84b"
+ },
+ "fit": {
+  "photo": "rallyx-forehand",
+  "x": 115.6,
+  "y": 0.9,
+  "width": 284,
+  "height": 378.7,
+  "back": {
+   "x": 0.0,
+   "y": -127.1,
+   "width": 476.0,
+   "height": 634.7
+  },
+  "feather": 14,
+  "pan": 6,
+  "face_inside": 1.003,
+  "paddle_inside": 1.008,
+  "x_filled_sharp": 0.74
  }
 }

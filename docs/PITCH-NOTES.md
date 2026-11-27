@@ -99,18 +99,24 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
   section it is Rally X's neon with its words. Motion follows the scroll in Chrome, Edge and Safari; elsewhere, and
   with reduced motion, each seam shows its finished state.
 - Rally X on the home page (client's pick, 27 Nov, option D of five layouts shown): the venue's own black and neon
-  green, and the venue's paddle rack photo, in its natural colours, seen through the brush-stroke X of the Rally X logo,
-  traced from the banner in the venue's photo (`tools/rallyx-x.py`) and sunk in with an inner shadow. The X takes the
-  larger half of the section so the photo reads through it. The only neon green on the site.
-- Splash (client, 27 Nov, after the idea of React Bits' "Dodge Field", written for this site): once the logo has
-  served in, a CTA asks "Are you ready to play?", slips away from the pointer and asks "Are you sure?", then gives in
-  and glides home as "Get Served.", which opens the site. Touch: each tap is a try; keyboard: each Enter; Skip intro,
-  Escape or scrolling leave at any time; the page behind is inert while it shows; once per session, as before.
-- How it works: the current cards plus three layouts to pick from at `/lab/how/` (A rally line, B big numbers,
-  C step tabs), in the current site's words.
+  green, and the venue's photo of a player with his paddle, in its natural colours, seen through the brush-stroke X of
+  the Rally X logo, traced from the banner in the venue's photo (`tools/rallyx-x.py`) and sunk in with an inner shadow.
+  `tools/rallyx-fit.py` places the photo so his face and his paddle both show through the X; the same photo, blurred,
+  fills the rest of the X. The X takes the larger half of the section. The only neon green on the site.
+- Splash (client, 27 Nov, after the idea of React Bits' "Dodge Field", written for this site), desktop only: once the
+  logo has served in, a CTA asks "Are you ready to play?", slips away from the pointer and asks "Are you sure?", then
+  gives in and glides home as "Get Served.", which opens the site. Keyboard: each Enter is a try; Skip intro, Escape or
+  scrolling leave at any time; the page behind is inert while it shows. Phones and tablets keep the classic splash,
+  which closes on its own. Once per session, as before.
+- How it works (client's pick, 27 Nov, of three layouts shown): step tabs, three numbered tabs and the chosen step
+  large on a dark panel, moving on every five seconds until a visitor picks one. The current site's words.
+- Prices shown as examples are labelled as such (client, 27 Nov): the home page's payout receipt is a small calculator
+  with a court-rate slider and a note that the figures are for illustration only and may not match an actual court's
+  rate; the pricing page's calculator carries the same note; the Pricing menu card says "Rate + 5%" instead of a fixed
+  amount, since each court sets its own rate.
 - Corners eased site-wide (client, 27 Nov): cards and panels 16px (large panels 22px), smaller cards 12-14px; buttons
   and chips stay pill-shaped.
-- The option pages (`/lab/rally-x/`, `/lab/dividers/`) were removed once the client picked.
+- The option pages (`/lab/rally-x/`, `/lab/dividers/`, `/lab/how/`) were removed once the client picked.
 - Footer: the base row's line sits clear of the Served. logo (client, 27 Nov).
 
 ## Marked as concept, not live

@@ -22,7 +22,7 @@ Accounts work in the browser with no server: players register and can then book 
 waits while a guest signs up), and owners set their court page's colours, hero photo and gallery, which every page
 of that venue then wears. Everything is kept in the visitor's own browser.
 
-48 pages in all while Batangas is paused, the 404 page and the options page `/lab/how/` (How it works layouts) included. URLs kept from the current site (`/courts`, `/courts/<venue>`, `/courts/<venue>/availability`, `/courts/<venue>/slots`, `/pricing`, `/list-your-court`, `/contact`, `/sign-in`, `/sign-up`, `/forgot-password`, `/staff/sign-in`).
+47 pages in all while Batangas is paused, the 404 page included. URLs kept from the current site (`/courts`, `/courts/<venue>`, `/courts/<venue>/availability`, `/courts/<venue>/slots`, `/pricing`, `/list-your-court`, `/contact`, `/sign-in`, `/sign-up`, `/forgot-password`, `/staff/sign-in`).
 
 ## Build
 
@@ -32,6 +32,7 @@ node tools/linkcheck.mjs    # every local link and image resolves; every Book li
 python3 tools/images.py     # re-encodes the photo set to WebP (needs Pillow); pass names to redo only those
 python3 tools/logo.py       # traces the supplied logo into src/data/logo.json (needs OpenCV and Pillow)
 python3 tools/rallyx-x.py   # traces the X of the Rally X logo, from the banner in the venue's photo, into src/data/rallyx-x.json
+python3 tools/rallyx-fit.py # places the player photo so his face and paddle show through the X (writes "fit" into rallyx-x.json)
 ```
 
 No npm packages. `dist/` is what GitHub Pages serves (branch `gh-pages`).
