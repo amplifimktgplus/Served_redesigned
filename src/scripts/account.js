@@ -18,11 +18,16 @@
   const me = () => { const e = LS.get('srv.session', null); return e ? users().find((u) => u.email === e) || null : null; };
   const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
   const hashPw = async (pw, salt) => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${salt}:${pw}`)));
-  const landing = (u) => (u.role === 'owner' ? 'owner/studio/' : 'account/');
+  // a court owner has two views: the owner view (their court page studio) and the player view (book and see bookings)
+  const ownerView = (u) => u.role === 'owner' && (u.mode || 'owner') === 'owner';
+  const landing = (u) => (ownerView(u) ? 'owner/studio/' : 'account/');
+  const listings = () => LS.get('srv.listings', []);
+  const courtHref = (slug) => (String(slug).startsWith('listing-') ? `${R}courts/listing/?id=${encodeURIComponent(slug.slice(8))}` : `${R}courts/${slug}/`);
   // only a path inside this site, never another origin
   const safeNext = () => { const n = qs.get('next') || ''; return /^[a-z0-9][a-z0-9/_\-.?=&]*$/i.test(n) && !n.includes('..') && !n.includes('//') ? n : ''; };
   const goOn = (u) => { location.href = R + (safeNext() || landing(u)); };
   const signOut = () => { LS.set('srv.session', null); toast('Signed out.'); };
+  const setMode = (mode) => { const u = me(); if (!u || u.role !== 'owner') return; LS.set('srv.users', users().map((x) => (x.email === u.email ? { ...x, mode } : x))); };
   function addBooking(b) {
     const u = me(); if (!u) return;
     const all = LS.get('srv.bookings', []);
@@ -30,12 +35,16 @@
     all.unshift({ ...b, id, email: u.email, status: 'confirmed', created: new Date().toISOString() });
     LS.set('srv.bookings', all);
   }
-  S.acct = { me, addBooking, signOut };
+  S.acct = { me, addBooking, signOut, setMode };
 
   // form messages: one alert line per form, read out when it changes
   function say(form, html) {
     let p = $('.form-err', form);
-    if (!p) { p = d.createElement('p'); p.className = 'form-err'; p.setAttribute('role', 'alert'); const btn = $('button[type="submit"]', form); form.insertBefore(p, btn); }
+    if (!p) {
+      p = d.createElement('p'); p.className = 'form-err'; p.setAttribute('role', 'alert');
+      const btn = $('button[type="submit"]', form); let at = btn; while (at && at.parentElement !== form) at = at.parentElement; // the button, or the row it sits in
+      form.insertBefore(p, at || null);
+    }
     p.innerHTML = html; p.hidden = !html;
   }
   const field = (f, n) => (f.elements[n] ? f.elements[n].value.trim() : '');
@@ -98,13 +107,27 @@
       const card = (b) => {
         const when = startOf(b); const past = when < new Date(); const late = when - new Date() < 864e5;
         const st = b.status === 'cancelled' ? '<span class="bk__st is-off">Cancelled</span>' : past ? '<span class="bk__st is-past">Played</span>' : '<span class="bk__st">Confirmed</span>';
-        return `<article class="bk board"><div class="bk__main"><p class="bk__ref">Ref ${esc(b.id)}</p><h3 class="bk__v">${esc(b.venue)}</h3><p class="bk__d">${fmt(b.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p><ul class="bk__l">${b.lines.map((l) => `<li><b>${esc(l.court)}</b>${l.hours.map((h) => hh(h)).join(', ')}</li>`).join('')}</ul></div><div class="bk__side"><b class="bk__t">${peso(b.total)}</b>${st}${b.status !== 'cancelled' && !past ? `<button class="btn btn--line btn--sm" type="button" data-cancel="${esc(b.id)}" data-late="${late ? 1 : 0}"><span>Cancel booking</span></button>` : ''}<a class="link" href="${R}courts/${esc(b.slug)}/">View court</a></div></article>`;
+        return `<article class="bk board"><div class="bk__main"><p class="bk__ref">Ref ${esc(b.id)}</p><h3 class="bk__v">${esc(b.venue)}</h3><p class="bk__d">${fmt(b.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p><ul class="bk__l">${b.lines.map((l) => `<li><b>${esc(l.court)}</b>${l.hours.map((h) => hh(h)).join(', ')}</li>`).join('')}</ul></div><div class="bk__side"><b class="bk__t">${peso(b.total)}</b>${st}${b.status !== 'cancelled' && !past ? `<button class="btn btn--line btn--sm" type="button" data-cancel="${esc(b.id)}" data-late="${late ? 1 : 0}"><span>Cancel booking</span></button>` : ''}<a class="link" href="${courtHref(b.slug)}">View court</a></div></article>`;
       };
-      view.innerHTML = `<div class="acct__grid"><aside class="acct__me board"><span class="acct__av" aria-hidden="true">${esc((u.first || u.email)[0].toUpperCase())}</span><h2 class="d3">${esc(u.first)} ${esc(u.last)}</h2><p>${esc(u.email)}</p><p class="acct__role">${u.role === 'owner' ? 'Court owner' : 'Player'}</p>${u.role === 'owner' ? `<a class="btn btn--accent btn--block" href="${R}owner/studio/"><span>Court page studio</span></a>` : ''}<a class="btn btn--accent btn--block" href="${R}courts/"><span>Book a court</span></a><button class="btn btn--ghost btn--block" type="button" data-signout><span>Sign out</span></button></aside><div class="acct__list"><h2 class="d3">Your bookings</h2>${mine.length ? mine.map(card).join('') : `<div class="acct__empty board"><p>No bookings yet. Pick a court, choose your times and they will show here.</p><a class="btn btn--accent" href="${R}courts/"><span>Find a court</span></a></div>`}</div></div>`;
+      const myListings = () => {
+        const mineL = listings().filter((l) => l.owner === u.email);
+        return `<h2 class="d3">Your listings</h2>${mineL.length ? mineL.map((l) => `<article class="bk board"><div class="bk__main"><p class="bk__ref">${esc(l.sport)} <span class="sep">/</span> ${esc(l.city)}</p><h3 class="bk__v">${esc(l.name)}</h3><p class="bk__d">${esc(l.address)}</p><ul class="bk__l"><li><b>${l.courts} court${l.courts > 1 ? 's' : ''}</b>${S.pesoI(l.rate)} an hour</li></ul></div><div class="bk__side"><a class="btn btn--accent btn--sm" href="${courtHref('listing-' + l.id)}"><span>View page</span></a><a class="btn btn--line btn--sm" href="${R}owner/list/?id=${encodeURIComponent(l.id)}"><span>Edit listing</span></a><button class="btn btn--line btn--sm" type="button" data-list-del="${esc(l.id)}"><span>Remove</span></button></div></article>`).join('') : `<div class="acct__empty board"><p>No listings yet. List your venue and it gets its own page that players can book.</p><a class="btn btn--accent" href="${R}owner/list/"><span>List a venue</span></a></div>`}`;
+      };
+      view.innerHTML = `<div class="acct__grid"><aside class="acct__me board"><span class="acct__av" aria-hidden="true">${esc((u.first || u.email)[0].toUpperCase())}</span><h2 class="d3">${esc(u.first)} ${esc(u.last)}</h2><p>${esc(u.email)}</p><p class="acct__role">${u.role === 'owner' ? (ownerView(u) ? 'Court owner, owner view' : 'Court owner, player view') : 'Player'}</p>${u.role === 'owner' ? `<button class="btn btn--accent btn--block" type="button" data-mode-to="${ownerView(u) ? 'player' : 'owner'}"><span>${ownerView(u) ? 'Switch to player view' : 'Switch to owner view'}</span></button><a class="btn btn--ghost btn--block" href="${R}owner/list/"><span>List a venue</span></a>` : ''}<a class="btn btn--accent btn--block" href="${R}courts/"><span>Book a court</span></a><button class="btn btn--ghost btn--block" type="button" data-signout><span>Sign out</span></button></aside><div class="acct__list">${u.role === 'owner' ? myListings() : ''}<h2 class="d3">Your bookings</h2>${mine.length ? mine.map(card).join('') : `<div class="acct__empty board"><p>No bookings yet. Pick a court, choose your times and they will show here.</p><a class="btn btn--accent" href="${R}courts/"><span>Find a court</span></a></div>`}</div></div>`;
     };
     draw();
     view.addEventListener('click', (e) => {
       if (e.target.closest('[data-signout]')) { signOut(); draw(); return; }
+      const mt = e.target.closest('[data-mode-to]');
+      if (mt) { setMode(mt.dataset.modeTo); if (mt.dataset.modeTo === 'owner') location.href = R + 'owner/studio/'; else { toast('Switched to player view. Book any court.'); draw(); } return; }
+      const del = e.target.closest('[data-list-del]');
+      if (del) {
+        if (!del.classList.contains('is-sure')) { del.classList.add('is-sure'); $('span', del).textContent = 'Tap again to remove'; setTimeout(() => { if (del.isConnected) { del.classList.remove('is-sure'); $('span', del).textContent = 'Remove'; } }, 3000); return; }
+        const id = del.dataset.listDel; LS.set('srv.listings', listings().filter((l) => l.id !== id));
+        const p = LS.get('srv.studio', {}); const cfg = p['listing-' + id];
+        if (cfg) { idb.del('hero:listing-' + id).catch(() => {}); (cfg.gallery || []).forEach((g) => idb.del(g).catch(() => {})); delete p['listing-' + id]; LS.set('srv.studio', p); }
+        toast('Listing removed.'); draw(); return;
+      }
       const c = e.target.closest('[data-cancel]'); if (!c) return;
       if (!c.classList.contains('is-sure')) { c.classList.add('is-sure'); $('span', c).textContent = 'Tap again to cancel'; setTimeout(() => { if (c.isConnected) { c.classList.remove('is-sure'); $('span', c).textContent = 'Cancel booking'; } }, 3000); return; }
       const all = LS.get('srv.bookings', []); const b = all.find((x) => x.id === c.dataset.cancel); if (!b) return;
@@ -166,19 +189,60 @@
     }
   }
 
+  // ---------------------------------------------------------------- list a venue (owners), and new listings in the directory
+  const lf = $('[data-list-form]');
+  if (lf) {
+    const u = me();
+    if (!u || u.role !== 'owner') { const g = $('[data-list-gate]'); if (g) g.hidden = false; }
+    else {
+      lf.hidden = false; setMode('owner');
+      const editId = qs.get('id'); const existing = editId ? listings().find((l) => l.id === editId && l.owner === u.email) : null;
+      if (existing) {
+        ['name', 'sport', 'city', 'address', 'courts', 'surface', 'rate', 'eveningRate', 'open', 'close', 'desc', 'phone'].forEach((k) => { if (lf.elements[k] && existing[k] != null) lf.elements[k].value = existing[k]; });
+        $$('input[name="amenities"]', lf).forEach((c) => { c.checked = (existing.amenities || []).includes(c.value); });
+        const lab = $('[data-list-label]'); if (lab) lab.textContent = 'Save changes';
+      }
+      lf.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!lf.checkValidity()) { lf.reportValidity(); return; }
+        const v = (k) => lf.elements[k].value.trim();
+        const open = +v('open'), close = +v('close');
+        if (close - open < 2) { say(lf, 'Leave at least two hours between opening and closing.'); return; }
+        const ev = v('eveningRate');
+        const L = { id: existing ? existing.id : Date.now().toString(36), owner: u.email, name: v('name'), sport: v('sport'), city: v('city'), address: v('address'), courts: Math.max(1, Math.min(20, Math.round(+v('courts')))), surface: v('surface'), rate: +v('rate'), eveningRate: ev ? +ev : null, open, close, amenities: $$('input[name="amenities"]:checked', lf).map((c) => c.value), desc: v('desc'), phone: v('phone'), created: existing ? existing.created : new Date().toISOString(), updated: new Date().toISOString() };
+        if (!LS.set('srv.listings', [L, ...listings().filter((l) => l.id !== L.id)])) return;
+        toast(existing ? 'Listing updated.' : 'Your venue is listed.');
+        location.href = courtHref('listing-' + L.id);
+      });
+    }
+  }
+  const ml = $('[data-my-listings]');
+  if (ml) {
+    const L = listings();
+    if (L.length) {
+      $('[data-my-listings-grid]', ml).innerHTML = L.map((l) => `<a class="mlc board" href="${courtHref('listing-' + l.id)}"><span class="chip">${esc(l.sport)}</span><b>${esc(l.name)}</b><span>${esc(l.city === 'Other' ? l.address : `${l.address}, ${l.city}`)}</span><em>${S.pesoI(l.rate)} / hr <span class="sep">/</span> ${l.courts} court${l.courts > 1 ? 's' : ''}</em><span class="mlc__go">View and book <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>`).join('');
+      ml.hidden = false;
+    }
+  }
+
   // ---------------------------------------------------------------- the studio
   const studio = $('[data-studio]');
   if (studio) {
     const u = me();
     if (!u || u.role !== 'owner') { $('[data-studio-gate]').hidden = false; return; }
     studio.hidden = false;
+    setMode('owner'); // the studio is the owner view
+    const swb = $('[data-mode-switch]'); if (swb) swb.addEventListener('click', () => { setMode('player'); location.href = R + 'account/'; });
     const f = $('[data-studio-form]'), frame = $('[data-studio-frame]'), urlEl = $('[data-studio-url]'), view = $('[data-studio-view]'), warn = $('[data-contrast]');
+    // the owner's own listings sit first in the venue list
+    const mineL = listings().filter((l) => l.owner === u.email);
+    if (mineL.length) { const g = d.createElement('optgroup'); g.label = 'Your listings'; mineL.forEach((l) => { const o = d.createElement('option'); o.value = 'listing-' + l.id; o.textContent = l.name; g.appendChild(o); }); f.elements.venue.prepend(g); }
     const all = pages();
-    let slug = Object.keys(all).find((k) => all[k].owner === u.email) || f.elements.venue.value;
+    let slug = Object.keys(all).find((k) => all[k].owner === u.email) || (mineL[0] ? 'listing-' + mineL[0].id : f.elements.venue.value);
     const cur = () => pages()[slug] || { owner: u.email, accent: '', base: '', hero: false, gallery: [] };
     const save = (patch) => { const p = pages(); p[slug] = { ...cur(), ...patch, owner: u.email }; LS.set('srv.studio', p); refresh(); };
     let tReload = null;
-    const reload = () => { clearTimeout(tReload); tReload = setTimeout(() => { frame.src = `${R}courts/${slug}/?studio=${Date.now()}`; }, 250); };
+    const reload = () => { clearTimeout(tReload); tReload = setTimeout(() => { const h = courtHref(slug); frame.src = `${h}${h.includes('?') ? '&' : '?'}studio=${Date.now()}`; }, 250); };
     const check = () => {
       const c = cur(); const a = c.accent || '#ff6b18', b = c.base || '#0a0a0a';
       const r = contrast(a, b);
@@ -197,7 +261,7 @@
       $$('input[name="accent"]', f).forEach((i) => { i.checked = i.value === (c.accent || ''); });
       if (c.accent) f.elements.accentPick.value = c.accent;
       $$('input[name="base"]', f).forEach((i) => { i.checked = i.value === (c.base || ''); });
-      urlEl.textContent = `served.ph/courts/${slug}`; view.href = `${R}courts/${slug}/`;
+      urlEl.textContent = `served.ph/courts/${slug.startsWith('listing-') ? 'listing' : slug}`; view.href = courtHref(slug);
       check(); reload();
     }
     f.elements.venue.addEventListener('change', () => { slug = f.elements.venue.value; const p = pages(); if (!p[slug]) { p[slug] = { owner: u.email, accent: '', base: '', hero: false, gallery: [] }; LS.set('srv.studio', p); } refresh(); paintHero(); paintGal(); });

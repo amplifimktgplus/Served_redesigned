@@ -15,7 +15,7 @@ Every page carries `noindex, nofollow`. Forms, sign-in and payment are demonstra
 | Sports and cities | Sports hub plus pickleball, tennis and badminton; cities hub plus Taguig, Pasig, Quezon City, Marikina, Muntinlupa (Batangas, meaning Nasugbu and its venue, is paused in `src/content.mjs`) |
 | Community | Play mode (open play, find players, clubs and ranking, tournaments, events), marked as concepts |
 | Company | Pricing, List Your Court, Help centre and FAQ, About, Contact, Court Gallery |
-| Account | Sign in, Register, Forgot password, Staff sign in, My account (bookings, cancel), Court page studio for owners |
+| Account | Sign in, Register, Forgot password, Staff sign in, My account (bookings, cancel, listings), List a venue and Court page studio for owners, owner and player views |
 | App | Installable: web app manifest, a service worker that keeps visited pages readable offline, and an Install App button on the home hero |
 
 Accounts work in the browser with no server: players register and can then book any listed court (the booking

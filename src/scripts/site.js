@@ -317,6 +317,9 @@
   $$('[data-eye]').forEach((b) => b.addEventListener('click', () => { const i = b.parentElement.querySelector('input'); const show = i.type === 'password'; i.type = show ? 'text' : 'password'; b.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); }));
   const qs = new URLSearchParams(location.search);
   if (qs.get('role') === 'owner') { const r = $('input[name="role"][value="owner"]'); if (r) r.checked = true; }
+  // contact?subject=Listing my court picks that subject, as the current site does
+  const subjQ = (qs.get('subject') || '').trim().toLowerCase(); const subjSel = $('select[name="subject"]');
+  if (subjQ && subjSel) { const o = [...subjSel.options].find((x) => x.text.trim().toLowerCase() === subjQ); if (o) subjSel.value = o.value; }
 
   // ---------------------------------------------------------------- payout calculator
   $$('[data-calc]').forEach((c) => {
@@ -339,43 +342,78 @@
     $$('[data-help-cat]').forEach((b) => b.addEventListener('click', () => { cat = b.dataset.helpCat; $$('[data-help-cat]').forEach((x) => x.classList.toggle('is-on', x === b)); run(); }));
   }
 
-  // ---------------------------------------------------------------- concave carousel for court photos
-  // A native scroller does the moving (touch, trackpad, keys, buttons, mouse drag); this only reads where each photo
-  // sits against the middle and hands it --cc-p (-1 left, 0 centre, 1 right) for the CSS to turn and lift it.
+  // ---------------------------------------------------------------- concave carousel: a gallery wall that curves around you
+  // Photos hang on the inside of a drum: the further one sits from the middle, the more it turns toward you and comes
+  // forward (x = R sin a, z = R (1 - cos a)). A native scroller still does the moving, so touch, trackpad, keys and the
+  // buttons all work. The set is repeated either side so a slow drift can turn the wall for ever; the drift stops
+  // whenever someone hovers, touches, drags, focuses or opens a photo, and the wall settles with a photo centred.
   function initCC(cc) {
     if (!cc) return;
     const tr = $('[data-cc-track]', cc); if (!tr || tr.dataset.ccOn) return; tr.dataset.ccOn = '1';
-    const slides = $$('[data-cc-slide]', tr); const n = slides.length; const count = $('[data-cc-count]', cc);
-    let raf = 0, cur = 0;
+    const orig = $$('[data-cc-slide]', tr); const n = orig.length; if (!n) return;
+    const count = $('[data-cc-count]', cc); const loop = n > 2;
+    if (loop) {
+      const copies = () => orig.map((s) => { const c = s.cloneNode(true); c.removeAttribute('data-cc-slide'); c.setAttribute('aria-hidden', 'true'); $$('button, a', c).forEach((b) => b.setAttribute('tabindex', '-1')); return c; });
+      copies().forEach((c) => tr.insertBefore(c, orig[0])); copies().forEach((c) => tr.appendChild(c));
+    }
+    const all = $$('.cc__s', tr); const home = loop ? n : 0;
+    const centreOf = (s) => s.offsetLeft - (tr.clientWidth - s.offsetWidth) / 2;
+    const period = () => (loop ? all[n].offsetLeft - all[0].offsetLeft : 0);
+    const step = () => (all[1] ? all[1].offsetLeft - all[0].offsetLeft : tr.clientWidth);
+    const pad = (k) => String(k).padStart(2, '0');
+    let raf = 0, cur = home;
     const paint = () => {
-      raf = 0; const r = tr.getBoundingClientRect(); const mid = r.left + r.width / 2; let best = 0, bestD = Infinity;
-      slides.forEach((s, i) => {
-        const b = s.getBoundingClientRect(); const c = b.left + b.width / 2;
-        const p = Math.max(-1.6, Math.min(1.6, (c - mid) / (r.width / 2)));
-        s.style.setProperty('--cc-p', p.toFixed(3)); s.style.setProperty('--cc-a', Math.abs(p).toFixed(3));
-        const dd = Math.abs(c - mid); if (dd < bestD) { bestD = dd; best = i; }
+      raf = 0; const W2 = tr.clientWidth; const mid = tr.scrollLeft + W2 / 2; const R = W2 * 0.95; let best = home, bestD = Infinity;
+      all.forEach((s, i) => {
+        const dx = s.offsetLeft + s.offsetWidth / 2 - mid; const ad = Math.abs(dx);
+        if (ad < bestD) { bestD = ad; best = i; }
+        if (ad > W2 * 1.4) return;
+        s.style.setProperty('--cc-a', Math.min(1, ad / (W2 * 0.5)).toFixed(3));
+        if (RM) return;
+        const a = Math.max(-1.2, Math.min(1.2, dx / R));
+        s.style.transform = `translate3d(${(R * Math.sin(a) - dx).toFixed(1)}px,0,${(R * (1 - Math.cos(a)) * 0.62).toFixed(1)}px) rotateY(${(-a * 51.6).toFixed(2)}deg)`;
       });
-      cur = best; slides.forEach((s, i) => s.classList.toggle('is-mid', i === best));
-      if (count) count.textContent = `${best + 1} / ${n}`;
+      cur = best; all.forEach((s, i) => s.classList.toggle('is-mid', i === best));
+      if (count) count.textContent = `${pad((best % n) + 1)} / ${pad(n)}`;
     };
     const req = () => { if (!raf) raf = requestAnimationFrame(paint); };
-    tr.addEventListener('scroll', req, { passive: true }); W.addEventListener('resize', req);
-    const go = (i) => { const s = slides[Math.max(0, Math.min(n - 1, i))]; tr.scrollTo({ left: s.offsetLeft - (tr.clientWidth - s.offsetWidth) / 2, behavior: RM ? 'auto' : 'smooth' }); };
+    // keep the middle copy centred: jumping by one whole set looks identical, so the wall never runs out
+    const wrap = () => { if (!loop) return; const P = period(), base = centreOf(all[home]), half = step() / 2; if (tr.scrollLeft < base - half) { tr.scrollLeft += P; acc += P; } else if (tr.scrollLeft > base + P - half) { tr.scrollLeft -= P; acc -= P; } };
+    let settleT = 0;
+    tr.addEventListener('scroll', () => { req(); clearTimeout(settleT); settleT = setTimeout(() => { if (!tr.classList.contains('is-drift')) wrap(); }, 140); }, { passive: true });
+    W.addEventListener('resize', req);
+    const go = (i, smooth = !RM) => tr.scrollTo({ left: centreOf(all[Math.max(0, Math.min(all.length - 1, i))]), behavior: smooth ? 'smooth' : 'auto' });
+    // drift: about a sixth of a photo a second, and only while nobody is interacting
+    let acc = 0, last = 0, hold = 0, hovering = false, dragging = false, visible = true;
+    const holdFor = (ms) => { hold = performance.now() + ms; };
+    const tick = (t) => {
+      const dt = last ? Math.min(64, t - last) / 1000 : 0; last = t;
+      const busy = hovering || dragging || t < hold || !visible || d.hidden || cc.contains(d.activeElement) || $('.lb');
+      if (loop && !RM && !busy) { if (!tr.classList.contains('is-drift')) { tr.classList.add('is-drift'); acc = tr.scrollLeft; } acc += step() * 0.16 * dt; tr.scrollLeft = acc; wrap(); }
+      else if (tr.classList.contains('is-drift')) { tr.classList.remove('is-drift'); go(cur); }
+      requestAnimationFrame(tick);
+    };
+    if ('IntersectionObserver' in W) new IntersectionObserver((en) => { visible = en[0].isIntersecting; }).observe(cc);
+    cc.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hovering = true; });
+    cc.addEventListener('pointerleave', () => { hovering = false; holdFor(800); });
+    ['touchstart', 'wheel', 'keydown'].forEach((ev) => tr.addEventListener(ev, () => holdFor(3500), { passive: true }));
     const prev = $('[data-cc-prev]', cc), next = $('[data-cc-next]', cc);
-    if (prev) prev.addEventListener('click', () => go(cur - 1));
-    if (next) next.addEventListener('click', () => go(cur + 1));
+    if (prev) prev.addEventListener('click', () => { holdFor(4000); go(cur - 1); });
+    if (next) next.addEventListener('click', () => { holdFor(4000); go(cur + 1); });
     tr.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') { e.preventDefault(); go(cur + 1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); go(cur - 1); } });
-    // mouse drag (touch and trackpads scroll natively); a drag never opens the photo it ends on
+    // mouse drag (touch and trackpads scroll natively); a drag never opens a photo, and a side photo turns the wall to it
     let drag = null, suppress = false;
-    tr.addEventListener('click', (ev) => { if (suppress) { suppress = false; ev.stopPropagation(); ev.preventDefault(); } }, true);
-    tr.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' || e.button !== 0) return; drag = { x: e.clientX, s: tr.scrollLeft, moved: false }; });
+    tr.addEventListener('click', (ev) => {
+      if (suppress) { suppress = false; ev.stopPropagation(); ev.preventDefault(); return; }
+      const s = ev.target.closest('.cc__s'); if (s && !s.classList.contains('is-mid')) { ev.stopPropagation(); ev.preventDefault(); holdFor(4000); go(all.indexOf(s)); }
+    }, true);
+    tr.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' || e.button !== 0) return; drag = { x: e.clientX, s: tr.scrollLeft, moved: false }; dragging = true; });
     W.addEventListener('pointermove', (e) => { if (!drag) return; const dx = e.clientX - drag.x; if (!drag.moved && Math.abs(dx) > 5) { drag.moved = true; tr.classList.add('is-drag'); } if (drag.moved) tr.scrollLeft = drag.s - dx; });
     W.addEventListener('pointerup', () => {
-      if (!drag) return; const moved = drag.moved; drag = null;
-      if (moved) { tr.classList.remove('is-drag'); go(cur); suppress = true; setTimeout(() => { suppress = false; }, 0); }
+      if (!drag) return; const moved = drag.moved; drag = null; dragging = false; holdFor(3000);
+      if (moved) { tr.classList.remove('is-drag'); paint(); go(cur); suppress = true; setTimeout(() => { suppress = false; }, 0); }
     });
-    // open on the second photo, so the curve shows on both sides from the start
-    requestAnimationFrame(() => { if (n > 2) { const s = slides[1]; tr.scrollLeft = s.offsetLeft - (tr.clientWidth - s.offsetWidth) / 2; } paint(); });
+    requestAnimationFrame(() => { tr.scrollLeft = centreOf(all[home]); acc = tr.scrollLeft; paint(); requestAnimationFrame(tick); });
   }
   $$('[data-cc]').forEach(initCC);
   W.__srv.cc = initCC;
@@ -637,8 +675,23 @@
       drawCourts(); drawSlots(); paintSum();
       if (!go.disabled) { toast('You are in. Your picks are ready to pay.'); go.click(); }
     }, 0);
+    // a court owner books as a player: from the owner view they are offered a one-tap switch
+    let swEl = null;
+    function switchGate() {
+      if (swEl) return swEl;
+      swEl = d.createElement('div'); swEl.className = 'sheet'; swEl.hidden = true;
+      swEl.setAttribute('role', 'dialog'); swEl.setAttribute('aria-modal', 'true'); swEl.setAttribute('aria-labelledby', 'sw-h');
+      swEl.innerHTML = `<div class="sheet__in board gate"><button class="iconbtn sheet__x" type="button" data-sw-close aria-label="Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button><p class="kicker"><span class="kicker__ball" aria-hidden="true"></span>You are in your owner view</p><h2 class="d3" id="sw-h">Switch to player to book</h2><p class="gate__p">Court owners book as players. Switch to your player view to finish this booking. Your court page stays as it is, and you can switch back any time from your account.</p><div class="ctas"><button class="btn btn--accent" type="button" data-sw-go><span>Switch to player and continue</span><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></button><button class="btn btn--ghost" type="button" data-sw-close><span>Not now</span></button></div></div>`;
+      el.appendChild(swEl);
+      $$('[data-sw-close]', swEl).forEach((b) => b.addEventListener('click', () => { closeSheet(swEl); go.focus(); }));
+      swEl.addEventListener('click', (e) => { if (e.target === swEl) closeSheet(swEl); });
+      $('[data-sw-go]', swEl).addEventListener('click', () => { W.__srv.acct.setMode('player'); closeSheet(swEl); toast('Switched to player. Switch back any time from your account.'); go.click(); });
+      return swEl;
+    }
     go.addEventListener('click', () => {
-      if (!acct()) { holdPicks(); openSheet(gate()); return; }
+      const who = acct();
+      if (!who) { holdPicks(); openSheet(gate()); return; }
+      if (who.role === 'owner' && (who.mode || 'owner') === 'owner') { openSheet(switchGate()); return; }
       const L = lines();
       $('[data-pay-sum]', el).innerHTML = `<div class="row"><span>${esc(B.name)}</span><b>${fmt(st.date, { weekday: 'short', day: 'numeric', month: 'short' })}</b></div>${L.map((l) => `<div class="row"><span>${esc(l.court)}</span><span>${l.hours.map((h) => hh(h)).join(', ')}</span></div>`).join('')}<div class="row"><span>Subtotal</span><span>${peso(st.sub)}</span></div><div class="row"><span>Service fee (5%)</span><span>${peso(st.fee)}</span></div><div class="row t"><span>Total</span><b>${peso(st.total)}</b></div>`;
       $('[data-pay-label]', el).textContent = 'Pay ' + peso(st.total);

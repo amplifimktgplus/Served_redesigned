@@ -88,6 +88,21 @@ html:has(.hdr.is-hidden) .vbar { top: 0; }
 .vend__by { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin: 0; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--text-3); }
 .vend__logo { height: 16px; width: auto; aspect-ratio: 1637.2 / 498.5; fill: currentColor; color: var(--text-2); }
 
+/* owner tools, the list-a-venue form, and new listings in the courts directory */
+.studio__tools { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; }
+.olist__form { display: grid; gap: 18px; padding: clamp(20px, 3vw, 32px); max-width: 880px; }
+.olist__am { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; min-width: 0; }
+.olist__checks { display: flex; flex-wrap: wrap; gap: 10px 20px; }
+.mylist__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.mlc { display: grid; gap: 6px; align-content: start; padding: 20px; color: var(--text); text-decoration: none; transition: border-color .2s, transform .3s var(--ease); }
+.mlc:hover { border-color: var(--accent); transform: translateY(-3px); }
+.mlc .chip { justify-self: start; }
+.mlc b { font: 850 20px/1.1 var(--f-display); text-transform: uppercase; }
+.mlc > span:not(.chip):not(.mlc__go) { color: var(--text-3); font-size: 14px; }
+.mlc em { font-style: normal; color: var(--text-2); font-size: 14px; }
+.mlc__go { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; color: var(--accent); font: 800 14px/1 var(--f-ui); }
+.mlc__go .ico { width: 16px; height: 16px; }
+
 @media (max-width: 900px) {
   .acct__grid, .studio__grid { grid-template-columns: minmax(0, 1fr); }
   .studio__preview { position: relative; top: 0; }

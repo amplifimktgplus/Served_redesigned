@@ -72,6 +72,14 @@ and B, "Live board". B was picked, with the staging palette across the whole sit
   venue's booking pages too.
 - Preview limits: there is no server, so accounts, bookings and page settings live in the visitor's own browser.
   Passwords are salted and hashed, never stored as typed. Other visitors do not see an owner's changes.
+- Owners list their venues: name, sport, city, address, courts, surface, rates (with an optional evening rate),
+  hours, amenities and a description. A listing gets its own venue page, shows under "New on Served" in the
+  courts directory, takes bookings at the owner's own rates and hours, and can be edited or removed.
+- Owners have two views. The owner view is the court page studio; the player view books courts and shows
+  bookings. An owner who tries to book from the owner view is offered a one-tap switch to player.
+- `contact?subject=Listing my court` opens the contact form with that subject picked, as on the current site.
+- What the capture could not see: on the current site the owner dashboard and a player's bookings sit behind
+  sign-in, so the concept builds its own versions of them rather than copying them.
 - Section dividers: five options at `/lab/dividers/`. Rule: a divider only sits where the background colour
   changes, so the one divider that sat between two black sections was removed.
 

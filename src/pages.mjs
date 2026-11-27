@@ -119,7 +119,7 @@ ${marquee(['Pickleball', 'Tennis', 'Badminton', 'No calls', 'No waiting', 'No gu
       <p class="lede">Skip the cost of building your own booking site and running ads to fill it. List on Served and get in front of players who are already looking for a court.</p>
       <p class="owners__bh">Benefit from:</p>
       <ul class="ticks"><li>${icon('check')}Increase booking volume</li><li>${icon('check')}Build trust with verified players</li><li>${icon('check')}Save the cost of a standalone booking app and its marketing</li></ul>
-      ${ctas(btn('Join Us Today!', '/sign-up/?role=owner', 'btn--ink'), btn('See pricing', '/pricing/#owners', 'btn--line-ink'))}
+      ${ctas(btn('Join Us Today!', '/sign-up/?role=owner&next=owner/list/', 'btn--ink'), btn('See pricing', '/pricing/#owners', 'btn--line-ink'))}
     </div>
     <div class="owners__side">
       <h3 class="d3">List Your Court Today</h3>
@@ -182,6 +182,10 @@ function courts() {
   const pins = VENUES.map((v) => ({ slug: v.slug, name: v.name, rate: v.rate, city: v.city, lat: v.lat, lng: v.lng, tone: v.tone, sport: v.sport, href: u(`/courts/${v.slug}/availability/`), page: u(`/courts/${v.slug}/`) }));
   const body = `
 ${phero({ k: 'Courts', h1: 'Find Your Court', lede: 'Every court on Served is real and ready to book. Filter by location, surface or price and lock your slot in minutes.', crumb: [['Home', '/'], ['Courts', '/courts/']], cls: 'phero--short', img: 'live-hero-court', pos: '50% 60%' })}
+<section class="band band--night mylist" data-my-listings hidden aria-labelledby="ml-h"><div class="wrap">
+  ${sh({ k: 'Listed by court owners', h: '<span id="ml-h">New on Served</span>', lede: 'Venues their owners listed in this browser. Each one has its own page and books like any other court.', cls: 'sh--split' })}
+  <div class="mylist__grid" data-my-listings-grid></div>
+</div></section>
 <section class="disc" data-disc data-pins="${json(pins)}">
   <div class="disc__bar">
     <div class="wrap disc__bar-in">
@@ -486,7 +490,7 @@ ${phero({ k: 'Pricing', h1: 'Simple Pricing', lede: 'Free to search and compare 
 // ============================================================ LIST YOUR COURT
 function listCourt() {
   const body = `
-${phero({ k: 'For venues', h1: 'List Your Court', lede: 'We already built the traffic. You bring the court. Get your venue in front of players who are searching right now.', crumb: [['Home', '/'], ['List Your Court', '/list-your-court/']], img: 'live-cta-court', extra: ctas(btn('Register Now', '/sign-up/?role=owner'), btn('See pricing', '/pricing/#owners', 'btn--ghost')) })}
+${phero({ k: 'For venues', h1: 'List Your Court', lede: 'We already built the traffic. You bring the court. Get your venue in front of players who are searching right now.', crumb: [['Home', '/'], ['List Your Court', '/list-your-court/']], img: 'live-cta-court', extra: ctas(btn('Register Now', '/sign-up/?role=owner&next=owner/list/'), btn('See pricing', '/pricing/#owners', 'btn--ghost'), btn('Talk to our team', '/contact/?subject=Listing+my+court', 'btn--line')) })}
 <section class="band band--night lyc" aria-labelledby="hl-h">
   <div class="wrap">
     ${sh({ k: 'Three steps', h: '<span id="hl-h">How Listing Works</span>', lede: 'Three steps from sign up to your first booking.', cls: 'sh--center' })}
@@ -517,7 +521,7 @@ ${phero({ k: 'For venues', h1: 'List Your Court', lede: 'We already built the tr
       <p class="lede">Skip the cost of building your own booking site and running ads to fill it. List on Served and get in front of players who are already looking for a court.</p>
       <p class="owners__bh">Benefit from:</p>
       <ul class="ticks"><li>${icon('check')}Increase booking volume</li><li>${icon('check')}Build trust with verified players</li><li>${icon('check')}Save the cost of a standalone booking app and its marketing</li></ul>
-      ${ctas(btn('Join Us Today!', '/sign-up/?role=owner', 'btn--ink'))}
+      ${ctas(btn('Join Us Today!', '/sign-up/?role=owner&next=owner/list/', 'btn--ink'))}
     </div>
   </div>
 </section>
@@ -788,6 +792,7 @@ function studio() {
       ${ctas(btn('Register as an owner', '/sign-up/?role=owner&next=owner/studio/'), btn('Sign in', '/sign-in/?role=owner&next=owner/studio/', 'btn--ghost'))}
     </div>
     <div class="studio__grid" data-studio hidden>
+      <div class="studio__tools"><a class="btn btn--accent btn--sm" href="${u('/owner/list/')}">${icon('plus')}<span>List a new venue</span></a><button class="btn btn--line btn--sm" type="button" data-mode-switch="player">${icon('user')}<span>Switch to player view</span></button></div>
       <form class="studio__panel board" data-studio-form>
         <fieldset class="studio__f"><legend class="field__l">Your venue</legend>
           <label class="field"><span class="sr">Your venue</span><select name="venue">${venues.map(([s, n]) => `<option value="${s}">${esc(n)}</option>`).join('')}</select></label>
@@ -816,6 +821,101 @@ function studio() {
   </div>
 </section>`;
   return layout({ path: '/owner/studio/', title: 'Court page studio', desc: 'Court owners: set your page colours, hero photo and gallery.', body, sticky: null, noFinal: true });
+}
+
+// ============================================================ OWNER: list a venue (kept in the owner's browser in this preview)
+const LIST_SURFACES = ['Hard', 'Acrylic', 'Clay', 'Wood', 'Synthetic turf', 'Rubber'];
+const LIST_AMENITIES = ['Lights', 'Parking', 'Showers', 'Lockers', 'Changing rooms', 'Equipment rental'];
+const hourLabel = (h) => (h === 24 ? '12:00 AM (midnight)' : `${h % 12 || 12}:00 ${h < 12 ? 'AM' : 'PM'}`);
+const hourOpts = (from, to, sel) => Array.from({ length: to - from + 1 }, (_, i) => from + i).map((h) => `<option value="${h}"${h === sel ? ' selected' : ''}>${hourLabel(h)}</option>`).join('');
+function ownerList() {
+  const body = `<section class="band band--night olist"><div class="wrap">
+  <header class="sh sh--split">${kicker('For court owners')}<h1 class="d1">List your venue<span class="pd">.</span></h1><p class="lede">Tell players what you have. Your listing gets its own page, shows in the courts directory and takes bookings straight away. You can change anything later.</p></header>
+  <div class="studio__gate board" data-list-gate hidden><h2 class="d3">Sign in as a court owner</h2><p>Listing a venue is for court owners. Register as an owner, or sign in, and you will come straight back here.</p>${ctas(btn('Register as an owner', '/sign-up/?role=owner&next=owner/list/'), btn('Sign in', '/sign-in/?role=owner&next=owner/list/', 'btn--ghost'))}</div>
+  <form class="olist__form board" data-list-form hidden novalidate>
+    <div class="cform__row"><label class="field"><span class="field__l">Venue name</span><input name="name" required maxlength="60" placeholder="e.g. Kapitolyo Pickle Club" autocomplete="organization"></label><label class="field"><span class="field__l">Sport</span><select name="sport" required>${SPORTS.filter((s) => s.live).map((s) => `<option>${s.name}</option>`).join('')}</select>${icon('chev', 'field__i')}</label></div>
+    <div class="cform__row"><label class="field"><span class="field__l">City</span><select name="city" required>${CITIES.map((c) => `<option>${c.name}</option>`).join('')}<option>Other</option></select>${icon('chev', 'field__i')}</label><label class="field"><span class="field__l">Street and area</span><input name="address" required maxlength="80" placeholder="e.g. 12 East Capitol Drive, Kapitolyo"></label></div>
+    <div class="cform__row"><label class="field"><span class="field__l">Courts on site</span><input name="courts" type="number" required min="1" max="20" value="2"></label><label class="field"><span class="field__l">Surface</span><select name="surface">${LIST_SURFACES.map((s) => `<option>${s}</option>`).join('')}</select>${icon('chev', 'field__i')}</label></div>
+    <div class="cform__row"><label class="field"><span class="field__l">Rate per hour (₱)</span><input name="rate" type="number" required min="100" max="10000" step="50" placeholder="e.g. 800"></label><label class="field"><span class="field__l">Evening rate from 6 PM (₱, optional)</span><input name="eveningRate" type="number" min="100" max="10000" step="50" placeholder="Leave empty for one rate"></label></div>
+    <div class="cform__row"><label class="field"><span class="field__l">Opens</span><select name="open">${hourOpts(5, 12, 7)}</select>${icon('chev', 'field__i')}</label><label class="field"><span class="field__l">Closes</span><select name="close">${hourOpts(14, 24, 22)}</select>${icon('chev', 'field__i')}</label></div>
+    <fieldset class="olist__am"><legend class="field__l">Amenities</legend><div class="olist__checks">${LIST_AMENITIES.map((x) => `<label class="check"><input type="checkbox" name="amenities" value="${x}"><span>${x}</span></label>`).join('')}</div></fieldset>
+    <label class="field"><span class="field__l">About the venue</span><textarea name="desc" required maxlength="280" rows="3" placeholder="What makes your courts good to play on, in a sentence or two."></textarea></label>
+    <label class="field"><span class="field__l">Contact number (optional)</span><input name="phone" type="tel" maxlength="20" placeholder="Shown on your page" autocomplete="tel"></label>
+    <div class="ctas"><button class="btn btn--accent btn--lg" type="submit"><span data-list-label>Publish listing</span>${icon('arrow')}</button><a class="btn btn--ghost" href="${u('/owner/studio/')}"><span>Your court page studio</span></a></div>
+    ${demoNote('Preview: your listing is kept in this browser only. On Served it would go live for players everywhere.')}
+  </form>
+</div></section>`;
+  return layout({ path: '/owner/list/', title: 'List your venue', desc: 'Court owners: list your venue on Served.', body, sticky: null, noFinal: true });
+}
+
+// ============================================================ a listed venue's page: one template, filled in the browser from the owner's listing
+const SPORT_PHOTO = { Pickleball: 'live-pickleball', Tennis: 'live-tennis', Badminton: 'live-badminton' };
+function listingPage() {
+  const tpl = { slug: 'listing', name: 'this venue', sport: 'Pickleball', rate: 0, open: [], full: [], address: '', booking: { hours: [], rates: null, courts: [{ id: 'c1', name: 'Court A' }], taken: {}, feeRate: SITE.feeRate, maxHours: SITE.maxHours } };
+  const live = SPORTS.filter((s) => s.live);
+  const art = Object.fromEntries(live.map((s) => [s.name, { court: courtSvg(s.name, 'cpk__court'), done: courtD(s.name, 10, 19, 180, 82, 6), img: img(SPORT_PHOTO[s.name], { alt: '', sizes: '100vw', eager: true }), chip: chipSport(s.name) }]));
+  const amen = { Lights: 'bulb', Parking: 'parking', Showers: 'shower', Lockers: 'locker', 'Changing rooms': 'shirt', 'Equipment rental': 'racket' };
+  const body = `
+<section class="vhero band band--night" data-l-page>
+  <div class="band__clip" aria-hidden="true"><figure class="vhero__bg" data-l-hero>${art.Pickleball.img}</figure><span class="vhero__scrim"></span></div>
+  <div class="wrap vhero__in">
+    <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="${u('/')}">Home</a></li><li><a href="${u('/courts/')}">Courts</a></li><li aria-current="page" data-l="name">Listing</li></ol></nav>
+    <div class="vhero__grid">
+      <div class="vhero__copy">
+        <p class="chips"><span data-l-chip>${art.Pickleball.chip}</span><span class="chip" data-l="surface">Surface</span><span class="chip">${icon('sparkle')}New listing</span></p>
+        <p class="vhero__by"><span class="vhero__mono" aria-hidden="true" data-l="mono">V</span>Listed by its owner</p>
+        <h1 class="d1 vhero__h" data-l="name">Listing</h1>
+        <p class="vhero__meta"><span data-l="place">City</span> <span class="sep">/</span> <span data-l="surface">Surface</span> surface <span class="sep">/</span> <span data-l="courts">0</span> courts available</p>
+      </div>
+      <div class="vhero__board board">
+        <p class="price price--big"><b data-l="rate">₱0</b><span>/ hr</span><small>exclusive of service fees</small></p>
+        ${ctas(`<a class="btn btn--accent btn--lg" href="#book"><span>Check availability</span>${icon('arrow')}</a>`, btn('Back to all courts', '/courts/', 'btn--ghost'))}
+      </div>
+    </div>
+  </div>
+  <p class="photo-note" data-photo-note>Representative photo</p>
+</section>
+<nav class="vbar" aria-label="Venue" data-l-page><div class="wrap vbar__in">
+  <a class="vbar__brand" href="#top"><span class="vbar__mono" aria-hidden="true" data-l="mono">V</span><b data-l="name">Listing</b></a>
+  <div class="vbar__links"><a href="#book">Book</a><a href="#about">About</a><a href="#photos" data-vgal-link hidden>Photos</a><a href="#location">Location</a></div>
+  <a class="btn btn--accent btn--sm vbar__go" href="#book"><span>Book now</span>${icon('arrow')}</a>
+</div></nav>
+<div data-l-page>${booking(tpl, 'venue')}</div>
+<section class="band band--night vinfo" id="about" data-l-page>
+  <div class="wrap vinfo__grid">
+    <div class="vinfo__about">${kicker('The venue')}<h2 class="d2">About <span data-l="name">the venue</span></h2><p class="lede" data-l="desc"></p>
+      <dl class="specs"><div><dt>Surface</dt><dd data-l="surface"></dd></div><div><dt>Courts on site</dt><dd data-l="courts"></dd></div><div><dt>Sport</dt><dd data-l="sport"></dd></div><div><dt>Open</dt><dd data-l="hours"></dd></div></dl></div>
+    <div class="vinfo__am"><h2 class="d3">Amenities</h2><ul class="amen" data-l-amen></ul>
+      <h2 class="d3">Good to know</h2>
+      <ul class="rules"><li>${icon('shield')}<span>Nothing is reserved until payment.</span></li><li>${icon('clock')}<span>Pick up to 4 hours on a court.</span></li><li>${icon('wallet')}<span>A 5% service fee is shown before you pay.</span></li></ul></div>
+  </div>
+</section>
+<section class="band band--night vgal" id="photos" data-vgal hidden aria-labelledby="ph-h"><div class="wrap">${kicker('Photos')}<h2 class="d2" id="ph-h">Inside <span data-l="name">the venue</span></h2></div><div class="vgal__grid" data-vgal-grid></div></section>
+<section class="band band--iron vloc" id="location" data-l-page><div class="wrap">${kicker('Location')}<h2 class="d2" data-l="address">Address</h2><p class="lede" data-l-phone-wrap hidden>Call the venue on <b data-l="phone"></b>.</p>${ctas(`<a class="btn btn--ghost" data-l-dir href="#" target="_blank" rel="noopener"><span>Get directions</span>${icon('arrow-ne')}</a>`)}</div></section>
+<section class="vend" data-l-page><div class="wrap vend__in"><span class="vend__mono" aria-hidden="true" data-l="mono">V</span><div class="vend__id"><b data-l="name">Listing</b><span data-l="address"></span></div><a class="btn btn--accent" href="#book"><span>Book a court</span>${icon('arrow')}</a><p class="vend__by">Bookings by ${logoMark('vend__logo')}</p></div></section>
+<section class="band band--night" data-l-missing hidden><div class="wrap">${kicker('Listing')}<h1 class="d2">This listing lives in its owner's browser<span class="pd">.</span></h1><p class="lede">In this preview a new listing is kept in the browser of the owner who made it. Open it there, or browse the courts already on Served.</p>${ctas(btn('Browse courts', '/courts/'))}</div></section>
+<script>(function(){var A=${JSON.stringify(art).replace(/</g, '\\u003c')},AM=${JSON.stringify(amen)};
+var q=new URLSearchParams(location.search),id=q.get('id')||'',L=null;try{L=(JSON.parse(localStorage.getItem('srv.listings')||'[]')||[]).filter(function(x){return x.id===id;})[0]||null;}catch(e){}
+var $=function(s){return document.querySelector(s);},$$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
+if(!L||!A[L.sport]){$$('[data-l-page]').forEach(function(e){e.hidden=true;});$('[data-l-missing]').hidden=false;return;}
+document.body.dataset.venue='listing-'+L.id;document.title=L.name+' | Served.';
+var peso=function(n){return '\\u20b1'+Number(n).toLocaleString('en-PH');},hl=function(h){return h===24?'midnight':((h%12||12)+':00 '+(h<12?'AM':'PM'));};
+var set=function(k,v){$$('[data-l="'+k+'"]').forEach(function(e){e.textContent=v;});};
+var place=L.city==='Other'?L.address:L.address+', '+L.city;
+set('name',L.name);set('mono',L.name.charAt(0).toUpperCase());set('sport',L.sport);set('surface',L.surface);set('courts',String(L.courts));set('place',place);set('address',place);set('rate',peso(L.rate));set('desc',L.desc);set('hours',hl(L.open)+' to '+hl(L.close));
+if(L.phone){set('phone',L.phone);$('[data-l-phone-wrap]').hidden=false;}
+$('[data-l-chip]').innerHTML=A[L.sport].chip;$('[data-l-hero]').innerHTML=A[L.sport].img;
+var t=$('[data-court-tpl]');if(t)t.innerHTML=A[L.sport].court;var dc=$('.done__court');if(dc)dc.setAttribute('d',A[L.sport].done);
+$('[data-l-amen]').innerHTML=(L.amenities||[]).map(function(x){return '<li><svg class="ico" aria-hidden="true"><use href="#i-'+(AM[x]||'check')+'"/></svg><span></span></li>';}).join('');
+$$('[data-l-amen] li span').forEach(function(s,i){s.textContent=L.amenities[i];});
+$('[data-l-dir]').href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(L.name+', '+place);
+var today=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Manila'}),day=function(iso,n){var d=new Date(iso+'T12:00:00+08:00');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
+var hours=[],open=[],rates={},courts=[];for(var h=+L.open;h<+L.close;h++)hours.push(h);for(var i=0;i<60;i++)open.push(day(today,i));
+if(L.eveningRate)hours.forEach(function(h){if(h>=18)rates[h]={rate:+L.eveningRate,label:'Evening'};});
+for(var c=0;c<+L.courts;c++)courts.push({id:'c'+(c+1),name:'Court '+String.fromCharCode(65+c)});
+var bk=$('[data-book]');bk.setAttribute('data-book',JSON.stringify({slug:'listing-'+L.id,name:L.name,rate:+L.rate,fee:${SITE.feeRate},max:${SITE.maxHours},hours:hours,rates:Object.keys(rates).length?rates:null,courts:courts,open:open,full:[],taken:{},address:place,links:{venue:'./?id='+L.id,availability:'./?id='+L.id+'#book',slots:'./?id='+L.id+'#book',courts:'../',signin:'../../sign-in/'}}));
+})();</script>`;
+  return layout({ path: '/courts/listing/', title: 'Venue listing', desc: 'A venue listed on Served by its owner.', body, active: 'courts', bodyCls: 'pg-venue', sticky: null, noFinal: true });
 }
 
 // ============================================================ LAB: section divider options (27 Nov 2026, for the client to pick one)
@@ -935,6 +1035,8 @@ export function pages() {
   add('/help/', help);
   add('/account/', account);
   add('/owner/studio/', studio);
+  add('/owner/list/', ownerList);
+  add('/courts/listing/', listingPage);
   add('/lab/dividers/', labDividers);
   add('/about/', about);
   add('/404', notFound);
