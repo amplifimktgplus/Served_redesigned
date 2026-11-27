@@ -429,7 +429,7 @@ ${marquee(['Rally X', 'Pickleball', 'Tennis', 'Now open', 'Rally X', 'Paddles up
   <div class="wrap">
     ${sh({ k: 'On court', h: '<span id="rxg-h">Inside Rally X<span class="pd">.</span></span>', lede: 'Photos supplied by the venue. Swipe or use the arrows, and tap a photo to open it full size.', cls: 'sh--split' })}
   </div>
-  ${carousel(R.photos.map((p) => ({ html: img(p, { alt: alts[p], sizes: '(min-width: 900px) 36vw, 80vw' }), full: a(`assets/img/${p}-${IMAGES[p].sizes.at(-1)}.webp`), alt: alts[p], cap: R.captions[p] })), 'Rally X photos')}
+  ${carousel(R.photos.map((p) => ({ html: img(p, { alt: alts[p], sizes: '(min-width: 900px) 36vw, 80vw' }), full: a(`assets/img/${p}-${IMAGES[p].sizes.at(-1)}.webp`), alt: alts[p] })), 'Rally X photos')}
 </section>
 <section class="band band--cream rxfacts" aria-labelledby="rxf-h">
   <div class="wrap rxfacts__in">
@@ -702,7 +702,7 @@ ${phero({ k: 'Court Gallery', h1: 'Court Gallery', lede: 'Courts, cities and the
 <section class="band band--night galp">
   <div class="wrap">
     <div class="chips chips--filter" role="toolbar" aria-label="Filter photos" data-gal-filter>${groups.map((g, i) => `<button class="chip${i ? '' : ' is-on'}" type="button" data-g="${g}" aria-pressed="${i ? 'false' : 'true'}">${g}</button>`).join('')}</div>
-    <div class="masonry masonry--4" data-gallery>${items.map((x, i) => `<figure class="mz${i % 7 === 0 ? ' mz--tall' : ''}" data-g="${x.g}" data-reveal style="--i:${i % 6}"><button class="mz__btn" type="button" data-lightbox="${a(`assets/img/${x.p}-${IMAGES[x.p].sizes.at(-1)}.webp`)}" aria-label="Open photo: ${esc(x.cap)}">${img(x.p, { alt: x.cap, sizes: '(min-width: 1000px) 25vw, 50vw' })}</button><figcaption><span>${esc(x.g)}</span>${esc(x.cap)}</figcaption></figure>`).join('')}</div>
+    <div class="masonry masonry--4" data-gallery>${items.map((x, i) => `<figure class="mz${i % 7 === 0 ? ' mz--tall' : ''}" data-g="${x.g}" data-reveal style="--i:${i % 6}"><button class="mz__btn" type="button" data-lightbox="${a(`assets/img/${x.p}-${IMAGES[x.p].sizes.at(-1)}.webp`)}" aria-label="Open photo: ${esc(x.cap)}">${img(x.p, { alt: x.cap, sizes: '(min-width: 1000px) 25vw, 50vw' })}</button></figure>`).join('')}</div>
   </div>
 </section>
 <section class="band band--iron" id="credits" aria-labelledby="cr-h"><div class="wrap">

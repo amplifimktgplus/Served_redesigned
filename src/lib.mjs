@@ -18,10 +18,11 @@ export function u(to) {
 }
 export const a = (p) => '../'.repeat(depth()) + p;
 // court photos on a concave carousel: a native, snapping horizontal scroller whose photos turn and come forward the
-// further they sit from the centre (site.js sets the angles). items: [{ html, full, alt, cap }]
+// further they sit from the centre (site.js sets the angles). items: [{ html, full, alt }]. No captions over the
+// photos (client, 27 Nov 2026): what a photo shows lives in its alt text and its enlarge label.
 export function carousel(items, label) {
   const n = items.length;
-  return `<div class="cc" data-cc><div class="cc__track" data-cc-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="${esc(label)}">${items.map((x, i) => `<figure class="cc__s" data-cc-slide aria-label="${i + 1} of ${n}"><button class="cc__btn" type="button" data-lightbox="${x.full}" aria-label="Enlarge photo: ${esc(x.alt)}">${x.html}</button>${x.cap ? `<figcaption>${esc(x.cap)}</figcaption>` : ''}</figure>`).join('')}</div><div class="cc__ui"><button class="iconbtn" type="button" data-cc-prev aria-label="Previous photo">${icon('back')}</button><span class="cc__count" data-cc-count aria-live="polite">1 / ${n}</span><button class="iconbtn" type="button" data-cc-next aria-label="Next photo">${icon('arrow')}</button></div></div>`;
+  return `<div class="cc" data-cc><div class="cc__track" data-cc-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="${esc(label)}">${items.map((x, i) => `<figure class="cc__s" data-cc-slide aria-label="${i + 1} of ${n}"><button class="cc__btn" type="button" data-lightbox="${x.full}" aria-label="Enlarge photo: ${esc(x.alt)}">${x.html}</button></figure>`).join('')}</div><div class="cc__ui"><button class="iconbtn" type="button" data-cc-prev aria-label="Previous photo">${icon('back')}</button><span class="cc__count" data-cc-count aria-live="polite">1 / ${n}</span><button class="iconbtn" type="button" data-cc-next aria-label="Next photo">${icon('arrow')}</button></div></div>`;
 }
 
 // the official logo from the sprite the build writes: letters and full stop as two shapes, one colour

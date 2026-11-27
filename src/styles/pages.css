@@ -707,7 +707,6 @@ a.icard:hover { border-color: var(--accent); transform: translateY(-3px); }
   .mcard { width: 300px; grid-template-columns: 96px 1fr; }
   .masonry, .masonry--4 { columns: 2 140px; column-gap: 10px; }
   .mz { margin-bottom: 10px; border-radius: 14px; }
-  .mz figcaption { opacity: 1; transform: none; font-size: 12px; padding: 30px 10px 8px; }
   .tbl th:nth-child(2), .tbl td:nth-child(2) { display: none; }
   .ex__bracket { grid-template-rows: repeat(4, 30px); }
   .chips--filter { justify-content: center; }
